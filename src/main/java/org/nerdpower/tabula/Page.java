@@ -1,7 +1,6 @@
 package org.nerdpower.tabula;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +18,7 @@ public class Page extends Rectangle {
     private List<Ruling> rulings, cleanRulings = null, verticalRulingLines = null, horizontalRulingLines = null;
     private float minCharWidth;
     private float minCharHeight;
-    private TextElementIndex spatial_index;
+    private RectangleSpatialIndex<TextElement> spatial_index;
 
     public Page(float width, float height, Integer rotation, int page_number) {
         super();
@@ -39,7 +38,7 @@ public class Page extends Rectangle {
 
     public Page(float width, float height, Integer rotation, int page_number,
             List<TextElement> characters, List<Ruling> rulings,
-            float minCharWidth, float minCharHeight, TextElementIndex index) {
+            float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
 
         this(width, height, rotation, page_number, characters, rulings);
         this.minCharHeight = minCharHeight;
@@ -48,7 +47,7 @@ public class Page extends Rectangle {
     }
 
     
-    public Page getArea(Rectangle2D area) {
+    public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
         
         return new Page((float) area.getWidth(),
@@ -74,7 +73,7 @@ public class Page extends Rectangle {
     }
     
     public Page getArea(float top, float left, float bottom, float right) {
-        Rectangle2D.Float area = new Rectangle2D.Float(left, top, Math.abs(right - left), Math.abs(bottom - top));
+        Rectangle area = new Rectangle(top, left, width, height);
         return this.getArea(area);
     }
     
@@ -82,12 +81,12 @@ public class Page extends Rectangle {
         return texts;
     }
     
-    public List<TextElement> getText(Rectangle2D area) {
+    public List<TextElement> getText(Rectangle area) {
         return this.spatial_index.contains(area);
     }
     
     public List<TextElement> getText(float top, float left, float bottom, float right) {
-        Rectangle2D.Float area = new Rectangle2D.Float(left, top, Math.abs(right - left), Math.abs(bottom - top));
+        Rectangle area = new Rectangle(top, left, right - left, bottom - top);
         return this.getText(area);
     }
 
@@ -162,7 +161,7 @@ public class Page extends Rectangle {
         return minCharHeight;
     }
     
-    public TextElementIndex getSpatialIndex() {
+    public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
     }
     

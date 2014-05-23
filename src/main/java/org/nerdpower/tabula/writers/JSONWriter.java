@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import org.nerdpower.tabula.RectangularTextContainer;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.TextChunk;
 
@@ -27,9 +28,9 @@ public class JSONWriter implements Writer {
             object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
             
             JsonArray jsonDataArray = new JsonArray();
-            for (List<TextChunk> row: table.getRows()) {
+            for (List<RectangularTextContainer> row: table.getRows()) {
                 JsonArray jsonRowArray = new JsonArray();
-                for (TextChunk textChunk: row) {
+                for (RectangularTextContainer textChunk: row) {
                     jsonRowArray.add(context.serialize(textChunk));
                 }
                 jsonDataArray.add(jsonRowArray);

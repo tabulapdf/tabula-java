@@ -24,7 +24,7 @@ public class TestBasicExtractor {
                 28.28f, 103.04f, 732.6f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-        List<TextChunk> firstRow = table.getRows().get(0);
+        List<RectangularTextContainer> firstRow = table.getRows().get(0);
 
         assertTrue(firstRow.get(2).getText().equals("ALLEGIANT AIR"));
         assertTrue(firstRow.get(3).getText().equals("ALLEGIANT AIR LLC"));
@@ -55,7 +55,7 @@ public class TestBasicExtractor {
                 255.57f, 40.43f, 398.76f, 557.35f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(rulings);
         Table table = bea.extract(page).get(0);
-        List<TextChunk> sixthRow = table.getRows().get(5);
+        List<RectangularTextContainer> sixthRow = table.getRows().get(5);
 
         assertTrue(sixthRow.get(0).getText().equals("VALSANGIACOMO BLANC"));
         assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE "));

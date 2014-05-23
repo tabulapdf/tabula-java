@@ -53,14 +53,6 @@ public class TextChunk extends RectangularTextContainer {
         return textElements;
     }
     
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        String s = super.toString();
-        sb.append(s.substring(0, s.length() - 1));
-        sb.append(String.format(", text=\"%s\"]", this.getText()));
-        return sb.toString();
-    }
-    
     public String getText() {
         if (this.textElements.size() == 0) {
             return "";

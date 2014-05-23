@@ -44,7 +44,7 @@ public class ObjectExtractor extends PageDrawer {
     private float minCharWidth = Float.MAX_VALUE, minCharHeight = Float.MAX_VALUE;
     private List<TextElement> characters;
     private List<Ruling> rulings;
-    private TextElementIndex spatialIndex;
+    private RectangleSpatialIndex<TextElement> spatialIndex;
     private AffineTransform pageTransform;
     private Shape clippingPath;
     private Rectangle2D transformedClippingPathBounds;
@@ -97,6 +97,10 @@ public class ObjectExtractor extends PageDrawer {
     public PageIterator extract() {
         return extract(Utils.range(1, this.pdf_document_pages.size() + 1));
     }
+    
+    public Page extract(int pageNumber) {
+        return extract(Utils.range(pageNumber, pageNumber+1)).next();
+    }
 
     public void close() throws IOException {
         this.pdf_document.close();
@@ -122,7 +126,7 @@ public class ObjectExtractor extends PageDrawer {
         this.characters = new ArrayList<TextElement>();
         this.rulings = new ArrayList<Ruling>();
         this.pageTransform = null;
-        this.spatialIndex = new TextElementIndex();
+        this.spatialIndex = new RectangleSpatialIndex<TextElement>();
         this.minCharWidth = Float.MAX_VALUE;
         this.minCharHeight = Float.MAX_VALUE;	
     }
@@ -141,7 +145,7 @@ public class ObjectExtractor extends PageDrawer {
             return;
         }
 
-        PathIterator pi = this.getLinePath().getPathIterator(this.pageTransform);
+        PathIterator pi = this.getLinePath().getPathIterator(this.getPageTransform());
         float[] c = new float[6];
         int currentSegment;
 
@@ -167,7 +171,7 @@ public class ObjectExtractor extends PageDrawer {
 
         // skip the first path operation and save it as the starting position
         float[] first = new float[6];
-        pi = this.getLinePath().getPathIterator(this.pageTransform);
+        pi = this.getLinePath().getPathIterator(this.getPageTransform());
         pi.currentSegment(first);
         // last move
         Point2D.Float start_pos = new Point2D.Float(first[0], first[1]);
@@ -305,6 +309,10 @@ public class ObjectExtractor extends PageDrawer {
     }
 
     public AffineTransform getPageTransform() {
+        
+        if (this.pageTransform != null) {
+            return this.pageTransform;
+        }
 
         PDRectangle cb = page.findCropBox();
         int rotation = page.findRotation();
@@ -348,10 +356,6 @@ public class ObjectExtractor extends PageDrawer {
 
     public List<TextElement> getCharacters() {
         return characters;
-    }
-    
-    public TextElementIndex getSpatialIndex() {
-        return spatialIndex;
     }
     
     private static boolean isPrintable(String s) {

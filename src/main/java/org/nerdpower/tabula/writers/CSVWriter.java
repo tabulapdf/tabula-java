@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVFormat;
+import org.nerdpower.tabula.RectangularTextContainer;
 import org.nerdpower.tabula.Table;
-import org.nerdpower.tabula.TextChunk;
 
 public class CSVWriter implements Writer {
     
@@ -20,9 +20,9 @@ public class CSVWriter implements Writer {
     @Override
     public void write(Appendable out, Table table) throws IOException {
         this.createWriter(out);
-        for (List<TextChunk> row: table.getRows()) {
+        for (List<RectangularTextContainer> row: table.getRows()) {
             List<String> cells = new ArrayList<String>(row.size());
-            for (TextChunk tc: row) {
+            for (RectangularTextContainer tc: row) {
                 cells.add(tc.getText());
             }
             this.printer.printRecord(cells);

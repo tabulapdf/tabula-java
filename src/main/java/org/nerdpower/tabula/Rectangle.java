@@ -18,6 +18,11 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         this.setRect(left, top, width, height);
     }
     
+    public Rectangle(double top, double left, double width, double height) {
+        super();
+        this.setRect(left, top, width, height);
+    }
+    
     @Override
     public int compareTo(Rectangle other) {
         double thisBottom = this.getBottom();
