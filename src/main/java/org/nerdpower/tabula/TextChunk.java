@@ -193,7 +193,6 @@ public class TextChunk extends RectangularTextContainer {
         for (Line line: lines) {
             rv.add(Line.removeRepeatedCharacters(line, ' ', 3));
         }
-
         
         return rv;
     }

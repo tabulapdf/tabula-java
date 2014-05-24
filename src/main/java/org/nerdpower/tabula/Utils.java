@@ -55,6 +55,20 @@ public class Utils {
             }
         };
     }
+
+    /* from apache.commons-lang */
+    public static boolean isNumeric(final CharSequence cs) {
+        if (cs == null || cs.length() == 0) {
+            return false;
+        }
+        final int sz = cs.length();
+        for (int i = 0; i < sz; i++) {
+            if (Character.isDigit(cs.charAt(i)) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     public static <T> List<List<T>> transpose(List<List<T>> table) {
         List<List<T>> ret = new ArrayList<List<T>>();
