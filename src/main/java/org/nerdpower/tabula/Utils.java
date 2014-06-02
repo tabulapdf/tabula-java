@@ -70,6 +70,21 @@ public class Utils {
         return true;
     }
     
+    public static String join(String glue, String...s) {
+        int k = s.length;
+        if ( k == 0 )
+        {
+          return null;
+        }
+        StringBuilder out = new StringBuilder();
+        out.append( s[0] );
+        for ( int x=1; x < k; ++x )
+        {
+          out.append(glue).append(s[x]);
+        }
+        return out.toString();
+    }
+    
     public static <T> List<List<T>> transpose(List<List<T>> table) {
         List<List<T>> ret = new ArrayList<List<T>>();
         final int N = table.get(0).size();

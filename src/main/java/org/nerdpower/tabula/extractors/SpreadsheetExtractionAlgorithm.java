@@ -20,7 +20,7 @@ import org.nerdpower.tabula.TextElement;
 
 public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
-    private static final float ARBITRARY_MAGIC_HEURISTIC_NUMBER = 0.65f;
+    private static final float MAGIC_HEURISTIC_NUMBER = 0.65f;
     
     private static final Comparator<Point2D> POINT_COMPARATOR = new Comparator<Point2D>() {
         @Override
@@ -118,17 +118,15 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) + ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
         
-        return ratio > ARBITRARY_MAGIC_HEURISTIC_NUMBER && ratio < (1/ARBITRARY_MAGIC_HEURISTIC_NUMBER);
+        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1/MAGIC_HEURISTIC_NUMBER);
     }
     
     public List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
         List<Cell> cellsFound = new ArrayList<Cell>();
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
         List<Point2D> intersectionPointsList = new ArrayList<Point2D>(intersectionPoints.keySet());
-        boolean doBreak = false;
-        
         Collections.sort(intersectionPointsList, POINT_COMPARATOR); 
-        
+        boolean doBreak = false;
         
         for (int i = 0; i < intersectionPointsList.size(); i++) {
             Point2D topLeft = intersectionPointsList.get(i);
@@ -136,12 +134,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             doBreak = false;
             
             // CrossingPointsDirectlyBelow( topLeft );
-            // CrossingPointsDirectlyToTheRight( topLeft );
-
             List<Point2D> xPoints = new ArrayList<Point2D>();
+            // CrossingPointsDirectlyToTheRight( topLeft );
             List<Point2D> yPoints = new ArrayList<Point2D>();
 
-                
             for (Point2D p: intersectionPointsList.subList(i, intersectionPointsList.size())) {
                 if (p.getX() == topLeft.getX() && p.getY() > topLeft.getY()) {
                     xPoints.add(p);
@@ -154,19 +150,20 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             for (Point2D xPoint: xPoints) {
                 if (doBreak) { break; }
 
-                if (!hv[1].colinear(xPoint)) {
+                // is there a vertical edge b/w topLeft and xPoint?
+                if (!hv[1].equals(intersectionPoints.get(xPoint)[1])) {
                     continue;
                 }
                 for (Point2D yPoint: yPoints) {
-                    if (!hv[0].colinear(yPoint)) {
+                    // is there an horizontal edge b/w topLeft and yPoint ?
+                    if (!hv[0].equals(intersectionPoints.get(yPoint)[0])) {
                         continue;
                     }
                     Point2D btmRight = new Point2D.Float((float) yPoint.getX(), (float) xPoint.getY());
-                    if (intersectionPoints.containsKey(btmRight)) {
-                        Ruling[] btmRightHV = intersectionPoints.get(btmRight);
-                        if (btmRightHV[0].colinear(xPoint) && btmRightHV[1].colinear(yPoint)) {
+                    if (intersectionPoints.containsKey(btmRight) 
+                            && intersectionPoints.get(btmRight)[0].equals(intersectionPoints.get(xPoint)[0])
+                            && intersectionPoints.get(btmRight)[1].equals(intersectionPoints.get(yPoint)[1])) {
                             cellsFound.add(new Cell(topLeft, btmRight));
-                        }
                         doBreak = true;
                         break outer;
                     }

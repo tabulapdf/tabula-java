@@ -49,6 +49,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
     public List<T> contains(Rectangle r) {
         SaveToListProcedure proc = new SaveToListProcedure();
         si.contains(rectangleToSpatialIndexRectangle(r), proc);
+        //si.intersects(rectangleToSpatialIndexRectangle(r), proc);
         ArrayList<T> rv = new ArrayList<T>();
         for (int i : proc.getIds()) {
             rv.add(rectangles.get(i));

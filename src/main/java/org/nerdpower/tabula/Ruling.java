@@ -29,12 +29,12 @@ public class Ruling extends Line2D.Float {
 
     public boolean vertical() {
         float diff = Math.abs(this.x1 - this.x2);
-        return diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean horizontal() {
         float diff = Math.abs(this.y1 - this.y2);
-        return diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean oblique() {
@@ -183,6 +183,10 @@ public class Ruling extends Line2D.Float {
             throw new IllegalArgumentException("lines must be orthogonal, vertical and horizontal");
         }
         return new Point2D.Float(vertical.getLeft(), horizontal.getTop());        
+    }
+    
+    public boolean equals(Ruling other) {
+        return this.getP1().equals(other.getP1()) && this.getP2().equals(other.getP2());
     }
     
     public float getTop() {

@@ -54,6 +54,14 @@ public class TextElement extends Rectangle {
         return fontSize;
     }
     
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String s = super.toString();
+        sb.append(s.substring(0, s.length() - 1));
+        sb.append(String.format(",text=\"%s\"]", this.getText()));
+        return sb.toString();
+    }
+    
     public static List<TextChunk> mergeWords(List<TextElement> textElements) {
         return mergeWords(textElements, new ArrayList<Ruling>());
     }
@@ -113,7 +121,10 @@ public class TextElement extends Rectangle {
             // is there any vertical ruling that goes across chr and prevChar?
             acrossVerticalRuling = false;
             for (Ruling r: verticalRulings) {
-                if (prevChar.x < r.getLeft() && chr.x > r.getLeft()) {
+                if (    
+                        (verticallyOverlapsRuling(prevChar, r) && verticallyOverlapsRuling(chr, r)) &&
+                        (prevChar.x < r.getPosition() && chr.x > r.getPosition()) || (prevChar.x > r.getPosition() && chr.x < r.getPosition())
+                    ) {
                     acrossVerticalRuling = true;
                     break;
                 }
@@ -208,4 +219,10 @@ public class TextElement extends Rectangle {
         }
         return textChunks;
     }
+    
+    private static boolean verticallyOverlapsRuling(TextElement te, Ruling r) {
+        // Utils.overlap(prevChar.getTop(), prevChar.getHeight(), r.getY1(), r.getY2() - r.getY1())
+        return Math.max(0, Math.min(te.getBottom(), r.getY2()) - Math.max(te.getTop(), r.getY1())) > 0;
+    }
+    
 }

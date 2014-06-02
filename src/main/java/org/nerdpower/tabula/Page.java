@@ -20,27 +20,27 @@ public class Page extends Rectangle {
     private float minCharHeight;
     private RectangleSpatialIndex<TextElement> spatial_index;
 
-    public Page(float width, float height, Integer rotation, int page_number) {
+    public Page(float top, float left, float width, float height, Integer rotation, int page_number) {
         super();
-        this.setRect(0, 0, width, height);
+        this.setRect(left, top, width, height);
         this.rotation = rotation;
         this.pageNumber = page_number;
     }
     
-    public Page(float width, float height, Integer rotation, int page_number,
+    public Page(float top, float left, float width, float height, Integer rotation, int page_number,
             List<TextElement> characters, List<Ruling> rulings) {
 
-        this(width, height, rotation, page_number);
+        this(top, left, width, height, rotation, page_number);
         this.texts = characters;
         this.rulings = rulings;
     }
 
 
-    public Page(float width, float height, Integer rotation, int page_number,
+    public Page(float top, float left, float width, float height, Integer rotation, int page_number,
             List<TextElement> characters, List<Ruling> rulings,
             float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
 
-        this(width, height, rotation, page_number, characters, rulings);
+        this(top, left, width, height, rotation, page_number, characters, rulings);
         this.minCharHeight = minCharHeight;
         this.minCharWidth = minCharWidth;
         this.spatial_index = index;
@@ -49,31 +49,35 @@ public class Page extends Rectangle {
     
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
-        
-        return new Page((float) area.getWidth(),
-                        (float) area.getHeight(),
-                        rotation,
-                        pageNumber,
-                        t,
-                        Ruling.cropRulingsToArea(getRulings(), area),
+        Page rv = new Page(
+                (float) area.getTop(),
+                (float) area.getLeft(),
+                (float) area.getWidth(),
+                (float) area.getHeight(),
+                rotation,
+                pageNumber,
+                t,
+                Ruling.cropRulingsToArea(getRulings(), area),
 
-                        Collections.min(t, new Comparator<TextElement>() {
-                            @Override
-                            public int compare(TextElement te1, TextElement te2) {
-                                return java.lang.Double.compare(te1.width, te2.width);
-                            }}).width,
-                        
-                        Collections.min(t, new Comparator<TextElement>() {
-                                @Override
-                                public int compare(TextElement te1, TextElement te2) {
-                                    return java.lang.Double.compare(te1.height, te2.height);
-                        }}).height,
-                        
-                        spatial_index);
+                Collections.min(t, new Comparator<TextElement>() {
+                    @Override
+                    public int compare(TextElement te1, TextElement te2) {
+                        return java.lang.Double.compare(te1.width, te2.width);
+                    }}).width,
+                
+                Collections.min(t, new Comparator<TextElement>() {
+                        @Override
+                        public int compare(TextElement te1, TextElement te2) {
+                            return java.lang.Double.compare(te1.height, te2.height);
+                }}).height,
+                
+                spatial_index);
+ 
+        return rv;
     }
     
     public Page getArea(float top, float left, float bottom, float right) {
-        Rectangle area = new Rectangle(top, left, width, height);
+        Rectangle area = new Rectangle(top, left, right - left, bottom - top);
         return this.getArea(area);
     }
     
@@ -108,6 +112,8 @@ public class Page extends Rectangle {
         }
         
         if (this.rulings == null || this.rulings.isEmpty()) {
+            this.verticalRulingLines = new ArrayList<Ruling>();
+            this.horizontalRulingLines = new ArrayList<Ruling>();
             return new ArrayList<Ruling>();
         }
         

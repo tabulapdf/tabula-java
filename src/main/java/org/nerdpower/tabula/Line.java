@@ -3,6 +3,7 @@ package org.nerdpower.tabula;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO this class seems superfluous - get rid of it
 
 @SuppressWarnings("serial")
 public class Line extends Rectangle {

@@ -24,6 +24,15 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     public BasicExtractionAlgorithm(List<Ruling> verticalRulings) {
         this.verticalRulings = verticalRulings;
     }
+    
+    public List<Table> extract(Page page, List<Float> verticalRulingPositions) {
+        List<Ruling> verticalRulings = new ArrayList<Ruling>(verticalRulingPositions.size());
+        for (Float p: verticalRulingPositions) {
+            verticalRulings.add(new Ruling((float) page.getTop(), (float) p, 0.0f, (float) page.getHeight()));
+        }
+        this.verticalRulings = verticalRulings;
+        return this.extract(page);
+    }
 
     @Override
     public List<Table> extract(Page page) {
@@ -89,7 +98,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
      * @param lines must be an array of lines sorted by their +top+ attribute
      * @return a list of column boundaries (x axis)
      */
-    private static List<java.lang.Float> columnPositions(List<Line> lines) {
+    public static List<java.lang.Float> columnPositions(List<Line> lines) {
 
         List<Rectangle> regions = new ArrayList<Rectangle>();
         for (TextChunk tc: lines.get(0).getTextElements()) {
@@ -136,6 +145,8 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         for (Rectangle r: regions) {
             rv.add((float) r.getRight());
         }
+        
+        Collections.sort(rv);
         
         return rv;
         

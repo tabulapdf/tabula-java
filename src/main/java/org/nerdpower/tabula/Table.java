@@ -113,6 +113,10 @@ public class Table extends Rectangle {
         return this.rows;
     }
     
+    public RectangularTextContainer getCell(int i, int j) {
+        return this.cellContainer.get(i, j);
+    }
+    
     public List<List<RectangularTextContainer>> getCols() {
         return Utils.transpose(this.getRows());
     }

@@ -14,27 +14,27 @@ public class TestMainApp {
     @Test
     public void testParsePagesOption() throws ParseException {
         
-        List<Integer> rv = Main.parsePagesOption("1");
+        List<Integer> rv = CommandLineApp.parsePagesOption("1");
         assertEquals(new Integer[] { 1 }, rv.toArray());
         
-        rv = Main.parsePagesOption("1-4");
+        rv = CommandLineApp.parsePagesOption("1-4");
         assertEquals(new Integer[] { 1,2,3,4 }, rv.toArray());
         
-        rv = Main.parsePagesOption("1-4,20-24");
+        rv = CommandLineApp.parsePagesOption("1-4,20-24");
         assertEquals(new Integer[] { 1,2,3,4,20,21,22,23,24 }, rv.toArray());
         
-        rv = Main.parsePagesOption("all");
+        rv = CommandLineApp.parsePagesOption("all");
         assertNull(rv);
     }
     
     @Test(expected=ParseException.class)
     public void testExceptionInParsePages() throws ParseException {
-        Main.parsePagesOption("1-4,24-22");
+        CommandLineApp.parsePagesOption("1-4,24-22");
     }
 
     @Test(expected=ParseException.class)
     public void testAnotherExceptionInParsePages() throws ParseException {
-        Main.parsePagesOption("quuxor");
+        CommandLineApp.parsePagesOption("quuxor");
     }
 
 

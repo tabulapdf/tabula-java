@@ -13,10 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -56,9 +58,20 @@ public class ObjectExtractor extends PageDrawer {
     private Dimension pageSize;
 
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
+        this(pdf_document, null);
+    }
+    
+    public ObjectExtractor(PDDocument pdf_document, String password) throws IOException {
         super(null);
+        if (pdf_document.isEncrypted()) {
+//            if (password == null) {
+//                throw new IOException("Document is encrypted. Please supply a valid password");    
+//            }
+            pdf_document.openProtection(new StandardDecryptionMaterial(password));
+        }
         this.pdf_document = pdf_document;
         this.pdf_document_pages = this.pdf_document.getDocumentCatalog().getAllPages();
+        
     }
 
     protected Page extractPage(Integer page_number) throws IOException {
@@ -79,7 +92,10 @@ public class ObjectExtractor extends PageDrawer {
         
         Collections.sort(this.characters);
         
-        return new Page(p.findCropBox().getWidth(),
+        return new Page(
+                0,
+                0,
+                p.findCropBox().getWidth(),
                 p.findCropBox().getHeight(),
                 p.findRotation(),
                 page_number,
@@ -193,7 +209,8 @@ public class ObjectExtractor extends PageDrawer {
 
                         if (line.intersects(this.currentClippingPath())) {
                             Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
-                            if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+                            //if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+                            if (r.length() > 0.01) {
                                 this.rulings.add(r);
                             }
                         }
@@ -211,7 +228,8 @@ public class ObjectExtractor extends PageDrawer {
 
                         if (line.intersects(this.currentClippingPath())) {
                             Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
-                            if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+                            //if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+                            if (r.length() > 0.01) {
                                 this.rulings.add(r);
                             }
                         }
@@ -222,16 +240,11 @@ public class ObjectExtractor extends PageDrawer {
         this.getLinePath().reset();
     }
     
-//    private void strokePath(PDColor filter_by_color) throws IOException {
-//        this.strokePath();
-//    }
-
     @Override
     public void fillPath(int windingRule) throws IOException {
         //
         //float[] color_comps = this.getGraphicsState().getNonStrokingColor().getJavaColor().getRGBColorComponents(null);
         float[] color = this.getGraphicsState().getNonStrokingColor().getComponents();
-        //new java.awt.Color
         // TODO use color_comps as filter_by_color
         this.strokePath();
     }
