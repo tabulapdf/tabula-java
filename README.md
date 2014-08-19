@@ -1,7 +1,7 @@
 tabula-java
 ===========
 
-`tabula-java` is a library for extracting tables from PDF files. It is a Java rewrite of [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor), that is soon to be become a thin wrapper around this library.
+`tabula-java` is a library for extracting tables from PDF files. It is a Java rewrite of [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor), that is soon to become a thin wrapper around this library.
 
 ## Build instructions
 
