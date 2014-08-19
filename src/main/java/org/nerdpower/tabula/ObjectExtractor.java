@@ -371,6 +371,8 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         PDRectangle cb = page.findCropBox();
         int rotation = Math.abs(page.findRotation());
         
+        this.pageTransform = new AffineTransform();
+        
         if (rotation == 90 || rotation == 270) {
             this.pageTransform = AffineTransform.getRotateInstance(rotation * (Math.PI / 180.0), 0, 0);
             this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
