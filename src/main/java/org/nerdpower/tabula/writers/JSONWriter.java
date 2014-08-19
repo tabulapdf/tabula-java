@@ -28,7 +28,11 @@ public class JSONWriter implements Writer {
                 JsonSerializationContext context) {
             
             JsonObject object = new JsonObject();
-//            object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
+            object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
+            object.addProperty("top", table.getTop());
+            object.addProperty("left", table.getLeft());
+            object.addProperty("width", table.getWidth());
+            object.addProperty("height", table.getHeight());
             
             JsonArray jsonDataArray = new JsonArray();
             for (List<RectangularTextContainer> row: table.getRows()) {
@@ -72,7 +76,6 @@ public class JSONWriter implements Writer {
         public boolean shouldSkipField(FieldAttributes fa) {
             return !fa.hasModifier(Modifier.PUBLIC);
         }
-        
     }
 
     
@@ -80,8 +83,8 @@ public class JSONWriter implements Writer {
     final Gson gson;
     
     public JSONWriter() {
-        gson = new GsonBuilder().setPrettyPrinting()
-//           .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
+        gson = new GsonBuilder()
+           .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
            .registerTypeAdapter(Table.class, new TableSerializer())
            .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
            .create();
@@ -91,5 +94,4 @@ public class JSONWriter implements Writer {
     public void write(Appendable out, Table table) throws IOException {
         out.append(gson.toJson(table, Table.class));
     }
-    
 }

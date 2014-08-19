@@ -77,10 +77,6 @@ public class Table extends Rectangle {
     ExtractionAlgorithm extractionAlgorithm;
     List<List<RectangularTextContainer>> rows = null;
     
-    public ExtractionAlgorithm getExtractionAlgorithm() {
-        return extractionAlgorithm;
-    }
-    
     public Table() {
         super();
     }
@@ -120,4 +116,15 @@ public class Table extends Rectangle {
     public List<List<RectangularTextContainer>> getCols() {
         return Utils.transpose(this.getRows());
     }
+    
+    public void setExtractionAlgorithm(ExtractionAlgorithm extractionAlgorithm) {
+        this.extractionAlgorithm = extractionAlgorithm;
+    }
+    
+    public ExtractionAlgorithm getExtractionAlgorithm() {
+        return extractionAlgorithm;
+    }
+
+    
+
 }

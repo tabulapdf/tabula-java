@@ -65,7 +65,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
 
     @Override
     public List<? extends Table> extract(Page page) {
-        // TODO Auto-generated method stub
         List<Cell> cells = findCells(page.getHorizontalRulings(), page.getVerticalRulings());
         List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
         
@@ -93,8 +92,12 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 }
             }
             
-            spreadsheets.add(new TableWithRulingLines(area, page, overlappingCells,
-                    horizontalOverlappingRulings, verticalOverlappingRulings));
+            TableWithRulingLines t = new TableWithRulingLines(area, page, overlappingCells,
+                    horizontalOverlappingRulings, verticalOverlappingRulings);
+            
+            t.setExtractionAlgorithm(this);
+            
+            spreadsheets.add(t);
         }
         
         return spreadsheets;
