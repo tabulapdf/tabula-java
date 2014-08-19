@@ -3,7 +3,6 @@ package org.nerdpower.tabula;
 import java.io.IOException;
 import java.util.Iterator;
 
-
 public class PageIterator implements Iterator<Page> {
 
     private ObjectExtractor oe;

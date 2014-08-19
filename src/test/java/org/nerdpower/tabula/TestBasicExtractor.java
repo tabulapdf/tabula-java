@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -14,6 +13,7 @@ import org.nerdpower.tabula.Ruling;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.extractors.BasicExtractionAlgorithm;
 import org.nerdpower.tabula.writers.CSVWriter;
+import org.nerdpower.tabula.UtilsForTesting;
 
 public class TestBasicExtractor {
 
@@ -1743,10 +1743,17 @@ public class TestBasicExtractor {
                         "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        for (Ruling r: page.getVerticalRulings()) {
+            System.out.println(r);
+        }
+        System.out.println();
+        for (Ruling r: page.getHorizontalRulings()) {
+            System.out.println(r);
+        }
         Table table = bea.extract(page).get(0);
         UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_RECOGNITION);
     }
-
+    
     @Test
     public void testVerticalRulingsPreventMergingOfColumns() throws IOException {
         List<Ruling> rulings = new ArrayList<Ruling>();

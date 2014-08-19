@@ -17,6 +17,7 @@ import org.nerdpower.tabula.Ruling;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.TableWithRulingLines;
 import org.nerdpower.tabula.TextElement;
+import org.nerdpower.tabula.Utils;
 
 public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
@@ -100,7 +101,33 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     }
     
     public boolean isTabular(Page page) {
-        List<? extends Table> tables = new SpreadsheetExtractionAlgorithm().extract(page);
+        
+        // get minimal region of page that contains every character (in effect,
+        // removes white "margins")
+        Page minimalRegion = page.getArea(Utils.bounds(page.getText()));
+        // add rulings along the borders of minimalRegion
+        minimalRegion.addRuling(new Ruling(
+                new Point2D.Double(minimalRegion.getLeft(), 
+                                   minimalRegion.getTop()), 
+                new Point2D.Double(minimalRegion.getRight(), 
+                                   minimalRegion.getTop())));
+        minimalRegion.addRuling(new Ruling(
+                new Point2D.Double(minimalRegion.getRight(), 
+                                   minimalRegion.getTop()), 
+                new Point2D.Double(minimalRegion.getRight(), 
+                                   minimalRegion.getBottom())));
+        minimalRegion.addRuling(new Ruling(
+                new Point2D.Double(minimalRegion.getRight(), 
+                                   minimalRegion.getBottom()), 
+                new Point2D.Double(minimalRegion.getLeft(), 
+                                   minimalRegion.getBottom())));
+        minimalRegion.addRuling(new Ruling(
+                new Point2D.Double(minimalRegion.getLeft(), 
+                                   minimalRegion.getBottom()), 
+                new Point2D.Double(minimalRegion.getLeft(), 
+                                   minimalRegion.getTop())));
+        
+        List<? extends Table> tables = new SpreadsheetExtractionAlgorithm().extract(minimalRegion);
         if (tables.size() == 0) {
             return false;
         }
@@ -108,7 +135,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         int rowsDefinedByLines = table.getRows().size();
         int colsDefinedByLines = table.getCols().size();
         
-        tables = new BasicExtractionAlgorithm().extract(page);
+        tables = new BasicExtractionAlgorithm().extract(minimalRegion);
         if (tables.size() == 0) {
             // TODO WHAT DO WE DO HERE?
         }

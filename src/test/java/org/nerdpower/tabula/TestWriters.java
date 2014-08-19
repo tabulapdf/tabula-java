@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.nerdpower.tabula.extractors.BasicExtractionAlgorithm;
+import org.nerdpower.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import org.nerdpower.tabula.writers.CSVWriter;
 import org.nerdpower.tabula.writers.JSONWriter;
 import org.nerdpower.tabula.writers.TSVWriter;
@@ -51,5 +52,18 @@ public class TestWriters {
         String s = sb.toString();
         System.out.println(s);
     }
+    
+    @Test
+    public void testJSONSerializeInfinity() throws IOException {
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Table table = sea.extract(page).get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new JSONWriter()).write(sb, table);
+        String s = sb.toString();
+        System.out.println(s);
+    }
+    
 
 }

@@ -205,6 +205,17 @@ public class TestSpreadsheetExtractor {
         assertTrue(foundRectangles.equals(expected));
     }
     
+    @Test
+    public void testSpreadsheetExtraction() throws IOException {
+        Page page = UtilsForTesting
+                .getAreaFromFirstPage(
+                        "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
+                        269.875f, 12.75f, 790.5f, 561f);
+        
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        se.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
+    }
+ 
     // TODO Add assertions
     @Test
     public void testSpanningCells() throws IOException {
@@ -213,6 +224,12 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
+                
+        for (List<RectangularTextContainer> r: tables.get(1).getRows()) {
+            for (RectangularTextContainer rtc: r) {
+                System.out.println(rtc.toString());
+            }
+        }
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(1));
         System.out.println(sb.toString());
@@ -242,6 +259,43 @@ public class TestSpreadsheetExtractor {
         String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and \rnanotechnology policy (SGER)\",Interagency,\"North Carolina State \rUniversity\"\r\n\"Social and ethical research and education in agrifood \rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed \rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience, \rapplications and societal implications (NUE)\",NSF,\"Michigan Technological \rUniversity\"\r\n\"Ethics and belief inside the development of \rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal \rimplications components\",\"NSF, DOE, \rDOD, and NIH\",\"All nanotechnology centers \rand networks\"\r\n";
         
         assertEquals(expected, result);
+    }
+    
+    @Test
+    // TODO add assertions
+    public void testMergeLinesCloseToEachOther() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/20.pdf", 1);
+        List<Ruling> rulings = page.getUnprocessedRulings();
+    }
+    
+    @Test
+    public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/org/nerdpower/tabula/spreadsheet_no_bounding_frame.pdf", 1,
+                140.25f,54.1875f,649.1875f,542.9375f);
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        boolean isTabular = se.isTabular(page);
+        assertTrue(isTabular);
+        List<? extends Table> tables = se.extract(page);
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, tables.get(0));
+        System.out.println(sb.toString());
+    }
+    
+    @Test
+    public void testExtractSpreadsheetWithinAnArea() throws IOException {
+        Page page = UtilsForTesting.getAreaFromPage(
+                "src/test/resources/org/nerdpower/tabula/puertos1.pdf",
+                1,
+                273.9035714285714f, 30.32142857142857f, 554.8821428571429f, 546.7964285714286f);
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        List<? extends Table> tables = se.extract(page);
+        Table table = tables.get(0);
+        assertEquals(15, table.getRows().size());
+
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, tables.get(0));
+        System.out.println(sb.toString());
+        
     }
     
     // TODO add assertions

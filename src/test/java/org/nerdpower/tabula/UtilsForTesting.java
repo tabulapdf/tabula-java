@@ -7,7 +7,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import static org.junit.Assert.*;
 
-
 public class UtilsForTesting {
     
     public static Page getAreaFromFirstPage(String path, float top, float left, float bottom, float right) throws IOException {

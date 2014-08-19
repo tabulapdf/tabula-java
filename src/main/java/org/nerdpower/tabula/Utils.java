@@ -32,6 +32,7 @@ public class Utils {
         
         Iterator<? extends Shape> iter = shapes.iterator();
         Rectangle rv = new Rectangle();
+        rv.setRect(iter.next().getBounds2D());
 
         do {
             Rectangle2D.union(iter.next().getBounds2D(), rv, rv);
@@ -55,6 +56,7 @@ public class Utils {
             }
         };
     }
+    
 
     /* from apache.commons-lang */
     public static boolean isNumeric(final CharSequence cs) {

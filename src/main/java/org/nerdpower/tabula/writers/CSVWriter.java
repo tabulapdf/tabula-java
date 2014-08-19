@@ -14,7 +14,12 @@ public class CSVWriter implements Writer {
     CSVPrinter printer;
     
     void createWriter(Appendable out) {
-        this.printer = new CSVPrinter(out, CSVFormat.EXCEL);
+        try {
+            this.printer = new CSVPrinter(out, CSVFormat.EXCEL);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     @Override

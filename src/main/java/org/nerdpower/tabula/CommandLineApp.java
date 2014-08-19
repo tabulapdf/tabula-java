@@ -42,6 +42,11 @@ public class CommandLineApp {
                 System.exit(0);
             }
             
+            if (line.hasOption('v')) {
+                System.out.println(VERSION_STRING);
+                System.exit(0);
+            }
+            
             if (line.getArgs().length != 1) {
                 throw new ParseException("Need one filename\nTry --help for help");
             }

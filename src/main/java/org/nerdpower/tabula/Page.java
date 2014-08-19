@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("serial")
+// TODO: this class should probably be called "PageArea" or something like that
 public class Page extends Rectangle {
 
     private Integer rotation;
@@ -18,11 +19,11 @@ public class Page extends Rectangle {
     private List<Ruling> rulings, cleanRulings = null, verticalRulingLines = null, horizontalRulingLines = null;
     private float minCharWidth;
     private float minCharHeight;
+    private Rectangle textBounds;
     private RectangleSpatialIndex<TextElement> spatial_index;
 
     public Page(float top, float left, float width, float height, Integer rotation, int page_number) {
-        super();
-        this.setRect(left, top, width, height);
+        super(top, left, width, height);
         this.rotation = rotation;
         this.pageNumber = page_number;
     }
@@ -90,8 +91,7 @@ public class Page extends Rectangle {
     }
     
     public List<TextElement> getText(float top, float left, float bottom, float right) {
-        Rectangle area = new Rectangle(top, left, right - left, bottom - top);
-        return this.getText(area);
+        return this.getText(new Rectangle(top, left, right - left, bottom - top));
     }
 
     public Integer getRotation() {
@@ -105,10 +105,25 @@ public class Page extends Rectangle {
     public List<TextElement> getTexts() {
         return texts;
     }
+    
+    /**
+     * Returns the minimum bounding box that contains all the TextElements on this Page
+     * @return
+     */
+    public Rectangle getTextBounds() {
+        List<TextElement> texts = this.getText();
+        if (!texts.isEmpty()) {
+            return Utils.bounds(texts);
+        }
+        else {
+            return new Rectangle();
+        }
+        
+    }
 
     public List<Ruling> getRulings() {
         if (this.cleanRulings != null) {
-            return this.rulings;
+            return this.cleanRulings;
         }
         
         if (this.rulings == null || this.rulings.isEmpty()) {
@@ -138,7 +153,7 @@ public class Page extends Rectangle {
         this.cleanRulings = new ArrayList<Ruling>(this.verticalRulingLines);
         this.cleanRulings.addAll(this.horizontalRulingLines);
         
-        return this.rulings;
+        return this.cleanRulings;
         
     }
     
@@ -157,7 +172,21 @@ public class Page extends Rectangle {
         this.getRulings();
         return this.horizontalRulingLines;
     }
-
+    
+    public void addRuling(Ruling r) {
+        if (r.oblique()) {
+            throw new UnsupportedOperationException("Can't add a non horizontal ruling");
+        }
+        this.rulings.add(r);
+        // clear caches
+        this.verticalRulingLines = null;
+        this.horizontalRulingLines = null;
+        this.cleanRulings = null;
+    }
+    
+    public List<Ruling> getUnprocessedRulings() {
+        return this.rulings;
+    }
 
     public float getMinCharWidth() {
         return minCharWidth;

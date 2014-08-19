@@ -12,6 +12,7 @@ public class TextElement extends Rectangle {
     private final PDFont font;
     private float fontSize;
     private float widthOfSpace, dir;
+    private static final float AVERAGE_CHAR_TOLERANCE = 0.3f;
 
     public TextElement(float y, float x, float width, float height,
             PDFont font, float fontSize, String c, float widthOfSpace) {
@@ -155,7 +156,7 @@ public class TextElement extends Rectangle {
             else {
                 averageCharWidth = (float) ((previousAveCharWidth + (chr.getWidth() / chr.getText().length())) / 2.0f);
             }
-            deltaCharWidth = averageCharWidth * 0.3f; // 0.3 == average char tolerance
+            deltaCharWidth = averageCharWidth * AVERAGE_CHAR_TOLERANCE;
             
             // Compares the values obtained by the average method and the wordSpacing method and picks
             // the smaller number.

@@ -20,21 +20,31 @@ public class Ruling extends Line2D.Float {
     private enum SOType { VERTICAL, HRIGHT, HLEFT };
 
     public Ruling(float top, float left, float width, float height) {
-        super(left, top, left+width, top+height);
+        this(new Point2D.Float(left, top), new Point2D.Float(left+width, top+height));
     }
     
     public Ruling(Point2D p1, Point2D p2) {
         super(p1, p2);
+        
+        // normalize almost vertical or almost horizontal lines
+        double angle = this.getAngle();
+        if (Utils.within(angle, 0, 1) || Utils.within(angle, 180, 1)) { // almost horizontal
+            this.setLine(this.x1, this.y1, this.x2, this.y1);
+        }
+        else if (Utils.within(angle, 90, 1) || Utils.within(angle, 270, 1)) { // almost vertical
+            this.setLine(this.x1, this.y1, this.x1, this.y2);
+        }
+//        else {
+//            System.out.println("oblique: " + this + " ("+ this.getAngle() + ")");
+//        }
     }
 
     public boolean vertical() {
-        float diff = Math.abs(this.x1 - this.x2);
-        return this.length() > 0 && diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && this.x1 == this.x2; //diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean horizontal() {
-        float diff = Math.abs(this.y1 - this.y2);
-        return this.length() > 0 && diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && this.y1 == this.y2; //diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean oblique() {
@@ -228,6 +238,18 @@ public class Ruling extends Line2D.Float {
     public float getHeight() {
         return this.getBottom() - this.getTop();
     }
+    
+    public double getAngle() {
+        double angle = Math.toDegrees(Math.atan2(this.getP2().getY() - this.getP1().getY(),
+                this.getP2().getX() - this.getP1().getX()));
+
+        if (angle < 0) {
+            angle += 360;
+        }
+        return angle;
+    }
+    
+    
     
     @Override
     public String toString() {

@@ -1,6 +1,7 @@
 package org.nerdpower.tabula.writers;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -8,6 +9,8 @@ import org.nerdpower.tabula.RectangularTextContainer;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.TextChunk;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -25,7 +28,7 @@ public class JSONWriter implements Writer {
                 JsonSerializationContext context) {
             
             JsonObject object = new JsonObject();
-            object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
+//            object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
             
             JsonArray jsonDataArray = new JsonArray();
             for (List<RectangularTextContainer> row: table.getRows()) {
@@ -57,19 +60,36 @@ public class JSONWriter implements Writer {
             return object;
         }
     }
+
+    class TableSerializerExclusionStrategy implements ExclusionStrategy {
+
+        @Override
+        public boolean shouldSkipClass(Class<?> arg0) {
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes fa) {
+            return !fa.hasModifier(Modifier.PUBLIC);
+        }
+        
+    }
+
     
-    final GsonBuilder gsonBuilder = new GsonBuilder();
+    //final GsonBuilder gsonBuilder;
     final Gson gson;
     
     public JSONWriter() {
-        gsonBuilder.registerTypeAdapter(Table.class, new TableSerializer());
-        gsonBuilder.registerTypeAdapter(TextChunk.class, new TextChunkSerializer());
-        gson = gsonBuilder.create();
+        gson = new GsonBuilder().setPrettyPrinting()
+//           .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
+           .registerTypeAdapter(Table.class, new TableSerializer())
+           .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
+           .create();
     }
     
     @Override
     public void write(Appendable out, Table table) throws IOException {
-        out.append(gson.toJson(table));
+        out.append(gson.toJson(table, Table.class));
     }
     
 }
