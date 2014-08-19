@@ -55,6 +55,8 @@ Tabula helps you extract tables from PDFs
 
 ```
 
+It also includes a debugging tool, run `java -cp ./target/tabula-extractor-0.7.4-SNAPSHOT-jar-with-dependencies.jar org.nerdpower.tabula.debug.Debug -h` for the available options.
+
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/org/nerdpower/tabula/) folder.
 
 © 2014 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
