@@ -8,7 +8,7 @@ tabula-java
 Clone this repo and run:
 
 ```
-mvn clean install
+mvn clean compile assembly:single
 ```
 
 ## Examples
