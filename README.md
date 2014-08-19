@@ -1,4 +1,60 @@
 tabula-java
 ===========
 
-Extract tables from PDF files
+`tabula-java` is a library for extracting tables from PDF files. It is a Java rewrite of [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor), that is soon to be become a thin wrapper around this library.
+
+## Build instructions
+
+Clone this repo and run:
+
+```
+mvn clean install
+```
+
+## Examples
+
+`tabula-java` provides a command line application:
+
+```
+$ java -jar ./target/tabula-extractor-0.7.4-SNAPSHOT-jar-with-dependencies.jar --help
+
+usage: tabula [-a <AREA>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
+       [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
+
+Tabula helps you extract tables from PDFs
+ -a,--area <AREA>           Portion of the page to analyze
+                            (top,left,bottom,right). Example: --area
+                            269.875,12.75,790.5,561. Default is entire
+                            page
+ -c,--columns <COLUMNS>     X coordinates of column boundaries. Example
+                            --columns 10.1,20.2,30.3
+ -d,--debug                 Print detected table areas instead of
+                            processing.
+ -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
+ -g,--guess                 Guess the portion of the page to analyze per
+                            page.
+ -h,--help                  Print this help text.
+ -i,--silent                Suppress all stderr output.
+ -n,--no-spreadsheet        Force PDF not to be extracted using
+                            spreadsheet-style extraction (if there are
+                            ruling lines separating each cell, as in a PDF
+                            of an Excel spreadsheet)
+ -o,--outfile <OUTFILE>     Write output to <file> instead of STDOUT.
+                            Default: -
+ -p,--pages <PAGES>         Comma separated list of ranges, or all.
+                            Examples: --pages 1-3,5-7, --pages 3 or
+                            --pages all. Default is --pages 1
+ -r,--spreadsheet           Force PDF to be extracted using
+                            spreadsheet-style extraction (if there are
+                            ruling lines separating each cell, as in a PDF
+                            of an Excel spreadsheet)
+ -s,--password <PASSWORD>   Password to decrypt document. Default is empty
+ -u,--use-line-returns      Use embedded line returns in cells. (Only in
+                            spreadsheet mode.)
+ -v,--version               Print version and exit.
+
+```
+
+You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/org/nerdpower/tabula/) folder.
+
+© 2014 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
