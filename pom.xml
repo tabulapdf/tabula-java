@@ -7,7 +7,13 @@
     <name>tabula-extractor</name>
     <description>Extract tables from PDF files</description>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
     <repositories>
+
         <repository>
             <id>sonatype</id>
             <name>Sonatype repository</name>
@@ -51,6 +57,32 @@
                     </descriptorRefs>
                 </configuration>
             </plugin>
+            <!-- plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <verbose>false</verbose>
+                    <addSvnKeyWords>true</addSvnKeyWords>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>first</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <licenseName>gpl_v3</licenseName>
+                            <includes>
+                                <include>*Dao.java</include>
+                                <include>*Bean.java</include>
+                                <include>.*entities.*.xml</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin -->
         </plugins>
     </build>
 
@@ -59,14 +91,18 @@
             <groupId>net.sf.jsi</groupId>
             <artifactId>jsi</artifactId>
             <version>1.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.6.4</version>
-            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.4</version>
         </dependency>
 
         <dependency>
