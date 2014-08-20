@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class TextChunk extends RectangularTextContainer { 
+public class TextChunk extends RectangularTextContainer<TextElement> implements HasText { 
     public static final TextChunk EMPTY = new TextChunk(0,0,0,0);
     List<TextElement> textElements = new ArrayList<TextElement>();
     
@@ -35,7 +35,6 @@ public class TextChunk extends RectangularTextContainer {
         }
         super.merge(other);
         return this;
-
     }
     
     public void add(TextElement textElement) {
@@ -64,6 +63,13 @@ public class TextChunk extends RectangularTextContainer {
         }
         return sb.toString();
     }
+    
+    @Override
+    public String getText(boolean useLineReturns) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     
     /**
      * @return true if text contained in this TextChunk is the same repeated character
@@ -196,6 +202,5 @@ public class TextChunk extends RectangularTextContainer {
         
         return rv;
     }
-
 
 }

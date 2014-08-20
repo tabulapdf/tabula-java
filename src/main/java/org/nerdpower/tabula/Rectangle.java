@@ -112,7 +112,6 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         this.setRect(this.x, this.y, right - this.x, this.height);
     }
         
-    
     public double getLeft() {
         return this.getMinX();
     }

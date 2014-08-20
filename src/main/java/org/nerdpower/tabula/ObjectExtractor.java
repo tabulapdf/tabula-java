@@ -230,7 +230,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 if (line.intersects(this.currentClippingPath())) {
                     Ruling r = new Ruling(line.getP1(), line.getP2())
                             .intersect(this.currentClippingPath());
-                    // if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+
                     if (r.length() > 0.01) {
                         this.rulings.add(r);
                     }
@@ -253,7 +253,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 if (line.intersects(this.currentClippingPath())) {
                     Ruling r = new Ruling(line.getP1(), line.getP2())
                             .intersect(this.currentClippingPath());
-                    // if (!(r.getWidth() == 0 && r.getHeight() == 0)) {
+
                     if (r.length() > 0.01) {
                         this.rulings.add(r);
                     }

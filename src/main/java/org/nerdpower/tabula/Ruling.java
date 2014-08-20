@@ -306,8 +306,8 @@ public class Ruling extends Line2D.Float {
         });
         
         for (Ruling h : horizontals) {
-            sos.add(new SortObject(SOType.HLEFT, h.getLeft(), h));
-            sos.add(new SortObject(SOType.HRIGHT, h.getRight(), h));
+            sos.add(new SortObject(SOType.HLEFT, h.getLeft() - PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
+            sos.add(new SortObject(SOType.HRIGHT, h.getRight() + PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
         }
 
         for (Ruling v : verticals) {

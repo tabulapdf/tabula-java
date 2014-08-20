@@ -2,6 +2,7 @@ package org.nerdpower.tabula;
 
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +24,12 @@ public class Utils {
     
     public static boolean overlap(double y1, double height1, double y2, double height2) {
         return overlap(y1, height1, y2, height2, 0.1f);
+    }
+    
+    public static float round(double d, int decimalPlace) {
+        BigDecimal bd = new BigDecimal(Double.toString(d));
+        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+        return bd.floatValue();
     }
     
     public static Rectangle bounds(Collection<? extends Shape> shapes) {

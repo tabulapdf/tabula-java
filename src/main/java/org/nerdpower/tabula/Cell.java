@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class Cell extends RectangularTextContainer {
+public class Cell extends RectangularTextContainer<TextChunk> {
     private boolean spanning;
     private boolean placeholder;
     private boolean useLineReturns = true;
@@ -22,8 +22,9 @@ public class Cell extends RectangularTextContainer {
     public Cell(Point2D topLeft, Point2D bottomRight) {
         super((float) topLeft.getY(), (float) topLeft.getX(), (float) (bottomRight.getX() - topLeft.getX()), (float) (bottomRight.getY() - topLeft.getY()));
     }
-
-    public String getText() {
+    
+    @Override
+    public String getText(boolean useLineReturns) {
         if (this.textElements.size() == 0) {
             return "";
         }
@@ -31,13 +32,17 @@ public class Cell extends RectangularTextContainer {
         Collections.sort(this.textElements);
         double curTop = this.textElements.get(0).getTop();
         for (TextChunk tc: this.textElements) {
-            if (this.useLineReturns && tc.getTop() > curTop) {
+            if (useLineReturns && tc.getTop() > curTop) {
                 sb.append("\r");
             }
             sb.append(tc.getText());
             curTop = tc.getTop();
         }
         return sb.toString().trim();
+    }
+
+    public String getText() {
+        return getText(this.useLineReturns);
     }
 
     public boolean isSpanning() {
@@ -71,4 +76,5 @@ public class Cell extends RectangularTextContainer {
     public void setTextElements(List<TextChunk> textElements) {
         this.textElements = textElements;
     }
+
 }

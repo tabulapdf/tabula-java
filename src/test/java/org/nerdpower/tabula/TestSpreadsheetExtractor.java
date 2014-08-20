@@ -2,10 +2,13 @@ package org.nerdpower.tabula;
 
 import static org.junit.Assert.*;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.nerdpower.tabula.Cell;
@@ -205,6 +208,7 @@ public class TestSpreadsheetExtractor {
         assertTrue(foundRectangles.equals(expected));
     }
     
+    // TODO Add assertions
     @Test
     public void testSpreadsheetExtraction() throws IOException {
         Page page = UtilsForTesting
@@ -296,6 +300,14 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
         System.out.println(sb.toString());
         
+    }
+    
+    @Test
+    public void testAlmostIntersectingRulingsShouldIntersect() {
+        Ruling v = new Ruling(new Point2D.Float(555.960876f, 271.569641f), new Point2D.Float(555.960876f, 786.899902f));
+        Ruling h = new Ruling(new Point2D.Float(25.620499f, 786.899902f), new Point2D.Float(555.960754f, 786.899902f));
+        Map<Point2D, Ruling[]> m = Ruling.findIntersections(Arrays.asList(new Ruling[] { h }), Arrays.asList(new Ruling[] { v }));
+        assertEquals(m.values().size(), 1);
     }
     
     // TODO add assertions
