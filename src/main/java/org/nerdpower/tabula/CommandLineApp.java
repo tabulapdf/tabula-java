@@ -193,7 +193,7 @@ public class CommandLineApp {
     }
     
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
-        if (pagesSpec == "all") {
+        if (pagesSpec.equals("all")) {
             return null;
         }
         
