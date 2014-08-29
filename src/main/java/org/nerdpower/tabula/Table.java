@@ -55,6 +55,9 @@ public class Table extends Rectangle {
         public RectangularTextContainer put(CellPosition cp, RectangularTextContainer value) {
             this.maxRow = Math.max(maxRow, cp.row);
             this.maxCol = Math.max(maxCol, cp.col);
+            if (this.containsKey(cp)) { // adding on an existing CellPosition, concatenate content and resize
+                value.merge(this.get(cp));
+            }
             super.put(cp, value);
             return value;
         }

@@ -47,6 +47,19 @@ public class Line extends Rectangle {
         }
         this.textChunks.add(textChunk);
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String s = super.toString();
+        sb.append(s.substring(0, s.length() - 1));
+        sb.append(",chunks=");
+        for (TextChunk te: this.textChunks) {
+            sb.append("'" + te.getText() + "', ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 
     static Line removeRepeatedCharacters(Line line, Character c, int minRunLength) {
 

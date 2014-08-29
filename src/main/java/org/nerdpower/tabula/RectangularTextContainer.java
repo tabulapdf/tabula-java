@@ -1,6 +1,9 @@
 package org.nerdpower.tabula;
 
-public abstract class RectangularTextContainer extends Rectangle {
+import java.util.List;
+
+@SuppressWarnings("serial")
+public abstract class RectangularTextContainer<T extends HasText> extends Rectangle {
 
     public RectangularTextContainer(float top, float left, float width, float height) {
         super(top, left, width, height);
@@ -14,5 +17,19 @@ public abstract class RectangularTextContainer extends Rectangle {
         return sb.toString();
     }
     
+    public RectangularTextContainer<T> merge(RectangularTextContainer<T> other) {
+        if (this.compareTo(other) < 0) {
+            this.getTextElements().addAll(other.getTextElements());
+            
+        }
+        else {
+            this.getTextElements().addAll(0, other.getTextElements());
+        }
+        super.merge(other);
+        return this;
+    }
+    
     public abstract String getText();
+    public abstract String getText(boolean useLineReturns);
+    public abstract List<T> getTextElements();
 }

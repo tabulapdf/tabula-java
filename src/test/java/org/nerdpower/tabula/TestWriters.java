@@ -43,6 +43,7 @@ public class TestWriters {
         //assertEquals(lines[0], EXPECTED_CSV_WRITER_OUTPUT);
     }
     
+    // TODO Add assertions
     @Test
     public void testJSONWriter() throws IOException {
         // TODO add assertions
@@ -53,6 +54,7 @@ public class TestWriters {
         System.out.println(s);
     }
     
+    // TODO add assertions
     @Test
     public void testJSONSerializeInfinity() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);

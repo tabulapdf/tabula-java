@@ -1784,18 +1784,23 @@ public class TestBasicExtractor {
         UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
     }
     
+    // TODO Add assertions
     @Test
     public void testExtractColumnsCorrectly2() throws IOException {
-//        Page page = UtilsForTesting.getAreaFromPage(
-//                "src/test/resources/org/nerdpower/tabula/eu-017.pdf", 3,
-//                275.0f,156.0f,728.0f,420.0f);
         Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/eu-017.pdf", 3);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
 //        UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
         (new CSVWriter()).write(System.out, table);
-
-        
+    }
+    
+    @Test
+    public void testExtractColumnsCorrectly3() throws IOException {
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/frx_2012_disclosure.pdf", 106.01f, 48.09f, 227.31f, 551.89f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
+        Table table = bea.extract(page).get(0);
+//        UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
+        (new CSVWriter()).write(System.out, table);
     }
 
     // TODO add assertions

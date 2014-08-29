@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 @SuppressWarnings("serial")
-public class TextElement extends Rectangle {
+public class TextElement extends Rectangle implements HasText {
 
     private final String text;
     private final PDFont font;
