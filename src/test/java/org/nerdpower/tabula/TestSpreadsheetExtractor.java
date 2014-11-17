@@ -322,4 +322,35 @@ public class TestSpreadsheetExtractor {
         Table table = bea.extract(page).get(0);
         (new CSVWriter()).write(System.out, table);
     }
+    
+    // addresses https://github.com/tabulapdf/tabula-extractor/issues/69
+    // where some spreadsheet-style tables don't have borders on exterior cells
+    // so the Spreadsheet algorithm ignores all the cells on the edge of the table
+    // the solution is to pretend that the user-specified box's edges are also edges of the table.
+    // this table is a bad fit for the Spreadsheet algo in the first place, but it shows this problem well.
+//    	+ def test_treat_bounding_box_as_ruling_lines
+//    	+ pdf_file_path = File.expand_path('data/brazil_crop_area.pdf', File.dirname(__FILE__))
+//    	+ area = [258.1875,42.5,667.25,549.3125]
+//    	+ table = Tabula.extract_table(pdf_file_path,
+//    	+ 1,
+//    	+ area,
+//    	+ :extraction_method => 'spreadsheet')
+//    	+ expected_column_0_row_0 = "REGION / STATE"
+//    	+ table_array = table_to_array(table).transpose
+//    	+ assert_equal expected_column_0_row_0, table_array[0][0] #ensures we captured the first column
+//    	end
+    @Test
+    public void testTreatBoundingBoxAsRulingLines() throws IOException {
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/org/nerdpower/tabula/brazil_crop_area.pdf", 
+        		1,
+        		258.1875f, 42.5f, 667.25f, 549.3125f);
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        boolean isTabular = se.isTabular(page);
+        assertTrue(isTabular);
+        List<? extends Table> tables = se.extract(page);
+        Table table = tables.get(0);
+        String expected_column_0_row_0 = "REGION / STATE";
+        assertEquals(expected_column_0_row_0, table.getCell(0, 0));
+    }
+    
 }

@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.lang.Float;
 
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that
@@ -34,6 +35,7 @@ public class Page extends Rectangle {
         this(top, left, width, height, rotation, page_number);
         this.texts = characters;
         this.rulings = rulings;
+        this.rulings.addAll(Arrays.asList(this.getMinimalBoundingBoxOfRulings().getLines()));
     }
 
 
@@ -198,6 +200,30 @@ public class Page extends Rectangle {
     
     public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
+    }
+    
+    public Rectangle getMinimalBoundingBoxOfRulings() {
+    	float max_x = 0;
+    	float max_y = 0;
+    	float min_x = java.lang.Float.POSITIVE_INFINITY;
+    	float min_y = java.lang.Float.POSITIVE_INFINITY;
+    	for(Ruling line : horizontalRulingLines){
+    		if(line.getLeft() < min_x){
+        		min_x = line.getLeft();
+    		}
+    		if(line.getRight() < max_x){
+        		max_x = line.getRight();
+    		}
+    	}
+    	for(Ruling line : verticalRulingLines){
+    		if(line.getTop() < min_y){
+        		min_y = line.getTop();
+    		}
+    		if(line.getBottom() < max_y){
+        		max_y = line.getBottom();
+    		}
+    	}
+    	return new Rectangle(min_x, min_y, max_x - min_x, max_y - min_y);
     }
     
     public void snapPoints() {

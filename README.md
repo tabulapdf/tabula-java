@@ -59,4 +59,10 @@ It also includes a debugging tool, run `java -cp ./target/tabula-extractor-0.7.4
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/org/nerdpower/tabula/) folder.
 
+
+To test, run: 
+````
+mvn clean test
+````
+
 © 2014 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
