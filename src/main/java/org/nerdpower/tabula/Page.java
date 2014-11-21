@@ -207,7 +207,8 @@ public class Page extends Rectangle {
     	float max_y = 0;
     	float min_x = java.lang.Float.POSITIVE_INFINITY;
     	float min_y = java.lang.Float.POSITIVE_INFINITY;
-    	for(Ruling line : horizontalRulingLines){
+
+    	for(Ruling line : this.getHorizontalRulings()){
     		if(line.getLeft() < min_x){
         		min_x = line.getLeft();
     		}
@@ -215,7 +216,7 @@ public class Page extends Rectangle {
         		max_x = line.getRight();
     		}
     	}
-    	for(Ruling line : verticalRulingLines){
+    	for(Ruling line : this.getVerticalRulings()){
     		if(line.getTop() < min_y){
         		min_y = line.getTop();
     		}
