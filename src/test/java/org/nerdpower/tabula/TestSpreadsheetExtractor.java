@@ -328,17 +328,18 @@ public class TestSpreadsheetExtractor {
     // so the Spreadsheet algorithm ignores all the cells on the edge of the table
     // the solution is to pretend that the user-specified box's edges are also edges of the table.
     // this table is a bad fit for the Spreadsheet algo in the first place, but it shows this problem well.
-//    	+ def test_treat_bounding_box_as_ruling_lines
-//    	+ pdf_file_path = File.expand_path('data/brazil_crop_area.pdf', File.dirname(__FILE__))
-//    	+ area = [258.1875,42.5,667.25,549.3125]
-//    	+ table = Tabula.extract_table(pdf_file_path,
-//    	+ 1,
-//    	+ area,
-//    	+ :extraction_method => 'spreadsheet')
-//    	+ expected_column_0_row_0 = "REGION / STATE"
-//    	+ table_array = table_to_array(table).transpose
-//    	+ assert_equal expected_column_0_row_0, table_array[0][0] #ensures we captured the first column
-//    	end
+    //	
+    //    	def test_treat_bounding_box_as_ruling_lines
+    //    	  pdf_file_path = File.expand_path('data/brazil_crop_area.pdf', File.dirname(__FILE__))
+    //    	  area = [258.1875,42.5,667.25,549.3125]
+    //    	  table = Tabula.extract_table(pdf_file_path,
+    //    	                               1,
+    //    	                               area,
+    //    	                               :extraction_method => 'spreadsheet')
+    //    	  expected_column_0_row_0 = "REGION / STATE"
+    //    	  table_array = table_to_array(table).transpose
+    //    	  assert_equal expected_column_0_row_0, table_array[0][0] #ensures we captured the first column
+    //    	end
     @Test
     public void testTreatBoundingBoxAsRulingLines() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage("src/test/resources/org/nerdpower/tabula/brazil_crop_area.pdf", 
