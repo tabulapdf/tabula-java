@@ -400,10 +400,10 @@ public class Ruling extends Line2D.Float {
     
     public boolean isFinite(){
     	boolean finite = true;
-    	finite = this.getTop() != java.lang.Float.POSITIVE_INFINITY;
-    	finite = this.getBottom() != java.lang.Float.POSITIVE_INFINITY;
-    	finite = this.getLeft() != java.lang.Float.POSITIVE_INFINITY;
-    	finite = this.getRight() != java.lang.Float.POSITIVE_INFINITY;
+    	finite = finite && this.getTop() != java.lang.Float.POSITIVE_INFINITY;
+    	finite = finite && this.getBottom() != java.lang.Float.POSITIVE_INFINITY;
+    	finite = finite && this.getLeft() != java.lang.Float.POSITIVE_INFINITY;
+    	finite = finite && this.getRight() != java.lang.Float.POSITIVE_INFINITY;
     	return finite;
     }
 }

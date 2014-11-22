@@ -139,15 +139,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
     }
     
     public Ruling[] getLines(){
-//    	+ # decomposes a rectangle into its 4 constitutent lines
-//    	+ def to_lines
-//    	+ # top left width height
-//    	+ top = Line2D::Float.new self.left, self.top, self.right, self.top
-//    	+ bottom = Line2D::Float.new self.left, self.bottom, self.right, self.bottom
-//    	+ left = Line2D::Float.new self.left, self.top, self.left, self.bottom
-//    	+ right = Line2D::Float.new self.right, self.top, self.right, self.bottom
-//    	+ [top, bottom, left, right]
-//    	+ end
+//    	+ # decomposes a rectangle into its 4 constituent lines (if they exist)
     	Ruling top = new Ruling((float) getLeft(), (float) getTop(), (float) getRight(), (float) getTop());
     	Ruling bottom = new Ruling((float) getLeft(), (float) getBottom(), (float) getRight(), (float) getBottom());
     	Ruling left = new Ruling((float) getLeft(), (float) getTop(), (float) getLeft(), (float) getBottom());
