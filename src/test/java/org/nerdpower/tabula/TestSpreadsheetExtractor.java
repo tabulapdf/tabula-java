@@ -243,10 +243,10 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/china.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
-        assertEquals(2, tables.size());
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
         System.out.println(sb.toString());
+        assertEquals(2, tables.size());
     }
     
     @Test
@@ -351,6 +351,10 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         Table table = tables.get(0);
         String expected_column_0_row_0 = "REGION / STATE";
+
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        (new CSVWriter()).write(System.out, table);
+        
         assertEquals(expected_column_0_row_0, table.getCell(0, 0));
     }
     

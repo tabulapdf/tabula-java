@@ -112,7 +112,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
      * 
      * @param c the Character to remove
      * @param minRunLength minimum run length to consider. 
-     * @return
+     * @return a List of TextChunk
      */
     public List<TextChunk> squeeze(Character c, int minRunLength) {
         Character currentChar, lastChar = null;
@@ -129,7 +129,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
             else {
                 if (((lastChar != null && !lastChar.equals(currentChar)) || i + 1 == this.getTextElements().size()) && subSequenceLength >= minRunLength) {
 
-                    if (subSequenceStart == 0 && subSequenceLength < this.getTextElements().size() - 1) {
+                    if (subSequenceStart == 0 && subSequenceLength < this.getTextElements().size()) {
                         t = this.splitAt(subSequenceLength);
                     }
                     else {
