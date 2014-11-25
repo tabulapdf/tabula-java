@@ -77,11 +77,10 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 pdf_document
                         .openProtection(new StandardDecryptionMaterial(password));
             } catch (BadSecurityHandlerException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            	throw new IOException("BadSecurityHandler");
             } catch (CryptographyException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new IOException("CryptographyException");
             }
         }
         this.pdf_document = pdf_document;
