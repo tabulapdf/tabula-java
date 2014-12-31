@@ -240,7 +240,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         while (i < pointSet.size()) {
             float currY = (float) pointsSortY.get(i).getY();
-            while (i < pointSet.size() && pointsSortY.get(i).getY() == currY) {
+            while (i < pointSet.size() && Utils.feq(pointsSortY.get(i).getY(), currY)) {
                 edgesH.put(pointsSortY.get(i), pointsSortY.get(i+1));
                 edgesH.put(pointsSortY.get(i+1), pointsSortY.get(i));
                 i += 2;
@@ -250,7 +250,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         i = 0;
         while (i < pointSet.size()) {
             float currX = (float) pointsSortX.get(i).getX();
-            while (i < pointSet.size() && pointsSortX.get(i).getX() == currX) {
+            while (i < pointSet.size() && Utils.feq(pointsSortX.get(i).getX(), currX)) {
                 edgesV.put(pointsSortX.get(i), pointsSortX.get(i+1));
                 edgesV.put(pointsSortX.get(i+1), pointsSortX.get(i));
                 i += 2;

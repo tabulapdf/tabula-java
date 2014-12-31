@@ -84,7 +84,7 @@ public class TableWithRulingLines extends Table {
         
         while (iter.hasNext()) {
             c = iter.next();
-            if (c.getTop() != lastTop) {
+            if (!Utils.feq(c.getTop(), lastTop)) {
                 lastRow = new ArrayList<Cell>();
                 rv.add(lastRow);
             }

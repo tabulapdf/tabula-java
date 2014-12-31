@@ -270,7 +270,12 @@ public class TestSpreadsheetExtractor {
     // TODO add assertions
     public void testMergeLinesCloseToEachOther() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/20.pdf", 1);
-        List<Ruling> rulings = page.getUnprocessedRulings();
+        List<Ruling> rulings = page.getVerticalRulings();
+        for (Ruling ruling : rulings) {
+            System.out.println(ruling.getLeft());
+        }
+        System.out.println(rulings.size());
+        
     }
     
     @Test

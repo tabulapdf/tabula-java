@@ -26,6 +26,11 @@ public class Utils {
         return overlap(y1, height1, y2, height2, 0.1f);
     }
     
+    private final static float EPSILON = 0.00001f;
+    public static boolean feq(double f1, double f2) {
+        return (Math.abs(f1 - f2) < EPSILON);
+    }
+    
     public static float round(double d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Double.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);

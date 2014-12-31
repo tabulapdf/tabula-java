@@ -40,11 +40,11 @@ public class Ruling extends Line2D.Float {
     }
 
     public boolean vertical() {
-        return this.length() > 0 && this.x1 == this.x2; //diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && Utils.feq(this.x1, this.x2); //diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean horizontal() {
-        return this.length() > 0 && this.y1 == this.y2; //diff < ORIENTATION_CHECK_THRESHOLD;
+        return this.length() > 0 && Utils.feq(this.y1, this.y2); //diff < ORIENTATION_CHECK_THRESHOLD;
     }
     
     public boolean oblique() {
@@ -331,7 +331,7 @@ public class Ruling extends Line2D.Float {
             @Override
             public int compare(SortObject a, SortObject b) {
                 int rv;
-                if (a.position == b.position) {
+                if (Utils.feq(a.position, b.position)) {
                     if (a.type == SOType.VERTICAL && b.type == SOType.HLEFT) {
                        rv = 1;     
                     }
@@ -389,7 +389,7 @@ public class Ruling extends Line2D.Float {
         Collections.sort(lines, new Comparator<Ruling>() {
             @Override
             public int compare(Ruling a, Ruling b) {
-                return (int) (a.getPosition() != b.getPosition() ? a.getPosition() - b.getPosition() : a.getStart() - b.getStart());
+                return (int) (!Utils.feq(a.getPosition(), b.getPosition()) ? a.getPosition() - b.getPosition() : a.getStart() - b.getStart());
             }
         });
         
@@ -397,7 +397,7 @@ public class Ruling extends Line2D.Float {
         for (Ruling next_line : lines) {
             Ruling last = rv.get(rv.size() - 1);
             // if current line colinear with next, and are "close enough": expand current line
-            if (next_line.getPosition() == last.getPosition() && last.nearlyIntersects(next_line)) {
+            if (Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line)) {
                 last.setStart(next_line.getStart() < last.getStart() ? next_line.getStart() : last.getStart());
                 last.setEnd(next_line.getEnd() < last.getEnd() ? last.getEnd() : next_line.getEnd());
             }

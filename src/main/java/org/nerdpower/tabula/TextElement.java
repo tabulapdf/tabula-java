@@ -109,13 +109,13 @@ public class TextElement extends Rectangle implements HasText {
             }
             
             // if chr is a space that overlaps with prevChar, skip
-            if (chr.getText().equals(" ") && prevChar.getLeft() == chr.getLeft() && prevChar.getTop() == chr.getTop()) {
+            if (chr.getText().equals(" ") && Utils.feq(prevChar.getLeft(), chr.getLeft()) && Utils.feq(prevChar.getTop(), chr.getTop())) {
                 continue;
             }
             
             // Resets the average character width when we see a change in font
             // or a change in the font size
-            if ((chr.getFont() != prevChar.getFont()) || (chr.getFontSize() != prevChar.getFontSize())) {
+            if ((chr.getFont() != prevChar.getFont()) || !Utils.feq(chr.getFontSize(), prevChar.getFontSize())) {
                 previousAveCharWidth = -1;
             }
 
