@@ -22,13 +22,13 @@ public class Page extends Rectangle {
     private Rectangle textBounds;
     private RectangleSpatialIndex<TextElement> spatial_index;
 
-    public Page(float top, float left, float width, float height, Integer rotation, int page_number) {
+    public Page(float top, float left, float width, float height, int rotation, int page_number) {
         super(top, left, width, height);
         this.rotation = rotation;
         this.pageNumber = page_number;
     }
     
-    public Page(float top, float left, float width, float height, Integer rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number,
             List<TextElement> characters, List<Ruling> rulings) {
 
         this(top, left, width, height, rotation, page_number);
@@ -37,7 +37,7 @@ public class Page extends Rectangle {
     }
 
 
-    public Page(float top, float left, float width, float height, Integer rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number,
             List<TextElement> characters, List<Ruling> rulings,
             float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
 

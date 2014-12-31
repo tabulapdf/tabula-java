@@ -6,27 +6,25 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle> {
-    
+
     private static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
-        
+
     public Rectangle() {
         super();
     }
-    
-    public Rectangle(double top, double left, double width, double height) {
+
+    public Rectangle(float top, float left, float width, float height) {
         super();
         this.setRect(left, top, width, height);
     }
-    
+
     @Override
     public int compareTo(Rectangle other) {
         double thisBottom = this.getBottom();
         double otherBottom = other.getBottom();
         double yDifference = Math.abs(thisBottom - otherBottom);
         int rv;
-//        if ((yDifference < VERTICAL_COMPARISON_THRESHOLD) ||
-//                (otherBottom > this.getTop() && otherBottom < thisBottom) ||
-//                (thisBottom > other.getTop() && thisBottom < otherBottom)) {
+
         if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
             rv = java.lang.Double.compare(this.getX(), other.getX());
         }
@@ -35,19 +33,19 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         }
         return rv;
     }
-    
+
     public float getArea() {
         return this.width * this.height;
     }
-    
+
     public float verticalOverlap(Rectangle other) {
         return (float) Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
     }
-    
+
     public boolean verticallyOverlaps(Rectangle other) {
         return verticalOverlap(other) > 0;
     }
-    
+
     public float verticalOverlapRatio(Rectangle other) {
         float o = verticalOverlap(other), rv = 0;
         if (o > 0) {
@@ -55,19 +53,19 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         }
         return rv;
     }
-    
+
     public boolean horizontallyOverlaps(Rectangle other) {
         return Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft())) > 0;
     }
-    
+
     public float horizontalOverlapRatio(Rectangle other) {
-        float rv = 0, 
+        float rv = 0,
               delta = (float) Math.min(this.getBottom() - this.getTop(), other.getBottom() - other.getTop());
-        
-        if (other.getTop() <= this.getTop() && this.getTop() <= other.getBottom() && other.getBottom() <= this.getBottom()) { 
+
+        if (other.getTop() <= this.getTop() && this.getTop() <= other.getBottom() && other.getBottom() <= this.getBottom()) {
             rv = (float) ((other.getBottom() - this.getTop()) / delta);
         }
-        else if (this.getTop() <= other.getTop() && other.getTop() <= this.getBottom() && this.getBottom() <= other.getBottom()) { 
+        else if (this.getTop() <= other.getTop() && other.getTop() <= this.getBottom() && this.getBottom() <= other.getBottom()) {
             rv = (float) ((this.getBottom() - other.getTop()) / delta);
         }
         else if (this.getTop() <= other.getTop() && other.getTop() <= other.getBottom() && other.getBottom() <= this.getBottom()) {
@@ -76,59 +74,59 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         else if (other.getTop() <= this.getTop() && this.getTop() <= this.getBottom() && this.getBottom() <= other.getBottom()) {
             rv = (float) ((this.getBottom() - this.getTop()) / delta);
         }
-        
+
         return rv;
 
     }
-    
+
     public float overlapRatio(Rectangle other) {
         double intersectionWidth = Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
         double intersectionHeight = Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
         double intersectionArea = Math.max(0, intersectionWidth * intersectionHeight);
         double unionArea = this.getArea() + other.getArea() - intersectionArea;
-        
+
         return (float) (intersectionArea / unionArea);
     }
-    
+
     public Rectangle merge(Rectangle other) {
         this.setRect(this.createUnion(other));
         return this;
     }
 
-    public double getTop() {
-        return this.getMinY();
+    public float getTop() {
+        return (float) this.getMinY();
     }
-    
-    public void setTop(double top) {
-        double deltaHeight = top - this.y;
+
+    public void setTop(float top) {
+        float deltaHeight = top - this.y;
         this.setRect(this.x, top, this.width, this.height - deltaHeight);
     }
-    
-    public double getRight() {
-        return this.getMaxX();
+
+    public float getRight() {
+        return (float) this.getMaxX();
     }
-    
-    public void setRight(double right) {
+
+    public void setRight(float right) {
         this.setRect(this.x, this.y, right - this.x, this.height);
     }
-        
-    public double getLeft() {
-        return this.getMinX();
+
+    public float getLeft() {
+        return (float) this.getMinX();
     }
-    
-    public void setLeft(double left) {
-        double deltaWidth = left - this.x;
+
+    public void setLeft(float left) {
+        float deltaWidth = left - this.x;
         this.setRect(left, this.y, this.width - deltaWidth, this.height);
     }
-    
-    public double getBottom() {
-        return this.getMaxY();
+
+    public float getBottom() {
+        return (float) this.getMaxY();
     }
-    
-    public void setBottom(double bottom) {
+
+    public void setBottom(float bottom) {
         this.setRect(this.x, this.y, this.width, bottom - this.y);
     }
-    
+
     public Point2D[] getPoints() {
         return new Point2D[] {
                 new Point2D.Float((float) this.getLeft(), (float) this.getTop()),
@@ -137,7 +135,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
                 new Point2D.Float((float) this.getLeft(), (float) this.getBottom())
         };
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -147,7 +145,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         return sb.toString();
     }
 
-    
+
     /**
      * @param rectangles
      * @return minimum bounding box that contains all the rectangles
@@ -157,7 +155,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         float miny = java.lang.Float.MAX_VALUE;
         float maxx = java.lang.Float.MIN_VALUE;
         float maxy = java.lang.Float.MIN_VALUE;
-        
+
         for (Rectangle r: rectangles) {
             minx = (float) Math.min(r.getMinX(), minx);
             miny = (float) Math.min(r.getMinY(), miny);
@@ -166,6 +164,6 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         }
         return new Rectangle(miny, minx, maxx - minx, maxy - miny);
     }
-    
-    
+
+
 }
