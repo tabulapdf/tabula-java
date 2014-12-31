@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 import org.nerdpower.tabula.Cell;
 import org.nerdpower.tabula.Page;
@@ -282,6 +284,7 @@ public class TestSpreadsheetExtractor {
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
         System.out.println(sb.toString());
+        assertTrue(false);
     }
     
     @Test
@@ -294,10 +297,52 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         Table table = tables.get(0);
         assertEquals(15, table.getRows().size());
+        
+        String expected = "\"\",TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM\n" + 
+                "Peces vivos,1,25,1,23,2,38,1,37,2,67,2,89,1\n" + 
+                "\"Pescado fresco\n" + 
+                "o refrigerado.\n" + 
+                "exc. filetes\",7.704,7.175,8.931,6.892,12.635,10.255,16.742,13.688,14.357,11.674,13.035,13.429,9.727\n" + 
+                "\"Pescado congelado\n" + 
+                "exc. filetes\",90.560,105.950,112.645,108.416,132.895,115.874,152.767,133.765,148.882,134.847,156.619,165.134,137.179\n" + 
+                "\"Filetes y demás car-\n" + 
+                "nes de pescado\",105.434,200.563,151.142,218.389,152.174,227.780,178.123,291.863,169.422,313.735,176.427,381.640,144.814\n" + 
+                "\"Pescado sec./sal./\n" + 
+                "en salm. har./pol./\n" + 
+                "pell. aptos\n" + 
+                "p/c humano\",6.837,14.493,6.660,9.167,14.630,17.579,18.150,21.302,18.197,25.739,13.460,23.549,11.709\n" + 
+                "Crustáceos,61.691,375.798,52.488,251.043,47.635,387.783,27.815,217.443,7.123,86.019,39.488,373.583,45.191\n" + 
+                "Moluscos,162.027,174.507,109.436,111.443,90.834,104.741,57.695,109.141,98.182,206.304,187.023,251.352,157.531\n" + 
+                "\"Prod. no exp. en\n" + 
+                "otros capítulos.\n" + 
+                "No apto p/c humano\",203,328,7,35,521,343,\"1,710\",\"1,568\",125,246,124,263,131\n" + 
+                "\"Grasas y aceites de\n" + 
+                "pescado y mamíferos\n" + 
+                "marinos\",913,297,\"1,250\",476,\"1,031\",521,\"1,019\",642,690,483,489,710,959\n" + 
+                "\"Extractos y jugos de\n" + 
+                "pescado y mariscos\",5,25,1,3,4,4,31,93,39,117,77,230,80\n" + 
+                "\"Preparaciones y con-\n" + 
+                "servas de pescado\",846,\"3,737\",\"1,688\",\"4,411\",\"1,556\",\"3,681\",\"2,292\",\"5,474\",\"2,167\",\"7,494\",\"2,591\",\"8,833\",\"2,795\"\n" + 
+                "\"Preparaciones y con-\n" + 
+                "servas de mariscos\",348,\"3,667\",345,\"1,771\",738,\"3,627\",561,\"2,620\",607,\"3,928\",314,\"2,819\",250\n" + 
+                "\"Harina, polvo y pe-\n" + 
+                "llets de pescado.No\n" + 
+                "aptos p/c humano\",\"16,947\",\"8,547\",\"11,867\",\"6,315\",\"32,528\",\"13,985\",\"37,313\",\"18,989\",\"35,787\",\"19,914\",\"37,821\",\"27,174\",\"30,000\"\n" + 
+                "TOTAL,\"453,515\",\"895,111\",\"456,431\",\"718,382\",\"487,183\",\"886,211\",\"494,220\",\"816,623\",\"495,580\",\"810,565\",\"627,469\",\"1,248,804\",\"540,367\"\n";
 
+      
+        // TODO add better assertions
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
-        System.out.println(sb.toString());
+        String result = sb.toString();
+
+        List<CSVRecord> parsedExpected = org.apache.commons.csv.CSVParser.parse(expected, CSVFormat.EXCEL).getRecords();
+        List<CSVRecord> parsedResult = org.apache.commons.csv.CSVParser.parse(result, CSVFormat.EXCEL).getRecords();
+      
+        assertEquals(parsedResult.size(), parsedExpected.size());
+        for (int i = 0; i < parsedResult.size(); i ++) {
+            assertEquals(parsedResult.get(i).size(), parsedExpected.get(i).size());
+        }
         
     }
     

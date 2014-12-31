@@ -360,10 +360,7 @@ public class Debug {
         catch (ParseException e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
-        } /*catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }*/
+        } 
     }
     
     

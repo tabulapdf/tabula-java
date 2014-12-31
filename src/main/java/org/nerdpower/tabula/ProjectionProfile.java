@@ -212,7 +212,7 @@ public class ProjectionProfile {
     }
     
     private static double toDouble(int value) {
-        return (double) value / (double) Math.pow(10, DECIMAL_PLACES);
+        return (double) value / Math.pow(10, DECIMAL_PLACES);
     }
     
 }

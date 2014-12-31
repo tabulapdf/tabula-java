@@ -333,8 +333,12 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             this.point = point;
         }
         
-        public boolean equals(PolygonVertex other) {
-            return this.point.equals(other.point);
+        public boolean equals(Object other) {
+            if (this == other) 
+                return true;
+            if (!(other instanceof PolygonVertex))
+                return false;
+            return this.point.equals(((PolygonVertex) other).point);
         }
         
         public int hashCode() {

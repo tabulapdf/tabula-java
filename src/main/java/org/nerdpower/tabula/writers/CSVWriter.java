@@ -12,6 +12,16 @@ import org.nerdpower.tabula.Table;
 public class CSVWriter implements Writer {
     
     CSVPrinter printer;
+    private boolean useLineReturns = true;
+    
+//    public CSVWriter() {
+//        super();
+//    }
+//    
+//    public CSVWriter(boolean useLineReturns) {
+//        super();
+//        this.useLineReturns = useLineReturns;
+//    }
     
     void createWriter(Appendable out) {
         try {

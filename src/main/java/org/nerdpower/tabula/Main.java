@@ -2,7 +2,7 @@ package org.nerdpower.tabula;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class Main {
     }
     
     static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
-        if (pagesSpec == "all") {
+        if (!pagesSpec.equals("all")) {
             return null;
         }
         

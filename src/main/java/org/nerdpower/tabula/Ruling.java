@@ -195,12 +195,25 @@ public class Ruling extends Line2D.Float {
         return new Point2D.Float(vertical.getLeft(), horizontal.getTop());        
     }
     
-    public boolean equals(Ruling other) {
-        return this.getP1().equals(other.getP1()) && this.getP2().equals(other.getP2());
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) 
+            return true;
+        
+        if (!(other instanceof Ruling))
+            return false;
+        
+        Ruling o = (Ruling) other;
+        return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
+    }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
     
     public float getTop() {
-        return (float) this.y1;
+        return this.y1;
     }
     
     public void setTop(float v) {
@@ -208,7 +221,7 @@ public class Ruling extends Line2D.Float {
     }
     
     public float getLeft() {
-        return (float) this.x1;
+        return this.x1;
     }
     
     public void setLeft(float v) {
@@ -216,7 +229,7 @@ public class Ruling extends Line2D.Float {
     }
     
     public float getBottom() {
-        return (float) this.y2;
+        return this.y2;
     }
     
     public void setBottom(float v) {
@@ -224,7 +237,7 @@ public class Ruling extends Line2D.Float {
     }
 
     public float getRight() {
-        return (float) this.x2;
+        return this.x2;
     }
     
     public void setRight(float v) {

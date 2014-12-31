@@ -133,7 +133,7 @@ public class TextElement extends Rectangle implements HasText {
             
             // Estimate the expected width of the space based on the
             // space character with some margin.
-            wordSpacing = (float) chr.getWidthOfSpace();
+            wordSpacing = chr.getWidthOfSpace();
             deltaSpace = 0;
             if (java.lang.Float.isNaN(wordSpacing) || wordSpacing == 0) {
                 deltaSpace = java.lang.Float.MAX_VALUE;

@@ -17,7 +17,16 @@ public class Table extends Rectangle {
         
         @Override
         public boolean equals(Object other) {
+            if (this == other) 
+                return true;
+            if (!(other instanceof CellPosition))
+                return false;
             return other != null && this.row == ((CellPosition) other).row && this.col == ((CellPosition) other).col;
+        }
+        
+        @Override
+        public int hashCode() {
+            return this.row * 100000 + this.col;
         }
 
         @Override

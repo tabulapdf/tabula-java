@@ -57,7 +57,7 @@ public class Line extends Rectangle {
         for (TextChunk te: this.textChunks) {
             sb.append("'" + te.getText() + "', ");
         }
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

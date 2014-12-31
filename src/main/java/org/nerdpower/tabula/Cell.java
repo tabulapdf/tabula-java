@@ -9,7 +9,6 @@ import java.util.List;
 public class Cell extends RectangularTextContainer<TextChunk> {
     private boolean spanning;
     private boolean placeholder;
-    private boolean useLineReturns = true;
     private List<TextChunk> textElements;
     
     public Cell(float top, float left, float width, float height) {
@@ -33,7 +32,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
         double curTop = this.textElements.get(0).getTop();
         for (TextChunk tc: this.textElements) {
             if (useLineReturns && tc.getTop() > curTop) {
-                sb.append("\r");
+                sb.append('\r');
             }
             sb.append(tc.getText());
             curTop = tc.getTop();
@@ -42,7 +41,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
     }
 
     public String getText() {
-        return getText(this.useLineReturns);
+        return getText(true);
     }
 
     public boolean isSpanning() {
@@ -61,13 +60,6 @@ public class Cell extends RectangularTextContainer<TextChunk> {
         this.placeholder = placeholder;
     }
 
-    public boolean isUseLineReturns() {
-        return useLineReturns;
-    }
-
-    public void setUseLineReturns(boolean useLineReturns) {
-        this.useLineReturns = useLineReturns;
-    }
 
     public List<TextChunk> getTextElements() {
         return textElements;
