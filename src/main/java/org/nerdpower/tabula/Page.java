@@ -19,7 +19,6 @@ public class Page extends Rectangle {
     private List<Ruling> rulings, cleanRulings = null, verticalRulingLines = null, horizontalRulingLines = null;
     private float minCharWidth;
     private float minCharHeight;
-    private Rectangle textBounds;
     private RectangleSpatialIndex<TextElement> spatial_index;
 
     public Page(float top, float left, float width, float height, int rotation, int page_number) {
@@ -63,13 +62,13 @@ public class Page extends Rectangle {
                 Collections.min(t, new Comparator<TextElement>() {
                     @Override
                     public int compare(TextElement te1, TextElement te2) {
-                        return java.lang.Double.compare(te1.width, te2.width);
+                        return java.lang.Float.compare(te1.width, te2.width);
                     }}).width,
                 
                 Collections.min(t, new Comparator<TextElement>() {
                         @Override
                         public int compare(TextElement te1, TextElement te2) {
-                            return java.lang.Double.compare(te1.height, te2.height);
+                            return java.lang.Float.compare(te1.height, te2.height);
                 }}).height,
                 
                 spatial_index);

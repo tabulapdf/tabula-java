@@ -283,7 +283,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         PDTextState ts = gs.getTextState();
         PDFont font = ts.getFont();
         float fontSizeText = ts.getFontSize();
-        double horizontalScalingText = ts.getHorizontalScalingPercent() / 100.0;
+        float horizontalScalingText = ts.getHorizontalScalingPercent() / 100.0f;
         float spaceWidthText = 1000;
 
         if (font instanceof PDType3Font) {
