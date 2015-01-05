@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class UtilsForTesting {
     
     public static Page getAreaFromFirstPage(String path, float top, float left, float bottom, float right) throws IOException {
-        return getPage(path, 1).getArea(top, left, bottom, right);
+        return getAreaFromPage(path, 1, top, left, bottom, right);
     }
     
     public static Page getAreaFromPage(String path, int page, float top, float left, float bottom, float right) throws IOException {
@@ -26,7 +26,8 @@ public class UtilsForTesting {
             Page page = oe.extract(pageNumber);
             return page;
         } finally {
-            oe.close();
+            if (oe != null)
+                oe.close();
         }
     }
     

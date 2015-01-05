@@ -94,6 +94,61 @@ public class TestBasicExtractor {
                     "Tucumán ", "AFIRMATIVO" },
             { "CURRILEN, Oscar Rubén ", "Frente para la Victoria - PJ ",
                     "Chubut ", "AFIRMATIVO" } };
+    
+    private static final String[][] EXPECTED_COLUMN_EXTRACTION2 = {
+        {"","Austria","77","1","78"},
+        {"","Belgium","159","2","161"},
+        {"","Bulgaria","52","0","52"},
+        {"","Croatia","144","0","144"},
+        {"","Cyprus","43","2","45"},
+        {"","Czech Republic","78","0","78"},
+        {"","Denmark","151","2","153"},
+        {"","Estonia","46","0","46"},
+        {"","Finland","201","1","202"},
+        {"","France","428","7","435"},
+        {"","Germany","646","21","667"},
+        {"","Greece","113","2","115"},
+        {"","Hungary","187","0","187"},
+        {"","Iceland","18","0","18"},
+        {"","Ireland","213","4","217"},
+        {"","Israel","25","0","25"},
+        {"","Italy","627","12","639"},
+        {"","Latvia","7","0","7"},
+        {"","Lithuania","94","1","95"},
+        {"","Luxembourg","22","0","22"},
+        {"","Malta","18","0","18"},
+        {"","Netherlands","104","1","105"},
+        {"","Norway","195","0","195"},
+        {"","Poland","120","1","121"},
+        {"","Portugal","532","3","535"},
+        {"","Romania","110","0","110"},
+        {"","Slovakia","176","0","176"},
+        {"","Slovenia","56","0","56"},
+        {"","Spain","614","3","617"},
+        {"","Sweden","122","3","125"},
+        {"","Switzerland","64","0","64"},
+        {"","Turkey","96","0","96"},
+        {"","United Kingdom","572","14","586"}
+    };
+    
+    private static final String[][] EXPECTED_TABLE_EXTRACTION = {
+        {"AANONSEN, DEBORAH, A ","","","STATEN ISLAND, NY ","MEALS ","$85.00"},
+        {"TOTAL ","","","","","$85.00"},
+        {"AARON, CAREN, T ","","","RICHMOND, VA ","EDUCATIONAL ITEMS ","$78.80"},
+        {"AARON, CAREN, T ","","","RICHMOND, VA ","MEALS ","$392.45"},
+        {"TOTAL ","","","","","$471.25"},
+        {"AARON, JOHN ","","","CLARKSVILLE, TN ","MEALS ","$20.39"},
+        {"TOTAL ","","","","","$20.39"},
+        {"AARON, JOSHUA, N ","","","WEST GROVE, PA ","MEALS ","$310.33"},
+        {"AARON, JOSHUA, N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
+        {"TOTAL ","","","","","$5,010.33"},
+        {"AARON, MAUREEN, M ","","","MARTINSVILLE, VA ","MEALS ","$193.67"},
+        {"TOTAL ","","","","","$193.67"},
+        {"AARON, MICHAEL, L ","","","WEST ISLIP, NY ","MEALS ","$19.50"},
+        {"TOTAL ","","","","","$19.50"},
+        {"AARON, MICHAEL, R ","","","BROOKLYN, NY ","MEALS ","$65.92"}
+        };
+
 
     private static final Rectangle[] RECTANGLES_TEST_NATURAL_ORDER = {
             new Rectangle(38.368214f, 405.48f, 6.5260315f, 6.1515007f),
@@ -1743,13 +1798,6 @@ public class TestBasicExtractor {
                         "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
-        for (Ruling r: page.getVerticalRulings()) {
-            System.out.println(r);
-        }
-        System.out.println();
-        for (Ruling r: page.getHorizontalRulings()) {
-            System.out.println(r);
-        }
         Table table = bea.extract(page).get(0);
         UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_RECOGNITION);
     }
@@ -1784,23 +1832,21 @@ public class TestBasicExtractor {
         UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
     }
     
-    // TODO Add assertions
     @Test
     public void testExtractColumnsCorrectly2() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/eu-017.pdf", 3);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
-        Table table = bea.extract(page).get(0);
-//        UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
-        (new CSVWriter()).write(System.out, table);
+        Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
+        UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_EXTRACTION2);
     }
     
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/frx_2012_disclosure.pdf", 106.01f, 48.09f, 227.31f, 551.89f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/frx_2012_disclosure.pdf", 
+                106.01f, 48.09f, 227.31f, 551.89f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-//        UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
-        (new CSVWriter()).write(System.out, table);
+        UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
     }
 
     // TODO add assertions
@@ -1817,10 +1863,7 @@ public class TestBasicExtractor {
     
     @Test
     public void testNaturalOrderOfRectanglesOneMoreTime() throws IOException {
-//        Page page = UtilsForTesting.getPage(
-//                "src/test/resources/org/nerdpower/tabula/eu-017.pdf", 2);
         List<Rectangle> toSort = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
-        //Collections.sort(toSort);
         Rectangle x, y;
         List<Rectangle[]> greaterThan = new ArrayList<Rectangle[]>();
         for (int i = 0; i < RECTANGLES_TEST_NATURAL_ORDER.length - 2; i++) {
