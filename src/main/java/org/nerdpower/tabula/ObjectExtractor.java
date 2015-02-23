@@ -333,20 +333,15 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 textPosition.getDir());
 
        if (this.currentClippingPath().intersects(te)) {
-       //if (this.clippingPath.intersects(te)) {
-            if (this.minCharWidth > te.getWidth()) {
-                this.minCharWidth = (float) te.getWidth();
-            }
-
-            if (this.minCharHeight > te.getHeight()) {
-                this.minCharHeight = (float) te.getHeight();
-            }
+            
+            this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
+            this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
+            
             this.spatialIndex.add(te);
             this.characters.add(te);
         }
         
         if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
-            //this.clippingPaths.add(this.clippingPath);
             this.clippingPaths.add(this.currentClippingPath());
         }
         
@@ -392,7 +387,6 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 .createTransformedShape(this.clippingPath);
         this.transformedClippingPathBounds = this.transformedClippingPath
                 .getBounds2D();
-//        this.transformedClippingPathBounds = this.clippingPath.getBounds2D();
 
         return this.transformedClippingPathBounds;
     }
