@@ -199,6 +199,10 @@ public class Page extends Rectangle {
         return this.spatial_index;
     }
     
+    public boolean hasTexts() {
+        return this.texts.size() > 0;
+    }
+    
     public void snapPoints() {
 
         // collect points and keep a Line -> p1,p2 map
