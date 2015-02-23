@@ -148,7 +148,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         
         
         if (rv.isEmpty()) { // no splits occurred, hence this.squeeze() == [this]
-            if (subSequenceLength >= minRunLength) {
+            if (subSequenceLength >= minRunLength && subSequenceLength < this.textElements.size()) {
                 TextChunk[] chunks = this.splitAt(subSequenceStart); 
                 rv.add(chunks[0]);
             }

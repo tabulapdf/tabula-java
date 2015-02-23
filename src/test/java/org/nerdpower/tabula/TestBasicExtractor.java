@@ -1848,6 +1848,17 @@ public class TestBasicExtractor {
         Table table = bea.extract(page).get(0);
         UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
     }
+    
+    @Test
+    public void testCheckSqueezeDoesntBreak() throws IOException {
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/12s0324.pdf", 
+                99.0f, 17.25f, 316.5f, 410.25f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Table table = bea.extract(page).get(0);
+        //UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
+        System.out.println(table);
+        (new CSVWriter()).write(System.out, table);
+    }
 
     // TODO add assertions
     @Test
