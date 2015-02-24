@@ -140,7 +140,7 @@ public class TestBasicExtractor {
         {"AARON, JOHN ","","","CLARKSVILLE, TN ","MEALS ","$20.39"},
         {"TOTAL ","","","","","$20.39"},
         {"AARON, JOSHUA, N ","","","WEST GROVE, PA ","MEALS ","$310.33"},
-        {"AARON, JOSHUA, N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
+        {"AARON , JOSHUA, N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
         {"TOTAL ","","","","","$5,010.33"},
         {"AARON, MAUREEN, M ","","","MARTINSVILLE, VA ","MEALS ","$193.67"},
         {"TOTAL ","","","","","$193.67"},
@@ -1846,7 +1846,10 @@ public class TestBasicExtractor {
                 106.01f, 48.09f, 227.31f, 551.89f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+        (new CSVWriter()).write(System.out, table);
+
         UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
+
     }
     
     @Test
@@ -1871,7 +1874,6 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(
                 page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
-        (new CSVWriter()).write(System.out, table);
     }
     
     @Test
