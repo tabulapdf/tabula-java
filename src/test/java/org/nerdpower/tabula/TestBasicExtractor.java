@@ -1855,9 +1855,11 @@ public class TestBasicExtractor {
                 99.0f, 17.25f, 316.5f, 410.25f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-        //UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
-        System.out.println(table);
-        (new CSVWriter()).write(System.out, table);
+        List<List<RectangularTextContainer>> rows = table.getRows();
+        List<RectangularTextContainer> firstRow = rows.get(0);
+        List<RectangularTextContainer> lastRow = rows.get(rows.size() - 1);
+        assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . "));
+        assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
     }
 
     // TODO add assertions
