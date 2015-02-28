@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import org.nerdpower.tabula.Cell;
 import org.nerdpower.tabula.RectangularTextContainer;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.TextChunk;
@@ -48,10 +49,10 @@ public class JSONWriter implements Writer {
         }
     }
     
-    class TextChunkSerializer implements JsonSerializer<TextChunk> {
+    class TextChunkSerializer implements JsonSerializer<RectangularTextContainer> {
 
         @Override
-        public JsonElement serialize(TextChunk textChunk, Type arg1,
+        public JsonElement serialize(RectangularTextContainer textChunk, Type arg1,
                 JsonSerializationContext context) {
             JsonObject object = new JsonObject();
             
@@ -86,6 +87,8 @@ public class JSONWriter implements Writer {
         gson = new GsonBuilder()
            .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
            .registerTypeAdapter(Table.class, new TableSerializer())
+           .registerTypeAdapter(RectangularTextContainer.class, new TextChunkSerializer())
+           .registerTypeAdapter(Cell.class, new TextChunkSerializer())
            .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
            .create();
     }

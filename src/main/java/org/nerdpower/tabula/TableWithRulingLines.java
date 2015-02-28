@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings("serial")
 public class TableWithRulingLines extends Table {
 
     List<Ruling> verticalRulings, horizontalRulings;
@@ -93,4 +94,5 @@ public class TableWithRulingLines extends Table {
         }
         return rv;
     }
+
 }

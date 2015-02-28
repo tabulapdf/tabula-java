@@ -136,7 +136,11 @@ public class Table extends Rectangle {
     public ExtractionAlgorithm getExtractionAlgorithm() {
         return extractionAlgorithm;
     }
-
+    
+    public List<RectangularTextContainer> getCells() {
+        return (List<RectangularTextContainer>) new ArrayList<RectangularTextContainer>(this.cellContainer.values());
+    }
+    
     
 
 }

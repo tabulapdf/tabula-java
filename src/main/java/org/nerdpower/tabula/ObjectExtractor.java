@@ -63,7 +63,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     private final PDDocument pdf_document;
     protected List pdf_document_pages;
     private PDPage page;
-    
+
 
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
         this(pdf_document, null);
@@ -106,7 +106,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         this.drawPage(p);
 
         Collections.sort(this.characters);
-        
+
         float w, h;
         int pageRotation = p.findRotation();
         if (Math.abs(pageRotation) == 90 || Math.abs(pageRotation) == 270) {
@@ -170,7 +170,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     public void drawImage(Image awtImage, AffineTransform at) {
         // we just ignore images (for now)
     }
-    
+
     public void strokeOrFillPath(boolean isFill) {
         GeneralPath path = this.getLinePath();
 
@@ -333,18 +333,18 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 textPosition.getDir());
 
        if (this.currentClippingPath().intersects(te)) {
-            
+
             this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
             this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-            
+
             this.spatialIndex.add(te);
             this.characters.add(te);
         }
-        
+
         if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
             this.clippingPaths.add(this.currentClippingPath());
         }
-        
+
     }
 
     public float getMinCharWidth() {
@@ -363,9 +363,9 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
         PDRectangle cb = page.findCropBox();
         int rotation = Math.abs(page.findRotation());
-        
+
         this.pageTransform = new AffineTransform();
-        
+
         if (rotation == 90 || rotation == 270) {
             this.pageTransform = AffineTransform.getRotateInstance(rotation * (Math.PI / 180.0), 0, 0);
             this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
@@ -421,4 +421,9 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     public void setDebugClippingPaths(boolean debugClippingPaths) {
         this.debugClippingPaths = debugClippingPaths;
     }
+
+    public int getPageCount() {
+        return this.pdf_document_pages.size();
+    }
+
 }

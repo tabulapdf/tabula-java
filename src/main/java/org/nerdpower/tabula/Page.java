@@ -199,9 +199,10 @@ public class Page extends Rectangle {
         return this.spatial_index;
     }
     
-    public boolean hasTexts() {
+    public boolean hasText() {
         return this.texts.size() > 0;
     }
+    
     
     public void snapPoints() {
 
