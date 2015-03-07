@@ -151,7 +151,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1/MAGIC_HEURISTIC_NUMBER);
     }
     
-    public List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
+    public static List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
         List<Cell> cellsFound = new ArrayList<Cell>();
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
         List<Point2D> intersectionPointsList = new ArrayList<Point2D>(intersectionPoints.keySet());

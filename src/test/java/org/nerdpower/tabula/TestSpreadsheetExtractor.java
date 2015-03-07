@@ -190,8 +190,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testLinesToCells() {
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
-        List<Cell> cells = se.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
         Collections.sort(cells);
         List<Cell> expected = Arrays.asList(EXPECTED_CELLS);
         Collections.sort(expected);
@@ -217,8 +216,7 @@ public class TestSpreadsheetExtractor {
                         "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
         
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
-        se.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
+        SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
     }
  
     // TODO Add assertions

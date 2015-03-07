@@ -101,7 +101,7 @@ public class Debug {
             v = Ruling.cropRulingsToArea(v, area);
         }
         SpreadsheetExtractionAlgorithm ea = new SpreadsheetExtractionAlgorithm();
-        List<Cell> cells = ea.findCells(h, v);
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(h, v);
         drawShapes(g, cells);
     }
     
