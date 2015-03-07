@@ -16,7 +16,6 @@ public class Ruling extends Line2D.Float {
     
     private static int PERPENDICULAR_PIXEL_EXPAND_AMOUNT = 2;
     private static int COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT = 1;
-    private static float ORIENTATION_CHECK_THRESHOLD = 0.00001f;
     private enum SOType { VERTICAL, HRIGHT, HLEFT };
 
     public Ruling(float top, float left, float width, float height) {

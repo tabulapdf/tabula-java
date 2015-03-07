@@ -174,7 +174,7 @@ public class Page extends Rectangle {
     
     public void addRuling(Ruling r) {
         if (r.oblique()) {
-            throw new UnsupportedOperationException("Can't add a non horizontal ruling");
+            throw new UnsupportedOperationException("Can't add an oblique ruling");
         }
         this.rulings.add(r);
         // clear caches
