@@ -26,6 +26,7 @@ import org.nerdpower.tabula.Ruling;
 import org.nerdpower.tabula.Table;
 import org.nerdpower.tabula.TextChunk;
 import org.nerdpower.tabula.TextElement;
+import org.nerdpower.tabula.Utils;
 import org.nerdpower.tabula.extractors.BasicExtractionAlgorithm;
 import org.nerdpower.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import org.apache.commons.cli.CommandLine;
@@ -306,7 +307,7 @@ public class Debug {
             CommandLine line = parser.parse(buildOptions(), args );
             List<Integer> pages = new ArrayList<Integer>();
             if (line.hasOption('p')) {
-                pages = CommandLineApp.parsePagesOption(line.getOptionValue('p'));
+                pages = Utils.parsePagesOption(line.getOptionValue('p'));
             }
             else {
                 pages.add(1);

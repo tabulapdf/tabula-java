@@ -6,8 +6,11 @@ import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.commons.cli.ParseException;
 
 /**
  *
@@ -111,5 +114,35 @@ public class Utils {
         }
         return ret;
     }
-
+    
+    public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
+        if (pagesSpec.equals("all")) {
+            return null;
+        }
+        
+        List<Integer> rv = new ArrayList<Integer>();
+        
+        String[] ranges = pagesSpec.split(",");
+        for (int i = 0; i < ranges.length; i++) {
+            String[] r = ranges[i].split("-");
+            if (r.length == 0 || !Utils.isNumeric(r[0]) || r.length > 1 && !Utils.isNumeric(r[1])) {
+                throw new ParseException("Syntax error in page range specification");
+            }
+            
+            if (r.length < 2) {
+                rv.add(Integer.parseInt(r[0]));
+            }
+            else {
+                int t = Integer.parseInt(r[0]);
+                int f = Integer.parseInt(r[1]); 
+                if (t > f) {
+                    throw new ParseException("Syntax error in page range specification");
+                }
+                rv.addAll(Utils.range(t, f+1));       
+            }
+        }
+        
+        Collections.sort(rv);
+        return rv;
+    }
 }
