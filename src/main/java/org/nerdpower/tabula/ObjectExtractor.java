@@ -102,7 +102,8 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         int javaMajorVersion = Integer.parseInt(versionComponents[0]);
         int javaMinorVersion = Integer.parseInt(versionComponents[1]);
         boolean is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
-        return !is16orLess;
+        String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
+        return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
     }
 
     protected Page extractPage(Integer page_number) throws IOException {
