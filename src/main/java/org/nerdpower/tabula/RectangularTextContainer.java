@@ -13,7 +13,7 @@ public abstract class RectangularTextContainer<T extends HasText> extends Rectan
         StringBuilder sb = new StringBuilder();
         String s = super.toString();
         sb.append(s.substring(0, s.length() - 1));
-        sb.append(String.format(",text=\"%s\"]", this.getText()));
+        sb.append(String.format(",text=%s]", this.getText() == null ? "null" : "\"" + this.getText() + "\""));
         return sb.toString();
     }
     

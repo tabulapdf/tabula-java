@@ -214,6 +214,40 @@ public class TestSpreadsheetExtractor {
         }
     };
     
+    private static final Ruling[] EXTERNALLY_DEFINED_RULINGS = {
+            new Ruling(new Point2D.Float(320.0f, 285.0f), new Point2D.Float(564.4409f, 285.0f)),
+            new Ruling(new Point2D.Float(320.0f, 457.0f), new Point2D.Float(564.4409f, 457.0f)),
+            new Ruling(new Point2D.Float(320.0f, 331.0f), new Point2D.Float(564.4409f, 331.0f)),
+            new Ruling(new Point2D.Float(320.0f, 315.0f), new Point2D.Float(564.4409f, 315.0f)),
+            new Ruling(new Point2D.Float(320.0f, 347.0f), new Point2D.Float(564.4409f, 347.0f)),
+            new Ruling(new Point2D.Float(320.0f, 363.0f), new Point2D.Float(564.44088f, 363.0f)),
+            new Ruling(new Point2D.Float(320.0f, 379.0f), new Point2D.Float(564.44087f, 379.0f)),
+            new Ruling(new Point2D.Float(320.0f, 395.5f), new Point2D.Float(564.44086f, 395.5f)),
+            new Ruling(new Point2D.Float(320.00006f, 415.0f), new Point2D.Float(564.4409f, 415.0f)),
+            new Ruling(new Point2D.Float(320.00007f, 431.0f), new Point2D.Float(564.4409f, 431.0f)),
+
+            new Ruling(new Point2D.Float(320.0f, 285.0f), new Point2D.Float(320.0f, 457.0f)),
+            new Ruling(new Point2D.Float(565.0f, 285.0f), new Point2D.Float(564.4409f, 457.0f)),
+            new Ruling(new Point2D.Float(470.5542f, 285.0f), new Point2D.Float(470.36865f, 457.0f))
+    };
+    
+    private static final Ruling[] EXTERNALLY_DEFINED_RULINGS2 = {
+        new Ruling(new Point2D.Float(51.796964f, 180.0f), new Point2D.Float(560.20312f, 180.0f)),
+        new Ruling(new Point2D.Float(51.797017f, 219.0f), new Point2D.Float(560.2031f, 219.0f)),
+        new Ruling(new Point2D.Float(51.797f, 239.0f), new Point2D.Float(560.2031f, 239.0f)),
+        new Ruling(new Point2D.Float(51.797f, 262.0f), new Point2D.Float(560.20312f, 262.0f)),
+        new Ruling(new Point2D.Float(51.797f, 283.50247f), new Point2D.Float(560.05024f, 283.50247f)),
+        new Ruling(new Point2D.Float(51.796964f, 309.0f), new Point2D.Float(560.20312f, 309.0f)),
+        new Ruling(new Point2D.Float(51.796982f, 333.0f), new Point2D.Float(560.20312f, 333.0f)),
+        new Ruling(new Point2D.Float(51.797f, 366.0f), new Point2D.Float(560.20312f, 366.0f)),
+
+
+        new Ruling(new Point2D.Float(52.0f, 181.0f), new Point2D.Float(51.797f, 366.0f)),
+        new Ruling(new Point2D.Float(208.62891f, 181.0f), new Point2D.Float(208.62891f, 366.0f)),
+        new Ruling(new Point2D.Float(357.11328f, 180.0f), new Point2D.Float(357.0f, 366.0f)),
+        new Ruling(new Point2D.Float(560.11328f, 180.0f), new Point2D.Float(560.0f, 366.0f))
+    };
+    
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
@@ -423,6 +457,36 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page);
         assertEquals(1, tables.size());
+    }
+    
+    @Test
+    public void testExtractTableWithExternallyDefinedRulings() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/us-007.pdf", 
+                1);
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) bea.extract(page,
+                Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
+        assertEquals(1, tables.size());
+        Table table = tables.get(0);
+        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
+        assertEquals("154.17", table.getRows().get(3).get(1).getText());
+        
+    }
+    
+    @Test
+    public void testAnotherExtractTableWithExternallyDefinedRulings() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/us-024.pdf", 
+                1);
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) bea.extract(page,
+                Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
+        assertEquals(1, tables.size());
+        Table table = tables.get(0);
+
+        
+        assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
+        assertEquals("6.6", table.getRows().get(6).get(2).getText());
+        
     }
     
 }

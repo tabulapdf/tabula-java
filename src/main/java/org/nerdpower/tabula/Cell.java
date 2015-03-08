@@ -20,6 +20,9 @@ public class Cell extends RectangularTextContainer<TextChunk> {
     
     public Cell(Point2D topLeft, Point2D bottomRight) {
         super((float) topLeft.getY(), (float) topLeft.getX(), (float) (bottomRight.getX() - topLeft.getX()), (float) (bottomRight.getY() - topLeft.getY()));
+        this.setPlaceholder(false);
+        this.setSpanning(false);
+        this.setTextElements(new ArrayList<TextChunk>());
     }
     
     @Override
