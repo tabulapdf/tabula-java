@@ -33,13 +33,18 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     class PointComparator implements Comparator<Point2D> {
         @Override
         public int compare(Point2D o1, Point2D o2) {
-            if (o1.getY() > o2.getY())
+            float o1X = Utils.round(o1.getX(), 2);
+            float o1Y = Utils.round(o1.getY(), 2);
+            float o2X = Utils.round(o2.getX(), 2);
+            float o2Y = Utils.round(o2.getY(), 2);
+
+            if (o1Y > o2Y)
                 return 1;
-            if (o1.getY() < o2.getY())
+            if (o1Y < o2Y)
                 return -1;
-            if (o1.getX() > o2.getX())
+            if (o1X > o2X)
                 return 1;
-            if (o1.getX() < o2.getX())
+            if (o1X < o2X)
                 return -1;
             return 0;
         }
@@ -208,7 +213,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         pi = path.getPathIterator(this.getPageTransform());
         pi.currentSegment(first);
         // last move
-        Point2D.Float start_pos = new Point2D.Float(first[0], first[1]);
+        Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
         Point2D.Float last_move = start_pos;
         Point2D.Float end_pos = null;
         Line2D.Float line;

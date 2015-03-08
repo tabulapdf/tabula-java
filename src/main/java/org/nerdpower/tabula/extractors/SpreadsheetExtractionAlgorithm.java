@@ -27,16 +27,22 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         @Override
         public int compare(Point2D arg0, Point2D arg1) {
             int rv = 0;
-            if (arg0.getY() > arg1.getY()) {
+            float arg0X = Utils.round(arg0.getX(), 2);
+            float arg0Y = Utils.round(arg0.getY(), 2);
+            float arg1X = Utils.round(arg1.getX(), 2);
+            float arg1Y = Utils.round(arg1.getY(), 2);
+            
+            
+            if (arg0Y > arg1Y) {
                 rv = 1;
             }
-            else if (arg0.getY() < arg1.getY()) {
+            else if (arg0Y < arg1Y) {
                 rv = -1;
             }
-            else if (arg0.getX() > arg1.getX()) {
+            else if (arg0X > arg1X) {
                 rv = 1;
             }
-            else if (arg0.getX() < arg1.getX()) {
+            else if (arg0X < arg1X) {
                 rv = -1;
             }
             return rv;
@@ -47,16 +53,21 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         @Override
         public int compare(Point2D arg0, Point2D arg1) {
             int rv = 0;
-            if (arg0.getX() > arg1.getX()) {
+            float arg0X = Utils.round(arg0.getX(), 2);
+            float arg0Y = Utils.round(arg0.getY(), 2);
+            float arg1X = Utils.round(arg1.getX(), 2);
+            float arg1Y = Utils.round(arg1.getY(), 2);
+            
+            if (arg0X > arg1X) {
                 rv = 1;
             }
-            else if (arg0.getX() < arg1.getX()) {
+            else if (arg0X < arg1X) {
                 rv = -1;
             }
-            else if (arg0.getY() > arg1.getY()) {
+            else if (arg0Y > arg1Y) {
                 rv = 1;
             }
-            else if (arg0.getY() < arg1.getY()) {
+            else if (arg0Y < arg1Y) {
                 rv = -1;
             }
             return rv;

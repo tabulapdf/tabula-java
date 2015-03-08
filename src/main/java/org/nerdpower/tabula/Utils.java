@@ -26,7 +26,7 @@ public class Utils {
         return overlap(y1, height1, y2, height2, 0.1f);
     }
     
-    private final static float EPSILON = 0.00001f;
+    private final static float EPSILON = 0.01f;
     public static boolean feq(double f1, double f2) {
         return (Math.abs(f1 - f2) < EPSILON);
     }

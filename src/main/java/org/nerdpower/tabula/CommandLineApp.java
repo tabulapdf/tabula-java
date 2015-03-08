@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -109,7 +108,7 @@ public class CommandLineApp {
             verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
         }
         
-        List<Integer> pages = parsePagesOption(line.getOptionValue('p'));
+        List<Integer> pages = Utils.parsePagesOption(line.getOptionValue('p'));
         ExtractionMethod method = whichExtractionMethod(line);
         boolean useLineReturns = line.hasOption('u');
         
@@ -192,36 +191,7 @@ public class CommandLineApp {
         return rv;
     }
     
-    public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
-        if (pagesSpec.equals("all")) {
-            return null;
-        }
-        
-        List<Integer> rv = new ArrayList<Integer>();
-        
-        String[] ranges = pagesSpec.split(",");
-        for (int i = 0; i < ranges.length; i++) {
-            String[] r = ranges[i].split("-");
-            if (r.length == 0 || !Utils.isNumeric(r[0]) || r.length > 1 && !Utils.isNumeric(r[1])) {
-                throw new ParseException("Syntax error in page range specification");
-            }
-            
-            if (r.length < 2) {
-                rv.add(Integer.parseInt(r[0]));
-            }
-            else {
-                int t = Integer.parseInt(r[0]);
-                int f = Integer.parseInt(r[1]); 
-                if (t > f) {
-                    throw new ParseException("Syntax error in page range specification");
-                }
-                rv.addAll(Utils.range(t, f+1));       
-            }
-        }
-        
-        Collections.sort(rv);
-        return rv;
-    }
+    
     
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");

@@ -188,6 +188,32 @@ public class TestSpreadsheetExtractor {
             new Cell(70.0f, 70.0f, 156.0f, 4.0f),
             new Cell(74.0f, 70.0f, 156.0f, 6.0f) };
     
+    private static final Ruling[][] SINGLE_CELL_RULINGS = {
+        {
+            new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(380.73438f, 185.66929f)),
+            new Ruling(new Point2D.Float(151.653545f, 314.64567f), new Point2D.Float(380.73438f, 314.64567f))
+        },
+        {
+            new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 314.64567f)),
+            new Ruling(new Point2D.Float(380.73438f, 185.66929f), new Point2D.Float(380.73438f, 314.64567f))        
+        }
+    };
+    
+    private static final Ruling[][] TWO_SINGLE_CELL_RULINGS = {
+        {
+            new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(287.4074f, 185.66929f)),
+            new Ruling(new Point2D.Float(151.653545f, 262.101f), new Point2D.Float(287.4074f, 262.101f)),
+            new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(368.1948f, 280.62992f)),
+            new Ruling(new Point2D.Float(232.44095f, 357.06164f), new Point2D.Float(368.1948f, 357.06164f))
+        },
+        {
+            new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 262.101f)),
+            new Ruling(new Point2D.Float(287.4074f, 185.66929f), new Point2D.Float(287.4074f, 262.101f)),
+            new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(232.44095f, 357.06164f)),
+            new Ruling(new Point2D.Float(368.1948f, 280.62992f), new Point2D.Float(368.1948f, 357.06164f))
+        }
+    };
+    
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
@@ -196,7 +222,28 @@ public class TestSpreadsheetExtractor {
         Collections.sort(expected);
         assertTrue(cells.equals(expected));
     }
+    
+    @Test
+    public void testDetectSingleCell() {
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
+                Arrays.asList(SINGLE_CELL_RULINGS[1]));
+        assertEquals(1, cells.size());
+        Cell cell = cells.get(0);
+        assertTrue(Utils.feq(151.65355, cell.getLeft()));
+        assertTrue(Utils.feq(185.6693, cell.getTop()));
+        assertTrue(Utils.feq(229.08083, cell.getWidth()));
+        assertTrue(Utils.feq(128.97636, cell.getHeight()));
+    }
 
+    @Test
+    public void testDetectTwoSingleCells() {
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(TWO_SINGLE_CELL_RULINGS[0]),
+                Arrays.asList(TWO_SINGLE_CELL_RULINGS[1]));
+        assertEquals(2, cells.size());
+        // should not overlap
+        assertFalse(cells.get(0).intersects(cells.get(1)));
+    }
+    
     @Test
     public void testFindSpreadsheetsFromCells() {
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
@@ -366,4 +413,16 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
     }
+    
+    @Test
+    public void testShouldDetectASingleSpreadsheet() throws IOException {
+        Page page = UtilsForTesting.getAreaFromPage(
+                "src/test/resources/org/nerdpower/tabula/offense.pdf",
+                1,
+                68.08f, 16.44f, 680.85f, 597.84f);
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) bea.extract(page);
+        assertEquals(1, tables.size());
+    }
+    
 }
