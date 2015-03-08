@@ -93,6 +93,18 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
     }
 
+    private boolean useCustomQuickSort() {
+        // check if we need to use the custom quicksort algorithm as a
+        // workaround to the transitivity issue of TextPositionComparator:
+        // https://issues.apache.org/jira/browse/PDFBOX-1512
+        String[] versionComponents = System.getProperty("java.version").split(
+                "\\.");
+        int javaMajorVersion = Integer.parseInt(versionComponents[0]);
+        int javaMinorVersion = Integer.parseInt(versionComponents[1]);
+        boolean is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
+        return !is16orLess;
+    }
+
     protected Page extractPage(Integer page_number) throws IOException {
 
         if (page_number - 1 > this.pdf_document_pages.size() || page_number < 1) {
@@ -110,7 +122,12 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
         this.drawPage(p);
 
-        Collections.sort(this.characters);
+        if (this.useCustomQuickSort()) {
+            QuickSort.sort(this.characters);
+        }
+        else {
+            Collections.sort(this.characters);
+        }
 
         float w, h;
         int pageRotation = p.findRotation();
@@ -325,10 +342,10 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         float wos = textPosition.getWidthOfSpace();
 
         TextElement te = new TextElement(
-                textPosition.getY() - h,
-                textPosition.getX(),
-                textPosition.getWidthDirAdj(),
-                textPosition.getHeightDir(),
+                Utils.round(textPosition.getYDirAdj() - h, 2),
+                Utils.round(textPosition.getXDirAdj(), 2),
+                Utils.round(textPosition.getWidthDirAdj(), 2),
+                Utils.round(textPosition.getHeightDir(), 2),
                 textPosition.getFont(),
                 textPosition.getFontSize(),
                 c,

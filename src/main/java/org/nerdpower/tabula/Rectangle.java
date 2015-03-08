@@ -22,17 +22,20 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
     public int compareTo(Rectangle other) {
         double thisBottom = this.getBottom();
         double otherBottom = other.getBottom();
-        double yDifference = Math.abs(thisBottom - otherBottom);
         int rv;
 
-        if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
+       if (this.equals(other)) return 0;
+
+       if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
             rv = java.lang.Double.compare(this.getX(), other.getX());
-        }
-        else {
-            rv = java.lang.Double.compare(thisBottom, otherBottom);
-        }
-        return rv;
+       }
+       else {
+           rv = java.lang.Double.compare(thisBottom, otherBottom);
+       }
+       return rv;
     }
+
+
 
     public float getArea() {
         return this.width * this.height;
