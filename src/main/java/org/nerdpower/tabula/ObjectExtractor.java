@@ -94,6 +94,8 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     }
 
     private boolean useCustomQuickSort() {
+        // taken from PDFBOX:
+        
         // check if we need to use the custom quicksort algorithm as a
         // workaround to the transitivity issue of TextPositionComparator:
         // https://issues.apache.org/jira/browse/PDFBOX-1512
