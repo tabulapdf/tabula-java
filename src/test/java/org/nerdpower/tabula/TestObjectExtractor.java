@@ -2,6 +2,7 @@ package org.nerdpower.tabula;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,29 @@ public class TestObjectExtractor {
             pages.add(pi.next());
         }
         assertEquals(1, pages.size());
+    }
+    
+    @Test
+    public void testTextExtractionDoesNotRaise() throws IOException {
+        //PDDocument pdf_document = PDDocument.load("src/test/resources/org/nerdpower/tabula/test_text_exception.pdf");
+        PDDocument pdf_document = PDDocument.load("src/test/resources/org/nerdpower/tabula/rotated_page.pdf");
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        PageIterator pi = oe.extract();
+        while (pi.hasNext()) {
+            System.out.println(pi.next().getText());
+           // pages.add(pi.next());
+        }
+    }
+    
+    @Test
+    public void testShouldDetectRulings() throws IOException {
+        PDDocument pdf_document = PDDocument.load("src/test/resources/org/nerdpower/tabula/should_detect_rulings.pdf");
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        PageIterator pi = oe.extract();
+       
+        while (pi.hasNext()) {
+            assertNotEquals(0, pi.next().getRulings().size());
+        }
     }
     
     

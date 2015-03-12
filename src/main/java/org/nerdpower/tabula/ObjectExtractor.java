@@ -154,8 +154,8 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
     private void ensurePageSize() {
         if (this.pageSize == null && this.page != null) {
-            PDRectangle mediaBox = this.page.findMediaBox();
-            this.pageSize = mediaBox == null ? null : mediaBox
+            PDRectangle cropBox = this.page.findCropBox();
+            this.pageSize = cropBox == null ? null : cropBox
                     .createDimension();
         }
     }
