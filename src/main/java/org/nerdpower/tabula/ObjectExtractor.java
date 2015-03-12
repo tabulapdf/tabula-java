@@ -11,7 +11,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -67,8 +66,6 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     private boolean extractRulingLines = true;
     private final PDDocument pdf_document;
     protected List pdf_document_pages;
-    private PDPage page;
-
 
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
         this(pdf_document, null);
@@ -151,8 +148,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         PDStream contents = p.getContents();
         if (contents != null) {
             ensurePageSize();
-            this.processStream(p, p.findResources(), contents.getStream());/*,
-                    p.findCropBox(), p.findRotation());*/
+            this.processStream(p, p.findResources(), contents.getStream());
         }
     }
 
