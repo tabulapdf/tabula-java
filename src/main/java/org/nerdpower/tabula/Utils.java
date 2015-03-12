@@ -30,6 +30,8 @@ public class Utils {
     }
     
     private final static float EPSILON = 0.01f;
+    protected static boolean useQuickSort = useCustomQuickSort(); 
+    
     public static boolean feq(double f1, double f2) {
         return (Math.abs(f1 - f2) < EPSILON);
     }
@@ -114,6 +116,37 @@ public class Utils {
         }
         return ret;
     }
+
+    /**
+     * Wrap Collections.sort so we can fallback to a non-stable quicksort
+     * if we're running on JDK7+ 
+     * @param list
+     */
+    public static <T extends Comparable<? super T>> void sort(List<T> list) {
+        if (useQuickSort) {
+            QuickSort.sort(list);
+        }
+        else {
+            Collections.sort(list);
+        }
+    }
+    
+    private static boolean useCustomQuickSort() {
+        // taken from PDFBOX:
+        
+        // check if we need to use the custom quicksort algorithm as a
+        // workaround to the transitivity issue of TextPositionComparator:
+        // https://issues.apache.org/jira/browse/PDFBOX-1512
+        String[] versionComponents = System.getProperty("java.version").split(
+                "\\.");
+        int javaMajorVersion = Integer.parseInt(versionComponents[0]);
+        int javaMinorVersion = Integer.parseInt(versionComponents[1]);
+        boolean is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
+        String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
+        return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
+    }
+    
+    
     
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
         if (pagesSpec.equals("all")) {

@@ -53,7 +53,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
         for (int i : proc.getIds()) {
             rv.add(rectangles.get(i));
         }
-        Collections.sort(rv);
+        Utils.sort(rv);
         return rv;
     }
     
@@ -64,7 +64,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
         for (int i : proc.getIds()) {
             rv.add(rectangles.get(i));
         }
-        Collections.sort(rv);
+        Utils.sort(rv);
         return rv;
     }
     

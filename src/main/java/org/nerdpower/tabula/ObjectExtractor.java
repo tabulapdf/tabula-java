@@ -76,6 +76,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
     public ObjectExtractor(PDDocument pdf_document, String password)
             throws IOException {
+        super();
         if (pdf_document.isEncrypted()) {
             try {
                 pdf_document
@@ -93,20 +94,6 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
     }
 
-    private boolean useCustomQuickSort() {
-        // taken from PDFBOX:
-        
-        // check if we need to use the custom quicksort algorithm as a
-        // workaround to the transitivity issue of TextPositionComparator:
-        // https://issues.apache.org/jira/browse/PDFBOX-1512
-        String[] versionComponents = System.getProperty("java.version").split(
-                "\\.");
-        int javaMajorVersion = Integer.parseInt(versionComponents[0]);
-        int javaMinorVersion = Integer.parseInt(versionComponents[1]);
-        boolean is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
-        String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
-        return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
-    }
 
     protected Page extractPage(Integer page_number) throws IOException {
 
@@ -125,12 +112,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
         this.drawPage(p);
 
-        if (this.useCustomQuickSort()) {
-            QuickSort.sort(this.characters);
-        }
-        else {
-            Collections.sort(this.characters);
-        }
+        Utils.sort(this.characters);
 
         float w, h;
         int pageRotation = p.findRotation();
