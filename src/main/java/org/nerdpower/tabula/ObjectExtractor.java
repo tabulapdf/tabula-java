@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.apache.pdfbox.exceptions.CryptographyException;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -74,6 +76,10 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     public ObjectExtractor(PDDocument pdf_document, String password)
             throws IOException {
         super();
+
+        // turns off PDFBox's logging, which we usually don't care about.
+        Logger.getLogger("org.apache.pdfbox").setLevel(Level.OFF);
+
         if (pdf_document.isEncrypted()) {
             try {
                 pdf_document
