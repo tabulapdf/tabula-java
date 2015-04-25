@@ -49,7 +49,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.nerdpower.tabula.CommandLineApp</mainClass>
+                            <mainClass>technology.tabula.CommandLineApp</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
