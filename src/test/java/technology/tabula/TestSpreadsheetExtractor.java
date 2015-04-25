@@ -294,7 +294,7 @@ public class TestSpreadsheetExtractor {
     public void testSpreadsheetExtraction() throws IOException {
         Page page = UtilsForTesting
                 .getAreaFromFirstPage(
-                        "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
+                        "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
         
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
@@ -304,7 +304,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testSpanningCells() throws IOException {
         Page page = UtilsForTesting
-                .getPage("src/test/resources/org/nerdpower/tabula/spanning_cells.pdf", 1);
+                .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
@@ -321,7 +321,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testIncompleteGrid() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/china.pdf", 1);
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
@@ -329,7 +329,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testNaturalOrderOfRectanglesDoesNotBreakContract() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/us-017.pdf", 2);
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
 
@@ -345,7 +345,7 @@ public class TestSpreadsheetExtractor {
     @Test
     // TODO add assertions
     public void testMergeLinesCloseToEachOther() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/20.pdf", 1);
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/20.pdf", 1);
         List<Ruling> rulings = page.getVerticalRulings();
         for (Ruling ruling : rulings) {
             System.out.println(ruling.getLeft());
@@ -356,7 +356,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/org/nerdpower/tabula/spreadsheet_no_bounding_frame.pdf", 1,
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf", 1,
                 140.25f,54.1875f,649.1875f,542.9375f);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         boolean isTabular = se.isTabular(page);
@@ -371,7 +371,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testExtractSpreadsheetWithinAnArea() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/org/nerdpower/tabula/puertos1.pdf",
+                "src/test/resources/technology/tabula/puertos1.pdf",
                 1,
                 273.9035714285714f, 30.32142857142857f, 554.8821428571429f, 546.7964285714286f);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
@@ -439,7 +439,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testDontRaiseSortException() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/org/nerdpower/tabula/us-017.pdf",
+                "src/test/resources/technology/tabula/us-017.pdf",
                 2,
                 446.0f, 97.0f, 685.0f, 520.0f);
         page.getText();
@@ -451,7 +451,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testShouldDetectASingleSpreadsheet() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/org/nerdpower/tabula/offense.pdf",
+                "src/test/resources/technology/tabula/offense.pdf",
                 1,
                 68.08f, 16.44f, 680.85f, 597.84f);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
@@ -461,7 +461,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/us-007.pdf", 
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf", 
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page,
@@ -475,7 +475,7 @@ public class TestSpreadsheetExtractor {
     
     @Test
     public void testAnotherExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/us-024.pdf", 
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf", 
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page,

@@ -10,7 +10,7 @@ import technology.tabula.debug.Debug;
 
 public class TestDebug {
 
-    private final static String PATH = "src/test/resources/org/nerdpower/tabula/spanning_cells.pdf";
+    private final static String PATH = "src/test/resources/technology/tabula/spanning_cells.pdf";
         
 //    @Test
 //    public void test() throws IOException {

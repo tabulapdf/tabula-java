@@ -16,7 +16,7 @@ public class TestWriters {
     private static final String EXPECTED_CSV_WRITER_OUTPUT = "\"ABDALA de MATARAZZO, Norma Amanda \",\"Frente Cívico por Santiago \",\"Santiago del Estero \",AFIRMATIVO";
     
     private Table getTable() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         return table;
@@ -57,7 +57,7 @@ public class TestWriters {
     // TODO add assertions
     @Test
     public void testJSONSerializeInfinity() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
         

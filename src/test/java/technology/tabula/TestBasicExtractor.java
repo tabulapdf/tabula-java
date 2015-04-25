@@ -1781,7 +1781,7 @@ public class TestBasicExtractor {
     @Test
     public void testRemoveSequentialSpaces() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage(
-                "src/test/resources/org/nerdpower/tabula/m27.pdf", 79.2f,
+                "src/test/resources/technology/tabula/m27.pdf", 79.2f,
                 28.28f, 103.04f, 732.6f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -1795,7 +1795,7 @@ public class TestBasicExtractor {
     public void testColumnRecognition() throws IOException {
         Page page = UtilsForTesting
                 .getAreaFromFirstPage(
-                        "src/test/resources/org/nerdpower/tabula/argentina_diputados_voting_record.pdf",
+                        "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -1811,7 +1811,7 @@ public class TestBasicExtractor {
         }
 
         Page page = UtilsForTesting.getAreaFromFirstPage(
-                "src/test/resources/org/nerdpower/tabula/campaign_donors.pdf",
+                "src/test/resources/technology/tabula/campaign_donors.pdf",
                 255.57f, 40.43f, 398.76f, 557.35f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(rulings);
         Table table = bea.extract(page).get(0);
@@ -1825,7 +1825,7 @@ public class TestBasicExtractor {
     @Test
     public void testExtractColumnsCorrectly() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/org/nerdpower/tabula/eu-002.pdf", 1,
+                "src/test/resources/technology/tabula/eu-002.pdf", 1,
                 115.0f, 70.0f, 233.0f, 510.0f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -1834,7 +1834,7 @@ public class TestBasicExtractor {
     
     @Test
     public void testExtractColumnsCorrectly2() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/org/nerdpower/tabula/eu-017.pdf", 3);
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-017.pdf", 3);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
         Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
         UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_EXTRACTION2);
@@ -1842,7 +1842,7 @@ public class TestBasicExtractor {
     
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/frx_2012_disclosure.pdf", 
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 
                 106.01f, 48.09f, 227.31f, 551.89f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -1854,7 +1854,7 @@ public class TestBasicExtractor {
     
     @Test
     public void testCheckSqueezeDoesntBreak() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/org/nerdpower/tabula/12s0324.pdf", 
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/12s0324.pdf", 
                 99.0f, 17.25f, 316.5f, 410.25f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -1869,7 +1869,7 @@ public class TestBasicExtractor {
     @Test
     public void testNaturalOrderOfRectangles() throws IOException {
         Page page = UtilsForTesting.getPage(
-                "src/test/resources/org/nerdpower/tabula/us-017.pdf", 2)
+                "src/test/resources/technology/tabula/us-017.pdf", 2)
                 .getArea(446.0f, 97.0f, 685.0f, 520.0f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(
                 page.getVerticalRulings());
