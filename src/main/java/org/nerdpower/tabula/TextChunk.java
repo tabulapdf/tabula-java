@@ -3,6 +3,8 @@ package org.nerdpower.tabula;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Collections;
 
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> implements HasText { 
@@ -201,6 +203,16 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         }
         
         return rv;
+    }
+
+    protected void sortByCenters(){
+        Collections.sort(this.textElements, new Comparator<TextElement>() {
+            @Override
+            public int compare(TextElement textElement1, TextElement textElement2)
+            {
+                return  java.lang.Double.valueOf(textElement1.getX() + (textElement1.getWidth()/2.0)).compareTo(java.lang.Double.valueOf(textElement2.getX() + (textElement2.getWidth()/2.0) ));
+            }
+        });
     }
 
 }
