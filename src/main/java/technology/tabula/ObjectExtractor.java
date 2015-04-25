@@ -10,11 +10,13 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import org.apache.pdfbox.exceptions.CryptographyException;
+import org.apache.pdfbox.pdfviewer.PageDrawer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -67,6 +69,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     private final PDDocument pdf_document;
     protected List pdf_document_pages;
 
+
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
         this(pdf_document, null);
     }
@@ -74,6 +77,16 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
     public ObjectExtractor(PDDocument pdf_document, String password)
             throws IOException {
         super();
+        
+        // patch PageDrawer: dummy Graphics2D context so some drawing operators don't complain
+        try {
+            Field field = PageDrawer.class.getDeclaredField("graphics");
+            field.setAccessible(true);
+            field.set(this, new DummyGraphics2D());
+        } 
+        catch (Exception e1) {
+        }
+        
         if (pdf_document.isEncrypted()) {
             try {
                 pdf_document
