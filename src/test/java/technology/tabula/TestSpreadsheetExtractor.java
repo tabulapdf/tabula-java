@@ -486,7 +486,28 @@ public class TestSpreadsheetExtractor {
         
         assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
         assertEquals("6.6", table.getRows().get(6).get(2).getText());
-        
     }
+    
+    // related to https://github.com/tabulapdf/tabula/issues/303
+    // prior to this fix, characters were "scrambled" because they were ordered by their left value, not their center
+    @Test
+    public void testOverlappingCharactersAreOrderedByTheirCenters() throws IOException {
+        String expected = "N^nLl"; boolean asserted = false;
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/pune-budget-1.pdf", 
+                1);
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) bea.extract(page);
+
+        List<RectangularTextContainer> cells = tables.get(0).getRows().get(0);
+        
+        for (RectangularTextContainer r: cells) {
+            if (r.getText().equals("")) continue;
+            asserted = expected.equals(r.getText().replaceAll(" ", ""));
+            asserted &= expected.equals(r.getText());
+        }
+        assertTrue(asserted);
+    }
+    
+    
     
 }
