@@ -74,5 +74,18 @@ public class TestObjectExtractor {
         }
     }
     
+    @Test
+    public void testDontThrowNPEInShfill() throws IOException {
+        PDDocument pdf_document = PDDocument.load("src/test/resources/technology/tabula/labor.pdf");
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        PageIterator pi = oe.extract();
+        try {
+            Page p = pi.next();
+        }
+        catch (NullPointerException e) {
+            fail("NPE in ObjectExtractor " + e.toString());
+        }
+    }
+    
     
 }

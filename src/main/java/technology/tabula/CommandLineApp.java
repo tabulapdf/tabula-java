@@ -108,7 +108,8 @@ public class CommandLineApp {
             verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
         }
         
-        List<Integer> pages = Utils.parsePagesOption(line.getOptionValue('p'));
+        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
+        List<Integer> pages = Utils.parsePagesOption(pagesOption);
         ExtractionMethod method = whichExtractionMethod(line);
         boolean useLineReturns = line.hasOption('u');
         
