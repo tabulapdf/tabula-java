@@ -482,11 +482,21 @@ public class TestSpreadsheetExtractor {
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
         assertEquals(1, tables.size());
         Table table = tables.get(0);
-
         
         assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
         assertEquals("6.6", table.getRows().get(6).get(2).getText());
+    }
+    
+    @Test
+    public void testSpreadsheetsSortedByTopAndRight() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf", 
+                1);
         
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        for (int i = 1; i < tables.size(); i++) {
+            assert(tables.get(i-1).getTop() <= tables.get(i).getTop());
+        }
     }
     
 }

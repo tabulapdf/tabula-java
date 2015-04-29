@@ -180,7 +180,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             
             spreadsheets.add(t);
         }
-        
+        Utils.sort(spreadsheets);
         return spreadsheets;
     }
     
