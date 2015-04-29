@@ -27,16 +27,10 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         
     
     public TextChunk merge(TextChunk other) {
-        if (this.compareTo(other) < 0) {
-            this.textElements.addAll(other.textElements);
-        }
-        else {
-            this.textElements.addAll(0, other.textElements);
-        }
         super.merge(other);
         return this;
     }
-    
+
     public void add(TextElement textElement) {
         this.textElements.add(textElement);
         this.merge(textElement);
