@@ -506,7 +506,9 @@ public class TestSpreadsheetExtractor {
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) sea.extract(page);
-
+        for (int i = 1; i < tables.size(); i++) {
+            assert(tables.get(i-1).getTop() <= tables.get(i).getTop());
+        }
     }
     
 }
