@@ -150,9 +150,7 @@ public class CommandLineApp {
                 default:
                     break;
                 }
-                for (Table t: tables) {
-                    writeTables(of, tables, outFile);
-                }
+                writeTables(of, tables, outFile);
                 tables.clear();
             }
 
@@ -162,7 +160,7 @@ public class CommandLineApp {
 
     }
     
-    static void writeTables(OutputFormat format, Iterable<Table> tables, Appendable out) throws IOException {
+    static void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
         switch (format) {
         case CSV:
@@ -175,10 +173,7 @@ public class CommandLineApp {
             writer = new TSVWriter();
             break;
         }
-        Iterator<Table> iter = tables.iterator();
-        while (iter.hasNext()) {
-            writer.write(out, iter.next());
-        }
+        writer.write(out, tables);
     }
     
     static ExtractionMethod whichExtractionMethod(CommandLine line) {
