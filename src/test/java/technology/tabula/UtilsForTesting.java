@@ -1,9 +1,15 @@
 package technology.tabula;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+
+import com.google.gson.Gson;
 
 import static org.junit.Assert.*;
 
@@ -41,6 +47,20 @@ public class UtilsForTesting {
                 assertEquals(row[j].trim(), table.getCell(i, j).getText().trim());
             }
         }
+    }
+    
+    public static String loadJson(String path) throws IOException {
+    	
+    	BufferedReader reader = new BufferedReader( new FileReader (path));
+    	StringBuilder  stringBuilder = new StringBuilder();
+    	String line = null;
+    	
+        while( ( line = reader.readLine() ) != null ) {
+            stringBuilder.append( line );
+        }
+
+        return stringBuilder.toString();
+    	
     }
     
 
