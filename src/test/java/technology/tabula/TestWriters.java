@@ -39,13 +39,14 @@ public class TestWriters {
         assertEquals(lines[0], EXPECTED_CSV_WRITER_OUTPUT);
     }
     
+    // TODO Add assertions
     @Test
     public void testTSVWriter() throws IOException {
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
         (new TSVWriter()).write(sb, table);
         String s = sb.toString();
-        System.out.println(s);
+        //System.out.println(s);
         //String[] lines = s.split("\\r?\\n");
         //assertEquals(lines[0], EXPECTED_CSV_WRITER_OUTPUT);
     }

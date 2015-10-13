@@ -58,8 +58,8 @@ public class TestObjectExtractor {
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
-            System.out.println(pi.next().getText());
-           // pages.add(pi.next());
+            // System.out.println(pi.next().getText());
+            // pages.add(pi.next());
         }
     }
     

@@ -1816,7 +1816,6 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(rulings);
         Table table = bea.extract(page).get(0);
         List<RectangularTextContainer> sixthRow = table.getRows().get(5);
-        (new CSVWriter()).write(System.out, table);
 
         assertTrue(sixthRow.get(0).getText().equals("VALSANGIACOMO BLANC"));
         assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE "));
@@ -1846,7 +1845,6 @@ public class TestBasicExtractor {
                 106.01f, 48.09f, 227.31f, 551.89f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-        (new CSVWriter()).write(System.out, table);
 
         UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
 
@@ -1897,11 +1895,7 @@ public class TestBasicExtractor {
 
             for (Rectangle z : RECTANGLES_TEST_NATURAL_ORDER) {
                 if (y.compareTo(z) > 0 && !(x.compareTo(z) > 0)) {
-                     System.out.println(x); System.out.println(y);
-                     System.out.println(z);
-                     System.out.println("Vertical overlap ratio: " + x.verticalOverlapRatio(y));
-                    System.out.println();
-//                    System.out.println(x.verticalOverlap(y));
+
                 }
             }
         }     
