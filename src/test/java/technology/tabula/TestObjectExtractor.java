@@ -53,13 +53,11 @@ public class TestObjectExtractor {
     
     @Test
     public void testTextExtractionDoesNotRaise() throws IOException {
-        //PDDocument pdf_document = PDDocument.load("src/test/resources/technology/tabula/test_text_exception.pdf");
         PDDocument pdf_document = PDDocument.load("src/test/resources/technology/tabula/rotated_page.pdf");
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
-            // System.out.println(pi.next().getText());
-            // pages.add(pi.next());
+            pi.next();
         }
     }
     
