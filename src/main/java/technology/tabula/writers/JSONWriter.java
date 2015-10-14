@@ -2,6 +2,7 @@ package technology.tabula.writers;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import technology.tabula.Cell;
 import technology.tabula.RectangularTextContainer;
@@ -46,6 +47,12 @@ public class JSONWriter implements Writer {
     
     @Override
     public void write(Appendable out, Table table) throws IOException {
-        out.append(gson.toJson(table, Table.class));
+    	
+    	out.append(gson.toJson(table, Table.class));
+    }
+    
+    public void write(Appendable out, List<Table> tables) throws IOException {
+    	
+    	out.append(gson.toJson(tables.toArray(), Table[].class));
     }
 }

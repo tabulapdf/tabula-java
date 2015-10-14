@@ -19,6 +19,7 @@ import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.UtilsForTesting;
+import technology.tabula.writers.JSONWriter;
 
 public class TestSpreadsheetExtractor {
 
@@ -147,16 +148,16 @@ public class TestSpreadsheetExtractor {
             new Cell(442.0f, 764.0f, 216.0f, 74.0f),
             new Cell(516.0f, 764.0f, 216.0f, 28.0f),
             new Cell(544.0f, 764.0f, 216.0f, 4.0f) };
-    
+
     public static final Rectangle[] EXPECTED_RECTANGLES = {
         new Rectangle(40.0f, 18.0f, 208.0f, 40.0f),
         new Rectangle(84.0f, 18.0f, 962.0f, 464.0f)
     };
-    
-    private static final Ruling[] VERTICAL_RULING_LINES = { 
+
+    private static final Ruling[] VERTICAL_RULING_LINES = {
             new Ruling(40.0f, 18.0f, 0.0f, 40.0f),
             new Ruling(44.0f, 70.0f, 0.0f, 36.0f),
-            new Ruling(40.0f, 226.0f, 0.0f, 40.0f) 
+            new Ruling(40.0f, 226.0f, 0.0f, 40.0f)
             };
 
     private static final Ruling[] HORIZONTAL_RULING_LINES = {
@@ -168,10 +169,10 @@ public class TestSpreadsheetExtractor {
             new Ruling(64.0f, 18.0f, 208.0f, 0.0f),
             new Ruling(70.0f, 18.0f, 208.0f, 0.0f),
             new Ruling(74.0f, 18.0f, 208.0f, 0.0f),
-            new Ruling(80.0f, 18.0f, 208.0f, 0.0f) 
+            new Ruling(80.0f, 18.0f, 208.0f, 0.0f)
     };
-    
-    private static final Cell[] EXPECTED_CELLS = { 
+
+    private static final Cell[] EXPECTED_CELLS = {
             new Cell(40.0f, 18.0f, 208.0f, 4.0f),
             new Cell(44.0f, 18.0f, 52.0f, 6.0f),
             new Cell(50.0f, 18.0f, 52.0f, 4.0f),
@@ -187,7 +188,7 @@ public class TestSpreadsheetExtractor {
             new Cell(64.0f, 70.0f, 156.0f, 6.0f),
             new Cell(70.0f, 70.0f, 156.0f, 4.0f),
             new Cell(74.0f, 70.0f, 156.0f, 6.0f) };
-    
+
     private static final Ruling[][] SINGLE_CELL_RULINGS = {
         {
             new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(380.73438f, 185.66929f)),
@@ -195,10 +196,10 @@ public class TestSpreadsheetExtractor {
         },
         {
             new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 314.64567f)),
-            new Ruling(new Point2D.Float(380.73438f, 185.66929f), new Point2D.Float(380.73438f, 314.64567f))        
+            new Ruling(new Point2D.Float(380.73438f, 185.66929f), new Point2D.Float(380.73438f, 314.64567f))
         }
     };
-    
+
     private static final Ruling[][] TWO_SINGLE_CELL_RULINGS = {
         {
             new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(287.4074f, 185.66929f)),
@@ -213,7 +214,7 @@ public class TestSpreadsheetExtractor {
             new Ruling(new Point2D.Float(368.1948f, 280.62992f), new Point2D.Float(368.1948f, 357.06164f))
         }
     };
-    
+
     private static final Ruling[] EXTERNALLY_DEFINED_RULINGS = {
             new Ruling(new Point2D.Float(320.0f, 285.0f), new Point2D.Float(564.4409f, 285.0f)),
             new Ruling(new Point2D.Float(320.0f, 457.0f), new Point2D.Float(564.4409f, 457.0f)),
@@ -230,7 +231,7 @@ public class TestSpreadsheetExtractor {
             new Ruling(new Point2D.Float(565.0f, 285.0f), new Point2D.Float(564.4409f, 457.0f)),
             new Ruling(new Point2D.Float(470.5542f, 285.0f), new Point2D.Float(470.36865f, 457.0f))
     };
-    
+
     private static final Ruling[] EXTERNALLY_DEFINED_RULINGS2 = {
         new Ruling(new Point2D.Float(51.796964f, 180.0f), new Point2D.Float(560.20312f, 180.0f)),
         new Ruling(new Point2D.Float(51.797017f, 219.0f), new Point2D.Float(560.2031f, 219.0f)),
@@ -247,7 +248,7 @@ public class TestSpreadsheetExtractor {
         new Ruling(new Point2D.Float(357.11328f, 180.0f), new Point2D.Float(357.0f, 366.0f)),
         new Ruling(new Point2D.Float(560.11328f, 180.0f), new Point2D.Float(560.0f, 366.0f))
     };
-    
+
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
@@ -256,7 +257,7 @@ public class TestSpreadsheetExtractor {
         Collections.sort(expected);
         assertTrue(cells.equals(expected));
     }
-    
+
     @Test
     public void testDetectSingleCell() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
@@ -277,7 +278,7 @@ public class TestSpreadsheetExtractor {
         // should not overlap
         assertFalse(cells.get(0).intersects(cells.get(1)));
     }
-    
+
     @Test
     public void testFindSpreadsheetsFromCells() {
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
@@ -288,7 +289,7 @@ public class TestSpreadsheetExtractor {
         Collections.sort(foundRectangles);
         assertTrue(foundRectangles.equals(expected));
     }
-    
+
     // TODO Add assertions
     @Test
     public void testSpreadsheetExtraction() throws IOException {
@@ -296,29 +297,26 @@ public class TestSpreadsheetExtractor {
                 .getAreaFromFirstPage(
                         "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
-        
+
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
     }
- 
-    // TODO Add assertions
+
     @Test
     public void testSpanningCells() throws IOException {
         Page page = UtilsForTesting
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells.json");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
-                
-        for (List<RectangularTextContainer> r: tables.get(1).getRows()) {
-            for (RectangularTextContainer rtc: r) {
-                System.out.println(rtc.toString());
-            }
-        }
+
+
         StringBuilder sb = new StringBuilder();
-        (new CSVWriter()).write(sb, tables.get(1));
-        System.out.println(sb.toString());
+        (new JSONWriter()).write(sb, (List<Table>) tables);
+        assertEquals(expectedJson, sb.toString());
+
     }
-    
+
     @Test
     public void testIncompleteGrid() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
@@ -326,7 +324,7 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
     }
-    
+
     @Test
     public void testNaturalOrderOfRectanglesDoesNotBreakContract() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
@@ -335,25 +333,27 @@ public class TestSpreadsheetExtractor {
 
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
-        
+
         String result = sb.toString();
         String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and \rnanotechnology policy (SGER)\",Interagency,\"North Carolina State \rUniversity\"\r\n\"Social and ethical research and education in agrifood \rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed \rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience, \rapplications and societal implications (NUE)\",NSF,\"Michigan Technological \rUniversity\"\r\n\"Ethics and belief inside the development of \rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal \rimplications components\",\"NSF, DOE, \rDOD, and NIH\",\"All nanotechnology centers \rand networks\"\r\n";
-        
+
         assertEquals(expected, result);
     }
-    
+
     @Test
-    // TODO add assertions
     public void testMergeLinesCloseToEachOther() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/20.pdf", 1);
         List<Ruling> rulings = page.getVerticalRulings();
-        for (Ruling ruling : rulings) {
-            System.out.println(ruling.getLeft());
+        float[] expectedRulings = new float[] { 105.549774f,107.52332f,160.58167f,377.1792f,434.95804f,488.21783f };
+        for (int i = 0; i < rulings.size(); i++) {
+            assertEquals(expectedRulings[i], rulings.get(i).getLeft(), 0.1);
         }
-        System.out.println(rulings.size());
-        
+        assertEquals(6, rulings.size());
+
+
     }
-    
+
+    // TODO add assertions
     @Test
     public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf", 1,
@@ -364,10 +364,8 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
-        System.out.println(sb.toString());
-        assertTrue(false);
     }
-    
+
     @Test
     public void testExtractSpreadsheetWithinAnArea() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
@@ -378,40 +376,40 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         Table table = tables.get(0);
         assertEquals(15, table.getRows().size());
-        
-        String expected = "\"\",TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM\n" + 
-                "Peces vivos,1,25,1,23,2,38,1,37,2,67,2,89,1\n" + 
-                "\"Pescado fresco\n" + 
-                "o refrigerado.\n" + 
-                "exc. filetes\",7.704,7.175,8.931,6.892,12.635,10.255,16.742,13.688,14.357,11.674,13.035,13.429,9.727\n" + 
-                "\"Pescado congelado\n" + 
-                "exc. filetes\",90.560,105.950,112.645,108.416,132.895,115.874,152.767,133.765,148.882,134.847,156.619,165.134,137.179\n" + 
-                "\"Filetes y demás car-\n" + 
-                "nes de pescado\",105.434,200.563,151.142,218.389,152.174,227.780,178.123,291.863,169.422,313.735,176.427,381.640,144.814\n" + 
-                "\"Pescado sec./sal./\n" + 
-                "en salm. har./pol./\n" + 
-                "pell. aptos\n" + 
-                "p/c humano\",6.837,14.493,6.660,9.167,14.630,17.579,18.150,21.302,18.197,25.739,13.460,23.549,11.709\n" + 
-                "Crustáceos,61.691,375.798,52.488,251.043,47.635,387.783,27.815,217.443,7.123,86.019,39.488,373.583,45.191\n" + 
-                "Moluscos,162.027,174.507,109.436,111.443,90.834,104.741,57.695,109.141,98.182,206.304,187.023,251.352,157.531\n" + 
-                "\"Prod. no exp. en\n" + 
-                "otros capítulos.\n" + 
-                "No apto p/c humano\",203,328,7,35,521,343,\"1,710\",\"1,568\",125,246,124,263,131\n" + 
-                "\"Grasas y aceites de\n" + 
-                "pescado y mamíferos\n" + 
-                "marinos\",913,297,\"1,250\",476,\"1,031\",521,\"1,019\",642,690,483,489,710,959\n" + 
-                "\"Extractos y jugos de\n" + 
-                "pescado y mariscos\",5,25,1,3,4,4,31,93,39,117,77,230,80\n" + 
-                "\"Preparaciones y con-\n" + 
-                "servas de pescado\",846,\"3,737\",\"1,688\",\"4,411\",\"1,556\",\"3,681\",\"2,292\",\"5,474\",\"2,167\",\"7,494\",\"2,591\",\"8,833\",\"2,795\"\n" + 
-                "\"Preparaciones y con-\n" + 
-                "servas de mariscos\",348,\"3,667\",345,\"1,771\",738,\"3,627\",561,\"2,620\",607,\"3,928\",314,\"2,819\",250\n" + 
-                "\"Harina, polvo y pe-\n" + 
-                "llets de pescado.No\n" + 
-                "aptos p/c humano\",\"16,947\",\"8,547\",\"11,867\",\"6,315\",\"32,528\",\"13,985\",\"37,313\",\"18,989\",\"35,787\",\"19,914\",\"37,821\",\"27,174\",\"30,000\"\n" + 
+
+        String expected = "\"\",TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM\n" +
+                "Peces vivos,1,25,1,23,2,38,1,37,2,67,2,89,1\n" +
+                "\"Pescado fresco\n" +
+                "o refrigerado.\n" +
+                "exc. filetes\",7.704,7.175,8.931,6.892,12.635,10.255,16.742,13.688,14.357,11.674,13.035,13.429,9.727\n" +
+                "\"Pescado congelado\n" +
+                "exc. filetes\",90.560,105.950,112.645,108.416,132.895,115.874,152.767,133.765,148.882,134.847,156.619,165.134,137.179\n" +
+                "\"Filetes y demás car-\n" +
+                "nes de pescado\",105.434,200.563,151.142,218.389,152.174,227.780,178.123,291.863,169.422,313.735,176.427,381.640,144.814\n" +
+                "\"Pescado sec./sal./\n" +
+                "en salm. har./pol./\n" +
+                "pell. aptos\n" +
+                "p/c humano\",6.837,14.493,6.660,9.167,14.630,17.579,18.150,21.302,18.197,25.739,13.460,23.549,11.709\n" +
+                "Crustáceos,61.691,375.798,52.488,251.043,47.635,387.783,27.815,217.443,7.123,86.019,39.488,373.583,45.191\n" +
+                "Moluscos,162.027,174.507,109.436,111.443,90.834,104.741,57.695,109.141,98.182,206.304,187.023,251.352,157.531\n" +
+                "\"Prod. no exp. en\n" +
+                "otros capítulos.\n" +
+                "No apto p/c humano\",203,328,7,35,521,343,\"1,710\",\"1,568\",125,246,124,263,131\n" +
+                "\"Grasas y aceites de\n" +
+                "pescado y mamíferos\n" +
+                "marinos\",913,297,\"1,250\",476,\"1,031\",521,\"1,019\",642,690,483,489,710,959\n" +
+                "\"Extractos y jugos de\n" +
+                "pescado y mariscos\",5,25,1,3,4,4,31,93,39,117,77,230,80\n" +
+                "\"Preparaciones y con-\n" +
+                "servas de pescado\",846,\"3,737\",\"1,688\",\"4,411\",\"1,556\",\"3,681\",\"2,292\",\"5,474\",\"2,167\",\"7,494\",\"2,591\",\"8,833\",\"2,795\"\n" +
+                "\"Preparaciones y con-\n" +
+                "servas de mariscos\",348,\"3,667\",345,\"1,771\",738,\"3,627\",561,\"2,620\",607,\"3,928\",314,\"2,819\",250\n" +
+                "\"Harina, polvo y pe-\n" +
+                "llets de pescado.No\n" +
+                "aptos p/c humano\",\"16,947\",\"8,547\",\"11,867\",\"6,315\",\"32,528\",\"13,985\",\"37,313\",\"18,989\",\"35,787\",\"19,914\",\"37,821\",\"27,174\",\"30,000\"\n" +
                 "TOTAL,\"453,515\",\"895,111\",\"456,431\",\"718,382\",\"487,183\",\"886,211\",\"494,220\",\"816,623\",\"495,580\",\"810,565\",\"627,469\",\"1,248,804\",\"540,367\"\n";
 
-      
+
         // TODO add better assertions
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
@@ -419,14 +417,14 @@ public class TestSpreadsheetExtractor {
 
         List<CSVRecord> parsedExpected = org.apache.commons.csv.CSVParser.parse(expected, CSVFormat.EXCEL).getRecords();
         List<CSVRecord> parsedResult = org.apache.commons.csv.CSVParser.parse(result, CSVFormat.EXCEL).getRecords();
-      
+
         assertEquals(parsedResult.size(), parsedExpected.size());
         for (int i = 0; i < parsedResult.size(); i ++) {
             assertEquals(parsedResult.get(i).size(), parsedExpected.get(i).size());
         }
-        
+
     }
-    
+
     @Test
     public void testAlmostIntersectingRulingsShouldIntersect() {
         Ruling v = new Ruling(new Point2D.Float(555.960876f, 271.569641f), new Point2D.Float(555.960876f, 786.899902f));
@@ -434,7 +432,7 @@ public class TestSpreadsheetExtractor {
         Map<Point2D, Ruling[]> m = Ruling.findIntersections(Arrays.asList(new Ruling[] { h }), Arrays.asList(new Ruling[] { v }));
         assertEquals(m.values().size(), 1);
     }
-    
+
     // TODO add assertions
     @Test
     public void testDontRaiseSortException() throws IOException {
@@ -443,11 +441,10 @@ public class TestSpreadsheetExtractor {
                 2,
                 446.0f, 97.0f, 685.0f, 520.0f);
         page.getText();
-        //BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
     }
-    
+
     @Test
     public void testShouldDetectASingleSpreadsheet() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
@@ -458,10 +455,10 @@ public class TestSpreadsheetExtractor {
         List<Table> tables = (List<Table>) bea.extract(page);
         assertEquals(1, tables.size());
     }
-    
+
     @Test
     public void testExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf", 
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf",
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page,
@@ -470,12 +467,12 @@ public class TestSpreadsheetExtractor {
         Table table = tables.get(0);
         assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
         assertEquals("154.17", table.getRows().get(3).get(1).getText());
-        
+
     }
-    
+
     @Test
     public void testAnotherExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf", 
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf",
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page,
@@ -483,23 +480,23 @@ public class TestSpreadsheetExtractor {
         assertEquals(1, tables.size());
         Table table = tables.get(0);
 
-        
         assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
         assertEquals("6.6", table.getRows().get(6).get(2).getText());
     }
-    
+
+
     // related to https://github.com/tabulapdf/tabula/issues/303
     // prior to this fix, characters were "scrambled" because they were ordered by their left value, not their center
     @Test
     public void testOverlappingCharactersAreOrderedByTheirCenters() throws IOException {
         String expected = "N^nLl"; boolean asserted = false;
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/pune-budget-1.pdf", 
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/pune-budget-1.pdf",
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) bea.extract(page);
 
         List<RectangularTextContainer> cells = tables.get(0).getRows().get(0);
-        
+
         for (RectangularTextContainer r: cells) {
             if (r.getText().equals("")) continue;
             asserted = expected.equals(r.getText().replaceAll(" ", ""));
@@ -507,7 +504,28 @@ public class TestSpreadsheetExtractor {
         }
         assertTrue(asserted);
     }
-    
-    
-    
+
+    @Test
+    public void testSpreadsheetsSortedByTopAndRight() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf",
+                1);
+
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        for (int i = 1; i < tables.size(); i++) {
+            assert(tables.get(i-1).getTop() <= tables.get(i).getTop());
+        }
+    }
+
+    @Test
+    public void testDontStackOverflowQuicksort() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/failing_sort.pdf",
+                1);
+
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        for (int i = 1; i < tables.size(); i++) {
+            assert(tables.get(i-1).getTop() <= tables.get(i).getTop());
+        }
+    }
 }

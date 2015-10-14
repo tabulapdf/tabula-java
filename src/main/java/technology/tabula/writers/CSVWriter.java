@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVFormat;
+
 import technology.tabula.RectangularTextContainer;
 import technology.tabula.Table;
 
@@ -44,5 +45,13 @@ public class CSVWriter implements Writer {
         }
         printer.flush();
     }
+
+	@Override
+	public void write(Appendable out, List<Table> tables) throws IOException {
+		for (Table table : tables) {
+			write(out, table);
+		}
+		
+	}
 
 }

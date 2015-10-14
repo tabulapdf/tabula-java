@@ -1,12 +1,17 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.cli.ParseException;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestUtils {
@@ -61,6 +66,46 @@ public class TestUtils {
     @Test(expected=ParseException.class)
     public void testAnotherExceptionInParsePages() throws ParseException {
         Utils.parsePagesOption("quuxor");
+    }
+
+    @Test
+    public void testQuickSortEmptyList() {
+    	List<Integer> numbers = new ArrayList<Integer>();
+    	QuickSort.sort(numbers);
+    	
+    	assertEquals(Collections.emptyList(), numbers);
+    }
+    
+    @Test
+    public void testQuickSortOneElementList() {
+    	List<Integer> numbers = Arrays.asList(5);
+    	QuickSort.sort(numbers);
+    	
+    	assertEquals(Arrays.asList(5), numbers);
+    }
+    
+    @Test
+    public void testQuickSortShortList() {
+    	List<Integer> numbers = Arrays.asList(4, 5, 6, 8, 7, 1, 2, 3);
+    	QuickSort.sort(numbers);
+    	
+    	assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8), numbers);
+    }
+    
+    @Test
+    public void testQuickSortLongList() {
+    	
+    	List<Integer> numbers = new ArrayList<Integer>();
+    	List<Integer> expectedNumbers = new ArrayList<Integer>();
+    	
+    	for(int i = 0; i <= 12000; i++){
+    		numbers.add(12000 - i);
+    		expectedNumbers.add(i);
+    	}
+    	
+    	QuickSort.sort(numbers);
+    	
+    	assertEquals(expectedNumbers, numbers);
     }
 
 }
