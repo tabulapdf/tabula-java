@@ -19,6 +19,7 @@ import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.UtilsForTesting;
+import technology.tabula.writers.JSONWriter;
 
 public class TestSpreadsheetExtractor {
 
@@ -299,24 +300,21 @@ public class TestSpreadsheetExtractor {
         
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
     }
- 
-    // TODO Add assertions
+
     @Test
     public void testSpanningCells() throws IOException {
         Page page = UtilsForTesting
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells.json");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
                 
-        for (List<RectangularTextContainer> r: tables.get(1).getRows()) {
-            for (RectangularTextContainer rtc: r) {
-                System.out.println(rtc.toString());
-            }
-        }
+
         StringBuilder sb = new StringBuilder();
-        (new CSVWriter()).write(sb, tables.get(1));
-        System.out.println(sb.toString());
+        (new JSONWriter()).write(sb, (List<Table>) tables);
+        assertEquals(expectedJson, sb.toString());
+
     }
     
     @Test
@@ -343,17 +341,19 @@ public class TestSpreadsheetExtractor {
     }
     
     @Test
-    // TODO add assertions
     public void testMergeLinesCloseToEachOther() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/20.pdf", 1);
         List<Ruling> rulings = page.getVerticalRulings();
-        for (Ruling ruling : rulings) {
-            System.out.println(ruling.getLeft());
+        float[] expectedRulings = new float[] { 105.549774f,107.52332f,160.58167f,377.1792f,434.95804f,488.21783f };
+        for (int i = 0; i < rulings.size(); i++) {
+            assertEquals(expectedRulings[i], rulings.get(i).getLeft(), 0.1);
         }
-        System.out.println(rulings.size());
+        assertEquals(6, rulings.size());
+
         
     }
-    
+
+    // TODO add assertions
     @Test
     public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf", 1,
@@ -364,8 +364,6 @@ public class TestSpreadsheetExtractor {
         List<? extends Table> tables = se.extract(page);
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
-        System.out.println(sb.toString());
-        //assertTrue(false);
     }
     
     @Test
@@ -443,7 +441,6 @@ public class TestSpreadsheetExtractor {
                 2,
                 446.0f, 97.0f, 685.0f, 520.0f);
         page.getText();
-        //BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
     }
