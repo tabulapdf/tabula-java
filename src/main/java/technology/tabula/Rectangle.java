@@ -56,9 +56,13 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         }
         return rv;
     }
+    
+    public float horizontalOverlap(Rectangle other) {
+        return (float) Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
+    }
 
     public boolean horizontallyOverlaps(Rectangle other) {
-        return Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft())) > 0;
+        return horizontalOverlap(other) > 0;
     }
 
     public float horizontalOverlapRatio(Rectangle other) {
