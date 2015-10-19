@@ -2,7 +2,6 @@ language: java
 script: mvn test
 jdk:
   - oraclejdk7
-  - openjdk6
   - openjdk7
   - oraclejdk8
 sudo: false
