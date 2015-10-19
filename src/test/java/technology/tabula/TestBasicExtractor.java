@@ -140,7 +140,7 @@ public class TestBasicExtractor {
         {"AARON, JOHN ","","","CLARKSVILLE, TN ","MEALS ","$20.39"},
         {"TOTAL ","","","","","$20.39"},
         {"AARON, JOSHUA, N ","","","WEST GROVE, PA ","MEALS ","$310.33"},
-        {"AARON , JOSHUA, N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
+        {"AARON , JOSHUA , N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
         {"TOTAL ","","","","","$5,010.33"},
         {"AARON, MAUREEN, M ","","","MARTINSVILLE, VA ","MEALS ","$193.67"},
         {"TOTAL ","","","","","$193.67"},

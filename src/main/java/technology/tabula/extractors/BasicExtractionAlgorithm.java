@@ -67,7 +67,17 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-            for (TextChunk tc: line.getTextElements()) {
+            List<TextChunk> elements = line.getTextElements();
+            
+            Collections.sort(elements, new Comparator<TextChunk>() {
+
+				@Override
+				public int compare(TextChunk o1, TextChunk o2) {
+					return new java.lang.Float(o1.getLeft()).compareTo(o2.getLeft());
+				}
+			});
+            
+            for (TextChunk tc: elements) {
 
                 if (tc.isSameChar(Line.WHITE_SPACE_CHARS)) {
                     continue;
