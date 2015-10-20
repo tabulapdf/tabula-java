@@ -123,7 +123,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
             else {
                 if (((lastChar != null && !lastChar.equals(currentChar)) || i + 1 == this.getTextElements().size()) && subSequenceLength >= minRunLength) {
 
-                    if (subSequenceStart == 0 && subSequenceLength < this.getTextElements().size() - 1) {
+                    if (subSequenceStart == 0 && subSequenceLength <= this.getTextElements().size() - 1) {
                         t = this.splitAt(subSequenceLength);
                     }
                     else {
