@@ -174,7 +174,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
         Line last = lines.get(lines.size() - 1);
         for (TextChunk te: textChunks) {
-            if (last.horizontalOverlapRatio(te) < 0.1) {
+            if (last.verticalOverlapRatio(te) < 0.1) {
                 if (last.width / bbwidth > 0.9 && TextChunk.allSameChar(last.getTextElements())) {
                     lines.remove(lines.size() - 1);
                 }
