@@ -1,4 +1,4 @@
-tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java)  
+tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Join the chat at https://gitter.im/tabulapdf/tabula-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tabulapdf/tabula-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===========
 
 `tabula-java` is a library for extracting tables from PDF files. It is a Java rewrite of [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor), that is soon to become a thin wrapper around this library.
@@ -16,7 +16,7 @@ mvn clean compile assembly:single
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar ./target/tabula-extractor-0.7.4-SNAPSHOT-jar-with-dependencies.jar --help
+$ java -jar ./target/tabula-0.8.0-jar-with-dependencies.jar --help
 
 usage: tabula [-a <AREA>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
        [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
@@ -55,7 +55,7 @@ Tabula helps you extract tables from PDFs
 
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-extractor-0.7.4-SNAPSHOT-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-0.8.0-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 

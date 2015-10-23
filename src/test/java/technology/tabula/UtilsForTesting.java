@@ -1,17 +1,18 @@
 package technology.tabula;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.pdfbox.pdmodel.PDDocument;
-
-import com.google.gson.Gson;
-
-import static org.junit.Assert.*;
 
 public class UtilsForTesting {
     
@@ -60,6 +61,20 @@ public class UtilsForTesting {
         }
 
         return stringBuilder.toString();
+    	
+    }
+    
+    public static String loadCsv(String path) throws IOException {
+    	
+    	StringBuilder out = new StringBuilder();
+    	CSVParser parse = org.apache.commons.csv.CSVParser.parse(new File(path), Charset.forName("utf-8"), CSVFormat.EXCEL);
+        
+    	CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL);
+        printer.printRecords(parse);
+        printer.close();
+
+        String csv = out.toString().replaceAll("(?<!\r)\n", "\r");
+        return csv;
     	
     }
     

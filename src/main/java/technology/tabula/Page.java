@@ -72,6 +72,27 @@ public class Page extends Rectangle {
                 }}).height,
                 
                 spatial_index);
+        
+        rv.addRuling(new Ruling(
+                new Point2D.Double(rv.getLeft(), 
+                		rv.getTop()), 
+                new Point2D.Double(rv.getRight(), 
+                		rv.getTop())));
+        rv.addRuling(new Ruling(
+                new Point2D.Double(rv.getRight(), 
+                		rv.getTop()), 
+                new Point2D.Double(rv.getRight(), 
+                		rv.getBottom())));
+        rv.addRuling(new Ruling(
+                new Point2D.Double(rv.getRight(), 
+                		rv.getBottom()), 
+                new Point2D.Double(rv.getLeft(), 
+                		rv.getBottom())));
+        rv.addRuling(new Ruling(
+                new Point2D.Double(rv.getLeft(), 
+                		rv.getBottom()), 
+                new Point2D.Double(rv.getLeft(), 
+                		rv.getTop())));
  
         return rv;
     }
