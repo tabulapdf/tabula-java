@@ -155,7 +155,35 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     }
     
-    public static boolean allSameChar(List<TextChunk> textChunks) {
+    
+    
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((textElements == null) ? 0 : textElements.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TextChunk other = (TextChunk) obj;
+		if (textElements == null) {
+			if (other.textElements != null)
+				return false;
+		} else if (!textElements.equals(other.textElements))
+			return false;
+		return true;
+	}
+
+	public static boolean allSameChar(List<TextChunk> textChunks) {
         char first = textChunks.get(0).getText().charAt(0);
         for (TextChunk tc: textChunks) {
             if (!tc.isSameChar(first)) return false;
