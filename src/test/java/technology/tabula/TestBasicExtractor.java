@@ -1943,29 +1943,18 @@ public class TestBasicExtractor {
     
     @Test
     public void testNaturalOrderOfRectanglesOneMoreTime() throws IOException {
-        List<Rectangle> toSort = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
-        Rectangle x, y;
-        List<Rectangle[]> greaterThan = new ArrayList<Rectangle[]>();
-        for (int i = 0; i < RECTANGLES_TEST_NATURAL_ORDER.length - 2; i++) {
-            x = RECTANGLES_TEST_NATURAL_ORDER[i];
-            for (int j = i + 1; j < RECTANGLES_TEST_NATURAL_ORDER.length - 1; j++) {
-                y = RECTANGLES_TEST_NATURAL_ORDER[j];
-                if (x.compareTo(y) > 0) {
-                    greaterThan.add(new Rectangle[] { x, y });
-                }
-            }
-        }
-
-        for (Rectangle[] gt : greaterThan) {
-            x = gt[0];
-            y = gt[1];
-
-            for (Rectangle z : RECTANGLES_TEST_NATURAL_ORDER) {
-                if (y.compareTo(z) > 0 && !(x.compareTo(z) > 0)) {
-
-                }
-            }
-        }     
+        
+    	List<Rectangle> rectangles = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
+    	Utils.sort(rectangles);
+    	
+    	for (int i = 0; i < (rectangles.size() - 1); i++) {
+			Rectangle rectangle = rectangles.get(i);
+			Rectangle nextRectangle = rectangles.get(i + 1);
+			
+			assertTrue(rectangle.compareTo(nextRectangle) < 0);
+			
+			
+		}
 
     }
 
