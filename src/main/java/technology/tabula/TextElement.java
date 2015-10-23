@@ -16,12 +16,7 @@ public class TextElement extends Rectangle implements HasText {
 
     public TextElement(float y, float x, float width, float height,
             PDFont font, float fontSize, String c, float widthOfSpace) {
-        super();
-        this.setRect(x, y, width, height);
-        this.text = c;
-        this.widthOfSpace = widthOfSpace;
-        this.fontSize = fontSize;
-        this.font = font;
+    	this(y, x, width, height, font, fontSize, c, widthOfSpace, 0f);
     } 
 
     public TextElement(float y, float x, float width, float height,
@@ -63,7 +58,50 @@ public class TextElement extends Rectangle implements HasText {
         return sb.toString();
     }
     
-    public static List<TextChunk> mergeWords(List<TextElement> textElements) {
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + java.lang.Float.floatToIntBits(dir);
+		result = prime * result + ((font == null) ? 0 : font.hashCode());
+		result = prime * result + java.lang.Float.floatToIntBits(fontSize);
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		result = prime * result + java.lang.Float.floatToIntBits(widthOfSpace);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TextElement other = (TextElement) obj;
+		if (java.lang.Float.floatToIntBits(dir) != java.lang.Float
+				.floatToIntBits(other.dir))
+			return false;
+		if (font == null) {
+			if (other.font != null)
+				return false;
+		} else if (!font.equals(other.font))
+			return false;
+		if (java.lang.Float.floatToIntBits(fontSize) != java.lang.Float
+				.floatToIntBits(other.fontSize))
+			return false;
+		if (text == null) {
+			if (other.text != null)
+				return false;
+		} else if (!text.equals(other.text))
+			return false;
+		if (java.lang.Float.floatToIntBits(widthOfSpace) != java.lang.Float
+				.floatToIntBits(other.widthOfSpace))
+			return false;
+		return true;
+	}
+
+	public static List<TextChunk> mergeWords(List<TextElement> textElements) {
         return mergeWords(textElements, new ArrayList<Ruling>());
     }
     
