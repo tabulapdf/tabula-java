@@ -150,9 +150,9 @@ public class CommandLineApp {
                 default:
                     break;
                 }
-                writeTables(of, tables, outFile);
-                tables.clear();
             }
+            writeTables(of, tables, outFile);
+            
 
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
