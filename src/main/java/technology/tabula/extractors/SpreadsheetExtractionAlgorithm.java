@@ -1,6 +1,7 @@
 package technology.tabula.extractors;
 
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import technology.tabula.Table;
 import technology.tabula.TableWithRulingLines;
 import technology.tabula.TextElement;
 import technology.tabula.Utils;
+import technology.tabula.writers.CSVWriter;
 
 /**
  * @author manuel
@@ -216,6 +218,15 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             return false;
         }
         Table table = tables.get(0);
+        StringBuilder sb = new StringBuilder();
+      
+        try {
+			(new CSVWriter()).write(sb, table);
+			System.out.println(sb);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         int rowsDefinedByLines = table.getRows().size();
         int colsDefinedByLines = table.getCols().size();
         
