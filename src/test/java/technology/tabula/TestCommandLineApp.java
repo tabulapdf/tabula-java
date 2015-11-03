@@ -31,26 +31,9 @@ public class TestCommandLineApp {
 		StringBuilder stringBuilder = new StringBuilder();
 		new CommandLineApp(stringBuilder).extractTables(cmd);
 		
-		System.out.println("StringBuilder:");
-		System.out.println(stringBuilder);
 		assertEquals(expectedCsv, stringBuilder.toString());
 
 	}
 	
-	//@Test
-	public void testExtractSpreadsheet() throws ParseException {
-
-		CommandLineParser parser = new GnuParser();
-		CommandLine cmd = parser
-				.parse(CommandLineApp.buildOptions(),
-						new String[] {
-								"src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
-								"-p", "1", "-f",
-								"CSV" });
-		
-		StringBuilder stringBuilder = new StringBuilder();
-		new CommandLineApp(stringBuilder).extractTables(cmd);
-
-	}
 
 }

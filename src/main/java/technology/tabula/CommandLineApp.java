@@ -68,7 +68,7 @@ public class CommandLineApp {
 		this.defaultOutput = defaultOutput;
 	}
     
-    void extractTables(CommandLine line) throws ParseException {
+    public void extractTables(CommandLine line) throws ParseException {
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
@@ -171,7 +171,7 @@ public class CommandLineApp {
 
     }
     
-    static void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
+    private void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
         switch (format) {
         case CSV:
@@ -187,7 +187,7 @@ public class CommandLineApp {
         writer.write(out, tables);
     }
     
-    static ExtractionMethod whichExtractionMethod(CommandLine line) {
+    private ExtractionMethod whichExtractionMethod(CommandLine line) {
         ExtractionMethod rv = ExtractionMethod.DECIDE;
         if (line.hasOption('r')) {
             rv = ExtractionMethod.SPREADSHEET;
@@ -219,7 +219,7 @@ public class CommandLineApp {
     }
     
     @SuppressWarnings("static-access")
-    static Options buildOptions() {
+    public static Options buildOptions() {
         Options o = new Options();
         
         o.addOption("v", "version", false, "Print version and exit.");
