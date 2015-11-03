@@ -145,8 +145,6 @@ public class CommandLineApp {
                     method = spreadsheetExtractor.isTabular(page) ? ExtractionMethod.SPREADSHEET : ExtractionMethod.BASIC;
                 }
                 
-                System.out.println("Method: " + method);
-                
                 switch(method) {
                 case BASIC:
                     if (line.hasOption('g')) {
