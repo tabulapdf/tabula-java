@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
+
 import technology.tabula.Cell;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
@@ -353,17 +354,22 @@ public class TestSpreadsheetExtractor {
         
     }
 
-    // TODO add assertions
     @Test
     public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf", 1,
-                140.25f,54.1875f,649.1875f,542.9375f);
+        		150.56f,58.9f,654.7f,536.12f);
+        
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         boolean isTabular = se.isTabular(page);
         assertTrue(isTabular);
         List<? extends Table> tables = se.extract(page);
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables.get(0));
+        
+        assertEquals(expectedCsv, sb.toString());
+        
     }
     
     @Test

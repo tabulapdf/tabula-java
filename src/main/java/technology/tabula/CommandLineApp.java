@@ -1,5 +1,6 @@
 package technology.tabula;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,6 +17,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.GnuParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
+
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
@@ -29,6 +31,8 @@ public class CommandLineApp {
     private static String VERSION = "0.8.0";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2014 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
+    
+    private Appendable defaultOutput;
 
     public static void main(String[] args) {
         CommandLineParser parser = new GnuParser();
@@ -50,7 +54,7 @@ public class CommandLineApp {
                 throw new ParseException("Need one filename\nTry --help for help");
             }
                         
-            extractTables(line);
+            new CommandLineApp(System.out).extractTables(line);
             
         }
         catch( ParseException exp ) {
@@ -60,7 +64,11 @@ public class CommandLineApp {
         System.exit(0);
     }
     
-    static void extractTables(CommandLine line) throws ParseException {
+    public CommandLineApp(Appendable defaultOutput) {
+		this.defaultOutput = defaultOutput;
+	}
+    
+    public void extractTables(CommandLine line) throws ParseException {
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
@@ -80,7 +88,7 @@ public class CommandLineApp {
             
         }
         
-        Appendable outFile = System.out;
+        Appendable outFile = this.defaultOutput;
         if (line.hasOption('o')) {
             File file = new File(line.getOptionValue('o'));
             
@@ -130,6 +138,7 @@ public class CommandLineApp {
                 
                 if (area != null) {
                     page = page.getArea(area);
+
                 }
 
                 if (method == ExtractionMethod.DECIDE) {
@@ -160,7 +169,7 @@ public class CommandLineApp {
 
     }
     
-    static void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
+    private void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
         switch (format) {
         case CSV:
@@ -176,12 +185,12 @@ public class CommandLineApp {
         writer.write(out, tables);
     }
     
-    static ExtractionMethod whichExtractionMethod(CommandLine line) {
+    private ExtractionMethod whichExtractionMethod(CommandLine line) {
         ExtractionMethod rv = ExtractionMethod.DECIDE;
         if (line.hasOption('r')) {
             rv = ExtractionMethod.SPREADSHEET;
         }
-        else if (line.hasOption('n') || line.hasOption('c') || line.hasOption('a') || line.hasOption('g')) {
+        else if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g')) {
             rv = ExtractionMethod.BASIC;
         }
         return rv;
@@ -208,7 +217,7 @@ public class CommandLineApp {
     }
     
     @SuppressWarnings("static-access")
-    static Options buildOptions() {
+    public static Options buildOptions() {
         Options o = new Options();
         
         o.addOption("v", "version", false, "Print version and exit.");

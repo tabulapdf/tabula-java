@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
+
 import technology.tabula.Page;
 import technology.tabula.Ruling;
 import technology.tabula.Table;
@@ -1863,7 +1866,6 @@ public class TestBasicExtractor {
         assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
     }
 
-    // TODO add assertions
     @Test
     public void testNaturalOrderOfRectangles() throws IOException {
         Page page = UtilsForTesting.getPage(
@@ -1872,33 +1874,87 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(
                 page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
+        
+        List<RectangularTextContainer> cells = table.getCells();
+        for (RectangularTextContainer rectangularTextContainer : cells) {
+			System.out.println(rectangularTextContainer.getText());
+		}
+        //Column headers
+        assertEquals("Project", cells.get(0).getText());
+        assertEquals("Agency", cells.get(1).getText());
+        assertEquals(" Institution", cells.get(2).getText());
+
+        //First row
+        assertEquals("Nanotechnology and its publics", cells.get(3).getText());
+        assertEquals("NSF", cells.get(4).getText());
+        assertEquals("Pennsylvania State Universit", cells.get(5).getText());
+        
+        //Second row
+        assertEquals("Public information and deliberation in nanoscience and ", cells.get(6).getText());
+        assertEquals("North Carolina State ", cells.get(7).getText());
+        assertEquals("Interagency", cells.get(8).getText());
+        assertEquals("nanotechnology policy (SGER)", cells.get(9).getText());
+        assertEquals("University", cells.get(10).getText());
+
+        //Third row
+        assertEquals("Social and ethical research and education in agrifood ", cells.get(11).getText());
+        assertEquals("NSF", cells.get(12).getText());
+        assertEquals("Michigan State University", cells.get(13).getText());
+        assertEquals("nanotechnology (NIRT)", cells.get(14).getText());
+        
+        //Fourth row
+        assertEquals("From laboratory to society: developing an informed ", cells.get(15).getText());
+        assertEquals("NSF", cells.get(16).getText());
+        assertEquals("University of South Carolina", cells.get(17).getText());
+        assertEquals("approach to nanoscale science and engineering (NIRT)", cells.get(18).getText());
+        
+        //Fifth row
+        assertEquals("Database and innovation timeline for nanotechnology", cells.get(19).getText());
+        assertEquals("NSF", cells.get(20).getText());
+        assertEquals("UCLA", cells.get(21).getText());
+        
+        //Sixth row
+        assertEquals("Social and ethical dimensions of nanotechnology", cells.get(22).getText());
+        assertEquals("NSF", cells.get(23).getText());
+        assertEquals("University of Virginia", cells.get(24).getText());
+        
+        //Seventh row
+        assertEquals("Undergraduate exploration of nanoscience, ", cells.get(25).getText());
+        assertEquals("Michigan Technological ", cells.get(26).getText());
+        assertEquals("NSF", cells.get(27).getText());
+        assertEquals("applications and societal implications (NUE)", cells.get(28).getText());
+        assertEquals("University", cells.get(29).getText());
+        
+        //Eighth row
+        assertEquals("Ethics and belief inside the development of ", cells.get(30).getText());
+        assertEquals("NSF", cells.get(31).getText());
+        assertEquals("University of Virginia", cells.get(32).getText());
+        assertEquals("nanotechnology (CAREER)", cells.get(33).getText());
+        
+        //Ninth row
+        assertEquals("All centers, NNIN and NCN have a societal ", cells.get(34).getText());
+        assertEquals("NSF, DOE, ", cells.get(35).getText());
+        assertEquals("All nanotechnology centers ", cells.get(36).getText());
+        assertEquals("implications components ", cells.get(37).getText());
+        assertEquals("DOD, and NIH", cells.get(38).getText());
+        assertEquals("and networks", cells.get(39).getText());
+          
     }
     
     @Test
     public void testNaturalOrderOfRectanglesOneMoreTime() throws IOException {
-        List<Rectangle> toSort = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
-        Rectangle x, y;
-        List<Rectangle[]> greaterThan = new ArrayList<Rectangle[]>();
-        for (int i = 0; i < RECTANGLES_TEST_NATURAL_ORDER.length - 2; i++) {
-            x = RECTANGLES_TEST_NATURAL_ORDER[i];
-            for (int j = i + 1; j < RECTANGLES_TEST_NATURAL_ORDER.length - 1; j++) {
-                y = RECTANGLES_TEST_NATURAL_ORDER[j];
-                if (x.compareTo(y) > 0) {
-                    greaterThan.add(new Rectangle[] { x, y });
-                }
-            }
-        }
-
-        for (Rectangle[] gt : greaterThan) {
-            x = gt[0];
-            y = gt[1];
-
-            for (Rectangle z : RECTANGLES_TEST_NATURAL_ORDER) {
-                if (y.compareTo(z) > 0 && !(x.compareTo(z) > 0)) {
-
-                }
-            }
-        }     
+        
+    	List<Rectangle> rectangles = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
+    	Utils.sort(rectangles);
+    	
+    	for (int i = 0; i < (rectangles.size() - 1); i++) {
+			Rectangle rectangle = rectangles.get(i);
+			Rectangle nextRectangle = rectangles.get(i + 1);
+			
+			assertTrue(rectangle.compareTo(nextRectangle) < 0);
+			
+			
+		}
 
     }
 
