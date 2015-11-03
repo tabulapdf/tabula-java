@@ -190,44 +190,13 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         // get minimal region of page that contains every character (in effect,
         // removes white "margins")
-    	System.out.println(Utils.bounds(page.getText()));
         Page minimalRegion = page.getArea(Utils.bounds(page.getText()));
-        // add rulings along the borders of minimalRegion
-//        minimalRegion.addRuling(new Ruling(
-//                new Point2D.Double(minimalRegion.getLeft(), 
-//                                   minimalRegion.getTop()), 
-//                new Point2D.Double(minimalRegion.getRight(), 
-//                                   minimalRegion.getTop())));
-//        minimalRegion.addRuling(new Ruling(
-//                new Point2D.Double(minimalRegion.getRight(), 
-//                                   minimalRegion.getTop()), 
-//                new Point2D.Double(minimalRegion.getRight(), 
-//                                   minimalRegion.getBottom())));
-//        minimalRegion.addRuling(new Ruling(
-//                new Point2D.Double(minimalRegion.getRight(), 
-//                                   minimalRegion.getBottom()), 
-//                new Point2D.Double(minimalRegion.getLeft(), 
-//                                   minimalRegion.getBottom())));
-//        minimalRegion.addRuling(new Ruling(
-//                new Point2D.Double(minimalRegion.getLeft(), 
-//                                   minimalRegion.getBottom()), 
-//                new Point2D.Double(minimalRegion.getLeft(), 
-//                                   minimalRegion.getTop())));
         
         List<? extends Table> tables = new SpreadsheetExtractionAlgorithm().extract(minimalRegion);
         if (tables.size() == 0) {
             return false;
         }
         Table table = tables.get(0);
-        StringBuilder sb = new StringBuilder();
-      
-        try {
-			(new CSVWriter()).write(sb, table);
-			System.out.println(sb);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         int rowsDefinedByLines = table.getRows().size();
         int colsDefinedByLines = table.getCols().size();
         
