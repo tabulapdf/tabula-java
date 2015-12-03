@@ -10,13 +10,13 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import org.apache.pdfbox.exceptions.CryptographyException;
-import org.apache.pdfbox.pdfviewer.PageDrawer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -25,11 +25,9 @@ import org.apache.pdfbox.pdmodel.encryption.BadSecurityHandlerException;
 import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
-import org.apache.pdfbox.pdmodel.graphics.PDGraphicsState;
-import org.apache.pdfbox.pdmodel.text.PDTextState;
-import org.apache.pdfbox.util.TextPosition;
+import org.apache.pdfbox.text.TextPosition;
 
-public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
+public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine{
 
     class PointComparator implements Comparator<Point2D> {
         @Override
@@ -113,8 +111,8 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         }
 
         PDPage p = (PDPage) this.pdf_document_pages.get(page_number - 1);
-        PDStream contents = p.getContents();
-
+        InputStream contents = p.getContents();
+        
         if (contents == null) {
             return null;
         }
@@ -125,14 +123,14 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         Utils.sort(this.characters);
 
         float w, h;
-        int pageRotation = p.findRotation();
+        int pageRotation = p.getRotation();
         if (Math.abs(pageRotation) == 90 || Math.abs(pageRotation) == 270) {
-            w = p.findCropBox().getHeight();
-            h = p.findCropBox().getWidth();
+            w = p.getCropBox().getHeight();
+            h = p.getCropBox().getWidth();
         }
         else {
-            w = p.findCropBox().getWidth();
-            h = p.findCropBox().getHeight();
+            w = p.getCropBox().getWidth();
+            h = p.getCropBox().getHeight();
         }
 
         return new Page(0, 0, w, h, pageRotation, page_number, this.characters,
@@ -167,7 +165,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
 
     private void ensurePageSize() {
         if (this.pageSize == null && this.page != null) {
-            PDRectangle cropBox = this.page.findCropBox();
+            PDRectangle cropBox = this.page.getCropBox();
             this.pageSize = cropBox == null ? null : cropBox
                     .createDimension();
         }
@@ -294,33 +292,10 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         this.strokeOrFillPath(true);
     }
 
-    private float currentSpaceWidth() {
-        PDGraphicsState gs = this.getGraphicsState();
-        PDTextState ts = gs.getTextState();
-        PDFont font = ts.getFont();
-        float fontSizeText = ts.getFontSize();
-        float horizontalScalingText = ts.getHorizontalScalingPercent() / 100.0f;
-        float spaceWidthText = 1000;
-
-        if (font instanceof PDType3Font) {
-            // TODO WHAT?
-        }
-
-        for (int i = 0; i < spaceLikeChars.length; i++) {
-            spaceWidthText = font.getFontWidth(spaceLikeChars[i]);
-            if (spaceWidthText > 0)
-                break;
-        }
-
-        float ctm00 = gs.getCurrentTransformationMatrix().getValue(0, 0);
-
-        return (float) ((spaceWidthText / 1000.0) * fontSizeText
-                * horizontalScalingText * (ctm00 == 0 ? 1 : ctm00));
-    }
 
     @Override
     protected void processTextPosition(TextPosition textPosition) {
-        String c = textPosition.getCharacter();
+        String c = textPosition.getUnicode();
 
         // if c not printable, return
         if (!isPrintable(c)) {
@@ -343,9 +318,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
                 textPosition.getFont(),
                 textPosition.getFontSize(),
                 c,
-                // workaround a possible bug in PDFBox:
-                // https://issues.apache.org/jira/browse/PDFBOX-1755
-                (Float.isNaN(wos) || wos == 0) ? this.currentSpaceWidth() : wos,
+                wos,
                 textPosition.getDir());
 
        if (this.currentClippingPath().intersects(te)) {

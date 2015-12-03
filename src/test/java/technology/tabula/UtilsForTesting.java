@@ -28,7 +28,7 @@ public class UtilsForTesting {
         ObjectExtractor oe = null;
         try {
             PDDocument document = PDDocument
-                    .load(path);
+                    .load(new File(path));
             oe = new ObjectExtractor(document);
             Page page = oe.extract(pageNumber);
             return page;
