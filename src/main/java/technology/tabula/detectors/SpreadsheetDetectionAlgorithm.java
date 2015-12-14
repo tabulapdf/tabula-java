@@ -10,6 +10,10 @@ import java.util.List;
 
 /**
  * Created by matt on 2015-12-14.
+ *
+ * This is the basic spreadsheet table detection algorithm currently implemented in tabula (web).
+ *
+ * It uses intersecting ruling lines to find tables.
  */
 public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
     @Override
