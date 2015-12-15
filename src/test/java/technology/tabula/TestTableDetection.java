@@ -72,7 +72,7 @@ public class TestTableDetection {
         }
     }
 
-    //@Ignore("Test is ignored until better table detection algorithms are implemented")
+    @Ignore("Test is ignored until better table detection algorithms are implemented")
     @Test
     public void testDetectionOfTables() throws Exception {
 
