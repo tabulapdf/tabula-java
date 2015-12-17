@@ -128,7 +128,10 @@ public class TestTableDetection {
         PageIterator pages = extractor.extract();
         while (pages.hasNext()) {
             Page page = pages.next();
-            detectedTables.put(new Integer(page.getPageNumber()), detectionAlgorithm.detect(page));
+            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
+            if (tablesOnPage.size() > 0) {
+                detectedTables.put(new Integer(page.getPageNumber()), detectionAlgorithm.detect(page));
+            }
         }
 
         // now compare
