@@ -1,5 +1,6 @@
 package technology.tabula.detectors;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.Cell;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
     @Override
-    public List<Rectangle> detect(Page page) {
+    public List<Rectangle> detect(Page page, PDDocument referenceDocument) {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();

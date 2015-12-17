@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.detectors.DetectionAlgorithm;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 
 /**
@@ -72,7 +73,7 @@ public class TestTableDetection {
         }
     }
 
-    @Ignore("Test is ignored until better table detection algorithms are implemented")
+    //@Ignore("Test is ignored until better table detection algorithms are implemented")
     @Test
     public void testDetectionOfTables() throws Exception {
 
@@ -123,16 +124,19 @@ public class TestTableDetection {
         Map<Integer, List<Rectangle>> detectedTables = new HashMap<Integer, List<Rectangle>>();
 
         // the algorithm we're going to be testing
-        DetectionAlgorithm detectionAlgorithm = new SpreadsheetDetectionAlgorithm();
+        NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
+        detectionAlgorithm.debugFilename = this.pdf.getAbsolutePath();
 
         PageIterator pages = extractor.extract();
         while (pages.hasNext()) {
             Page page = pages.next();
-            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
+            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page, pdfDocument);
             if (tablesOnPage.size() > 0) {
                 detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
             }
         }
+
+        System.exit(0);
 
         // now compare
         System.out.println("Testing " + this.pdf.getName());

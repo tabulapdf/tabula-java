@@ -124,10 +124,12 @@ public class CommandLineApp {
         boolean useLineReturns = line.hasOption('u');
         
         try {
+
+            PDDocument pdfDocument = PDDocument.load(pdfFile);
      
             ObjectExtractor oe = line.hasOption('s') ? 
-                    new ObjectExtractor(PDDocument.load(pdfFile), line.getOptionValue('s')) : 
-                    new ObjectExtractor(PDDocument.load(pdfFile));
+                    new ObjectExtractor(pdfDocument, line.getOptionValue('s')) :
+                    new ObjectExtractor(pdfDocument);
             BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
             SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
                     
@@ -153,7 +155,7 @@ public class CommandLineApp {
                         // guess the page areas to extract using a detection algorithm
                         // currently we only have a detector that uses spreadsheets to find table areas
                         DetectionAlgorithm detector = new SpreadsheetDetectionAlgorithm();
-                        List<Rectangle> guesses = detector.detect(page);
+                        List<Rectangle> guesses = detector.detect(page, pdfDocument);
 
                         for (Rectangle guessRect : guesses) {
                             Page guess = page.getArea(guessRect);
