@@ -130,7 +130,7 @@ public class TestTableDetection {
             Page page = pages.next();
             List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
             if (tablesOnPage.size() > 0) {
-                detectedTables.put(new Integer(page.getPageNumber()), detectionAlgorithm.detect(page));
+                detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
             }
         }
 
