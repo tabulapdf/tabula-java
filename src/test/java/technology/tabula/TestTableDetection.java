@@ -125,18 +125,15 @@ public class TestTableDetection {
 
         // the algorithm we're going to be testing
         NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
-        detectionAlgorithm.debugFilename = this.pdf.getAbsolutePath();
 
         PageIterator pages = extractor.extract();
         while (pages.hasNext()) {
             Page page = pages.next();
-            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page, pdfDocument);
+            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page, this.pdf);
             if (tablesOnPage.size() > 0) {
                 detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
             }
         }
-
-        System.exit(0);
 
         // now compare
         System.out.println("Testing " + this.pdf.getName());

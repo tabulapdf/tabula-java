@@ -7,6 +7,7 @@ import technology.tabula.Rectangle;
 import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
  */
 public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
     @Override
-    public List<Rectangle> detect(Page page, PDDocument referenceDocument) {
+    public List<Rectangle> detect(Page page, File referenceDocument) {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();

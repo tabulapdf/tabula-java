@@ -155,7 +155,7 @@ public class CommandLineApp {
                         // guess the page areas to extract using a detection algorithm
                         // currently we only have a detector that uses spreadsheets to find table areas
                         DetectionAlgorithm detector = new SpreadsheetDetectionAlgorithm();
-                        List<Rectangle> guesses = detector.detect(page, pdfDocument);
+                        List<Rectangle> guesses = detector.detect(page, pdfFile);
 
                         for (Rectangle guessRect : guesses) {
                             Page guess = page.getArea(guessRect);
