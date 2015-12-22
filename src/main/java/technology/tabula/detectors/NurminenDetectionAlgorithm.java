@@ -13,16 +13,22 @@ import technology.tabula.Ruling;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.List;
 
 /**
  * Created by matt on 2015-12-17.
+ *
+ * Attempt at an implementation of the table finding algorithm described by
+ * Anssi Nurminen's master's thesis:
+ * http://dspace.cc.tut.fi/dpub/bitstream/handle/123456789/21520/Nurminen.pdf?sequence=3
  */
 public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
@@ -63,6 +69,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         List<Line2D.Float> verticalRulings = this.getVerticalRulings(image);
 
+        // now we need to snap edge endpoints to a grid
+        this.snapEndpoints(horizontalRulings, verticalRulings);
+
         // debugging stuff - spit out an image with what we want to see
         String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
 
@@ -90,6 +99,90 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         return new ArrayList<Rectangle>();
+    }
+
+    private void snapEndpoints(List<Line2D.Float> horizontalRulings, List<Line2D.Float> verticalRulings) {
+        // let's store a hash of start/end points -> edges that contain those points
+        TreeMap<Point2D.Float, ArrayList<Line2D.Float>> points = new TreeMap<Point2D.Float, ArrayList<Line2D.Float>>(new Comparator<Point2D.Float>() {
+            @Override
+            public int compare(Point2D.Float o1, Point2D.Float o2) {
+                if (o1.equals(o2)) {
+                    return 0;
+                }
+
+                if (o1.getY() == o2.getY()) {
+                    return Double.compare(o1.getX(), o2.getX());
+                } else {
+                    return Double.compare(o1.getY(), o2.getY());
+                }
+            }
+        });
+
+        for (List<Line2D.Float> edges : new List[] {horizontalRulings, verticalRulings}) {
+            for (Line2D.Float edge : edges) {
+                for (Point2D.Float point : new Point2D.Float[]{(Point2D.Float) edge.getP1(), (Point2D.Float) edge.getP2()}) {
+                    ArrayList<Line2D.Float> lines = points.get(point);
+
+                    if (lines == null) {
+                        lines = new ArrayList<Line2D.Float>();
+                        points.put(point, lines);
+                    }
+
+                    lines.add(edge);
+                }
+            }
+        }
+
+        // now go through points to find points we can snap together
+        ArrayList<Point2D.Float> snapPoints = new ArrayList<Point2D.Float>();
+        NavigableSet<Point2D.Float> remainingPoints = points.navigableKeySet();
+
+        while (remainingPoints.size() > 1) {
+            Point2D.Float checkPoint = remainingPoints.first();
+
+            snapPoints.add(checkPoint);
+
+            Iterator<Point2D.Float> iterator = remainingPoints.tailSet(checkPoint, false).iterator();
+
+            while (iterator.hasNext()) {
+                Point2D.Float nextPoint = iterator.next();
+                if (checkPoint.distance(nextPoint) <= 5) {
+                    snapPoints.add(nextPoint);
+                }
+            }
+
+            if (snapPoints.size() > 1) {
+                // ok, we've got a list of candidates now, snap them
+                // first get a mid point to snap to
+                double x = 0;
+                double y = 0;
+                for (Point2D.Float point : snapPoints) {
+                    x += point.getX();
+                    y += point.getY();
+                }
+
+                Point2D.Float newPoint = new Point2D.Float(
+                        (float) Math.floor(x / snapPoints.size()),
+                        (float) Math.floor(y / snapPoints.size())
+                );
+
+                // now set all lines that have one of these endpoints to the new value
+                for (Point2D.Float point : snapPoints) {
+                    List<Line2D.Float> edges = points.get(point);
+                    for (Line2D.Float edge : edges) {
+                        if (edge.getP1().equals(point)) {
+                            edge.setLine(newPoint, edge.getP2());
+                        } else {
+                            edge.setLine(edge.getP1(), newPoint);
+                        }
+                    }
+                }
+            }
+
+            // remove the points we've checked and set up the loop again
+            remainingPoints.removeAll(snapPoints);
+            snapPoints.clear();
+        }
     }
 
     private List<Line2D.Float> getHorizontalRulings(BufferedImage image) {
