@@ -1,14 +1,11 @@
 package technology.tabula;
 
 import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.cli.ParseException;
 
@@ -177,5 +174,91 @@ public class Utils {
         
         Collections.sort(rv);
         return rv;
+    }
+
+    public static void snapPoints(List<? extends Line2D.Float> rulings, float threshold) {
+
+        // collect points and keep a Line -> p1,p2 map
+        Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<Line2D.Float, Point2D[]>();
+        List<Point2D> points = new ArrayList<Point2D>();
+        for (Line2D.Float r: rulings) {
+            Point2D p1 = r.getP1();
+            Point2D p2 = r.getP2();
+            linesToPoints.put(r, new Point2D[] { p1, p2 });
+            points.add(p1);
+            points.add(p2);
+        }
+
+        // snap by X
+        Collections.sort(points, new Comparator<Point2D>() {
+            @Override
+            public int compare(Point2D arg0, Point2D arg1) {
+                return java.lang.Double.compare(arg0.getX(), arg1.getX());
+            }
+        });
+
+        List<List<Point2D>> groupedPoints = new ArrayList<List<Point2D>>();
+        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
+
+        for (Point2D p: points.subList(1, points.size() - 1)) {
+            List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
+            if (Math.abs(p.getX() - last.get(0).getX()) < threshold) {
+                groupedPoints.get(groupedPoints.size() - 1).add(p);
+            }
+            else {
+                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
+            }
+        }
+
+        for(List<Point2D> group: groupedPoints) {
+            float avgLoc = 0;
+            for(Point2D p: group) {
+                avgLoc += p.getX();
+            }
+            avgLoc /= group.size();
+            for(Point2D p: group) {
+                p.setLocation(avgLoc, p.getY());
+            }
+        }
+        // ---
+
+        // snap by Y
+        Collections.sort(points, new Comparator<Point2D>() {
+            @Override
+            public int compare(Point2D arg0, Point2D arg1) {
+                return java.lang.Double.compare(arg0.getY(), arg1.getY());
+            }
+        });
+
+        groupedPoints = new ArrayList<List<Point2D>>();
+        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
+
+        for (Point2D p: points.subList(1, points.size() - 1)) {
+            List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
+            if (Math.abs(p.getY() - last.get(0).getY()) < threshold) {
+                groupedPoints.get(groupedPoints.size() - 1).add(p);
+            }
+            else {
+                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
+            }
+        }
+
+        for(List<Point2D> group: groupedPoints) {
+            float avgLoc = 0;
+            for(Point2D p: group) {
+                avgLoc += p.getY();
+            }
+            avgLoc /= group.size();
+            for(Point2D p: group) {
+                p.setLocation(p.getX(), avgLoc);
+            }
+        }
+        // ---
+
+        // finally, modify lines
+        for(Map.Entry<Line2D.Float, Point2D[]> ltp: linesToPoints.entrySet()) {
+            Point2D[] p = ltp.getValue();
+            ltp.getKey().setLine(p[0], p[1]);
+        }
     }
 }

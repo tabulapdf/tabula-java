@@ -1,5 +1,7 @@
 package technology.tabula.detectors;
 
+import com.sun.tools.classfile.Opcode;
+import com.sun.tools.corba.se.idl.Util;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -7,9 +9,9 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.util.ImageIOUtil;
 import org.apache.pdfbox.util.PDFOperator;
-import technology.tabula.Page;
+import technology.tabula.*;
 import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
+import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -32,7 +34,22 @@ import java.util.List;
  */
 public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
-    private static int GRAYSCALE_INTENSITY_THRESHOLD = 150;
+    private static final int GRAYSCALE_INTENSITY_THRESHOLD = 150;
+
+    private static final Comparator<Point2D.Float> pointComparator = new Comparator<Point2D.Float>() {
+        @Override
+        public int compare(Point2D.Float o1, Point2D.Float o2) {
+            if (o1.equals(o2)) {
+                return 0;
+            }
+
+            if (o1.getY() == o2.getY()) {
+                return Double.compare(o1.getX(), o2.getX());
+            } else {
+                return Double.compare(o1.getY(), o2.getY());
+            }
+        }
+    };
 
     @Override
     public List<Rectangle> detect(Page page, File referenceDocument) {
@@ -70,10 +87,15 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Line2D.Float> verticalRulings = this.getVerticalRulings(image);
 
         // now we need to snap edge endpoints to a grid
-        this.snapEndpoints(horizontalRulings, verticalRulings);
+        List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
+        allEdges.addAll(verticalRulings);
+
+        Utils.snapPoints(allEdges, 5);
 
         // next get the crossing points of all the edges
-        List<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+        Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+
+        List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
         // debugging stuff - spit out an image with what we want to see
         String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
@@ -86,9 +108,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         g.setStroke(new BasicStroke(2f));
         int i = 0;
-        for (Point2D.Float point : crossingPoints) {
+        for (Shape s : cells) {
             g.setColor(COLORS[(i++) % 5]);
-            g.drawOval((int)point.x, (int)point.y, 3, 3);
+            g.draw(s);
         }
 
         try {
@@ -99,8 +121,80 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return new ArrayList<Rectangle>();
     }
 
-    private List<Point2D.Float> getCrossingPoints(List<Line2D.Float> horizontalEdges, List<Line2D.Float> verticalEdges) {
-        List<Point2D.Float> crossingPoints = new ArrayList<Point2D.Float>();
+    private List<Rectangle> findRectangles(
+            Set<Point2D.Float> crossingPoints,
+            List<Line2D.Float> horizontalEdges,
+            List<Line2D.Float> verticalEdges) {
+
+        List<Rectangle> foundRectangles = new ArrayList<Rectangle>();
+
+        ArrayList<Point2D.Float> sortedPoints = new ArrayList<Point2D.Float>(crossingPoints);
+
+        // sort all points by y value and then x value - this means that the first element
+        // is always the top-leftmost point
+        Collections.sort(sortedPoints, pointComparator);
+
+        for (int i=0; i<sortedPoints.size(); i++) {
+            Point2D.Float topLeftPoint = sortedPoints.get(i);
+
+            ArrayList<Point2D.Float> pointsBelow = new ArrayList<Point2D.Float>();
+            ArrayList<Point2D.Float> pointsRight = new ArrayList<Point2D.Float>();
+
+            for (int j=i+1; j<sortedPoints.size(); j++) {
+                Point2D.Float checkPoint = sortedPoints.get(j);
+                if (topLeftPoint.getX() == checkPoint.getX() && topLeftPoint.getY() < checkPoint.getY()) {
+                    pointsBelow.add(checkPoint);
+                } else if (topLeftPoint.getY() == checkPoint.getY() && topLeftPoint.getX() < checkPoint.getX()) {
+                    pointsRight.add(checkPoint);
+                }
+            }
+
+            nextCrossingPoint:
+            for (Point2D.Float belowPoint : pointsBelow) {
+                if (!this.edgeExistsBetween(topLeftPoint, belowPoint, verticalEdges)) {
+                    break nextCrossingPoint;
+                }
+
+                for (Point2D.Float rightPoint : pointsRight) {
+                    if (!this.edgeExistsBetween(topLeftPoint, rightPoint, horizontalEdges)) {
+                        break nextCrossingPoint;
+                    }
+
+                    Point2D.Float bottomRightPoint = new Point2D.Float(rightPoint.x, belowPoint.y);
+
+                    if (sortedPoints.contains(bottomRightPoint)
+                            && this.edgeExistsBetween(belowPoint, bottomRightPoint, horizontalEdges)
+                            && this.edgeExistsBetween(rightPoint, bottomRightPoint, verticalEdges)) {
+
+                        foundRectangles.add(new Rectangle(
+                                topLeftPoint.y,
+                                topLeftPoint.x,
+                                bottomRightPoint.x - topLeftPoint.x,
+                                bottomRightPoint.y - topLeftPoint.y)
+                        );
+
+                        break nextCrossingPoint;
+                    }
+                }
+            }
+        }
+
+        return foundRectangles;
+    }
+
+    private boolean edgeExistsBetween(Point2D.Float p1, Point2D.Float p2, List<Line2D.Float> edges) {
+        for (Line2D.Float edge : edges) {
+            if (p1.x >= edge.x1 && p1.x <= edge.x2 && p1.y >= edge.y1 && p1.y <= edge.y2
+                    && p2.x >= edge.x1 && p2.x <= edge.x2 && p2.y >= edge.y1 && p2.y <= edge.y2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Set<Point2D.Float> getCrossingPoints(List<Line2D.Float> horizontalEdges, List<Line2D.Float> verticalEdges) {
+        Set<Point2D.Float> crossingPoints = new HashSet<Point2D.Float>();
 
         for (Line2D.Float horizontalEdge : horizontalEdges) {
             for (Line2D.Float verticalEdge : verticalEdges) {
@@ -111,90 +205,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         return crossingPoints;
-    }
-
-    private void snapEndpoints(List<Line2D.Float> horizontalRulings, List<Line2D.Float> verticalRulings) {
-        // let's store a hash of start/end points -> edges that contain those points
-        TreeMap<Point2D.Float, ArrayList<Line2D.Float>> points = new TreeMap<Point2D.Float, ArrayList<Line2D.Float>>(new Comparator<Point2D.Float>() {
-            @Override
-            public int compare(Point2D.Float o1, Point2D.Float o2) {
-                if (o1.equals(o2)) {
-                    return 0;
-                }
-
-                if (o1.getY() == o2.getY()) {
-                    return Double.compare(o1.getX(), o2.getX());
-                } else {
-                    return Double.compare(o1.getY(), o2.getY());
-                }
-            }
-        });
-
-        for (List<Line2D.Float> edges : new List[] {horizontalRulings, verticalRulings}) {
-            for (Line2D.Float edge : edges) {
-                for (Point2D.Float point : new Point2D.Float[]{(Point2D.Float) edge.getP1(), (Point2D.Float) edge.getP2()}) {
-                    ArrayList<Line2D.Float> lines = points.get(point);
-
-                    if (lines == null) {
-                        lines = new ArrayList<Line2D.Float>();
-                        points.put(point, lines);
-                    }
-
-                    lines.add(edge);
-                }
-            }
-        }
-
-        // now go through points to find points we can snap together
-        ArrayList<Point2D.Float> snapPoints = new ArrayList<Point2D.Float>();
-        NavigableSet<Point2D.Float> remainingPoints = points.navigableKeySet();
-
-        while (remainingPoints.size() > 1) {
-            Point2D.Float checkPoint = remainingPoints.first();
-
-            snapPoints.add(checkPoint);
-
-            Iterator<Point2D.Float> iterator = remainingPoints.tailSet(checkPoint, false).iterator();
-
-            while (iterator.hasNext()) {
-                Point2D.Float nextPoint = iterator.next();
-                if (checkPoint.distance(nextPoint) <= 5) {
-                    snapPoints.add(nextPoint);
-                }
-            }
-
-            if (snapPoints.size() > 1) {
-                // ok, we've got a list of candidates now, snap them
-                // first get a mid point to snap to
-                double x = 0;
-                double y = 0;
-                for (Point2D.Float point : snapPoints) {
-                    x += point.getX();
-                    y += point.getY();
-                }
-
-                Point2D.Float newPoint = new Point2D.Float(
-                        (float) Math.floor(x / snapPoints.size()),
-                        (float) Math.floor(y / snapPoints.size())
-                );
-
-                // now set all lines that have one of these endpoints to the new value
-                for (Point2D.Float point : snapPoints) {
-                    List<Line2D.Float> edges = points.get(point);
-                    for (Line2D.Float edge : edges) {
-                        if (edge.getP1().equals(point)) {
-                            edge.setLine(newPoint, edge.getP2());
-                        } else {
-                            edge.setLine(edge.getP1(), newPoint);
-                        }
-                    }
-                }
-            }
-
-            // remove the points we've checked and set up the loop again
-            remainingPoints.removeAll(snapPoints);
-            snapPoints.clear();
-        }
     }
 
     private List<Line2D.Float> getHorizontalRulings(BufferedImage image) {
