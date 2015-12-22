@@ -1,7 +1,5 @@
 package technology.tabula.detectors;
 
-import com.sun.tools.classfile.Opcode;
-import com.sun.tools.corba.se.idl.Util;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -11,17 +9,14 @@ import org.apache.pdfbox.util.ImageIOUtil;
 import org.apache.pdfbox.util.PDFOperator;
 import technology.tabula.*;
 import technology.tabula.Rectangle;
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 
@@ -97,6 +92,33 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
+        List<Rectangle> tableAreas = this.getTableAreasFromCells(cells);
+
+        // debugging stuff - spit out an image with what we want to see
+        String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
+
+        Color[] COLORS = { new Color(27, 158, 119),
+                new Color(217, 95, 2), new Color(117, 112, 179),
+                new Color(231, 41, 138), new Color(102, 166, 30) };
+
+        Graphics2D g = (Graphics2D) debugImage.getGraphics();
+
+        g.setStroke(new BasicStroke(2f));
+        int i = 0;
+        for (Shape s : tableAreas) {
+            g.setColor(COLORS[(i++) % 5]);
+            g.draw(s);
+        }
+
+        try {
+            ImageIOUtil.writeImage(debugImage, debugFileOut, 144);
+        } catch (IOException e) {
+        }
+
+        return tableAreas;
+    }
+
+    private List<Rectangle> getTableAreasFromCells(List<Rectangle> cells) {
         List<List<Rectangle>> cellGroups = new ArrayList<List<Rectangle>>();
         for (Rectangle cell : cells) {
             boolean addedToGroup = false;
@@ -109,7 +131,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     for (int i=0; i<candidateCorners.length; i++) {
                         for (int j=0; j<groupCellCorners.length; j++) {
-                            if (candidateCorners[i].equals(groupCellCorners[j])) {
+                            if (candidateCorners[i].distance(groupCellCorners[j]) < 5) {
                                 cellGroup.add(cell);
                                 addedToGroup = true;
                                 break cellCheck;
@@ -142,27 +164,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
 
             tableAreas.add(new Rectangle(top, left, right - left, bottom - top));
-        }
-
-        // debugging stuff - spit out an image with what we want to see
-        String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
-
-        Color[] COLORS = { new Color(27, 158, 119),
-                new Color(217, 95, 2), new Color(117, 112, 179),
-                new Color(231, 41, 138), new Color(102, 166, 30) };
-
-        Graphics2D g = (Graphics2D) debugImage.getGraphics();
-
-        g.setStroke(new BasicStroke(2f));
-        int i = 0;
-        for (Shape s : tableAreas) {
-            g.setColor(COLORS[(i++) % 5]);
-            g.draw(s);
-        }
-
-        try {
-            ImageIOUtil.writeImage(debugImage, debugFileOut, 144);
-        } catch (IOException e) {
         }
 
         return tableAreas;
