@@ -97,6 +97,53 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
+        List<List<Rectangle>> cellGroups = new ArrayList<List<Rectangle>>();
+        for (Rectangle cell : cells) {
+            boolean addedToGroup = false;
+
+            cellCheck:
+            for (List<Rectangle> cellGroup : cellGroups) {
+                for (Rectangle groupCell : cellGroup) {
+                    Point2D[] groupCellCorners = groupCell.getPoints();
+                    Point2D[] candidateCorners = cell.getPoints();
+
+                    for (int i=0; i<candidateCorners.length; i++) {
+                        for (int j=0; j<groupCellCorners.length; j++) {
+                            if (candidateCorners[i].equals(groupCellCorners[j])) {
+                                cellGroup.add(cell);
+                                addedToGroup = true;
+                                break cellCheck;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!addedToGroup) {
+                ArrayList<Rectangle> cellGroup = new ArrayList<Rectangle>();
+                cellGroup.add(cell);
+                cellGroups.add(cellGroup);
+            }
+        }
+
+        // create table areas based on cell group
+        List<Rectangle> tableAreas = new ArrayList<Rectangle>();
+        for (List<Rectangle> cellGroup : cellGroups) {
+            float top = Float.MAX_VALUE;
+            float left = Float.MAX_VALUE;
+            float bottom = Float.MIN_VALUE;
+            float right = Float.MIN_VALUE;
+
+            for (Rectangle cell : cellGroup) {
+                if (cell.getTop() < top) top = cell.getTop();
+                if (cell.getLeft() < left) left = cell.getLeft();
+                if (cell.getBottom() > bottom) bottom = cell.getBottom();
+                if (cell.getRight() > right) right = cell.getRight();
+            }
+
+            tableAreas.add(new Rectangle(top, left, right - left, bottom - top));
+        }
+
         // debugging stuff - spit out an image with what we want to see
         String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
 
@@ -108,7 +155,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         g.setStroke(new BasicStroke(2f));
         int i = 0;
-        for (Shape s : cells) {
+        for (Shape s : tableAreas) {
             g.setColor(COLORS[(i++) % 5]);
             g.draw(s);
         }
@@ -118,7 +165,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         } catch (IOException e) {
         }
 
-        return new ArrayList<Rectangle>();
+        return tableAreas;
     }
 
     private List<Rectangle> findRectangles(
