@@ -152,7 +152,7 @@ public class Page extends Rectangle {
             return new ArrayList<Ruling>();
         }
         
-        Utils.snapPoints(this.rulings, this.minCharWidth);
+        Utils.snapPoints(this.rulings, this.minCharWidth, this.minCharHeight);
         
         List<Ruling> vrs = new ArrayList<Ruling>();
         for (Ruling vr: this.rulings) {

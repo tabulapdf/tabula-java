@@ -176,7 +176,7 @@ public class Utils {
         return rv;
     }
 
-    public static void snapPoints(List<? extends Line2D.Float> rulings, float threshold) {
+    public static void snapPoints(List<? extends Line2D.Float> rulings, float xThreshold, float yThreshold) {
 
         // collect points and keep a Line -> p1,p2 map
         Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<Line2D.Float, Point2D[]>();
@@ -202,7 +202,7 @@ public class Utils {
 
         for (Point2D p: points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
-            if (Math.abs(p.getX() - last.get(0).getX()) < threshold) {
+            if (Math.abs(p.getX() - last.get(0).getX()) < xThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             }
             else {
@@ -235,7 +235,7 @@ public class Utils {
 
         for (Point2D p: points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
-            if (Math.abs(p.getY() - last.get(0).getY()) < threshold) {
+            if (Math.abs(p.getY() - last.get(0).getY()) < yThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             }
             else {

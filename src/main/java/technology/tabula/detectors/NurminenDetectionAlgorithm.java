@@ -85,7 +85,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-        Utils.snapPoints(allEdges, 5);
+        Utils.snapPoints(allEdges, 5, 5);
 
         // next get the crossing points of all the edges
         Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
