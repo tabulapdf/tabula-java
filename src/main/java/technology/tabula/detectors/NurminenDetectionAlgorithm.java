@@ -72,6 +72,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // now we need to snap edge endpoints to a grid
         this.snapEndpoints(horizontalRulings, verticalRulings);
 
+        // next get the crossing points of all the edges
+        List<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+
         // debugging stuff - spit out an image with what we want to see
         String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
 
@@ -83,14 +86,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         g.setStroke(new BasicStroke(2f));
         int i = 0;
-        for (Shape s: horizontalRulings) {
+        for (Point2D.Float point : crossingPoints) {
             g.setColor(COLORS[(i++) % 5]);
-            g.draw(s);
-        }
-
-        for (Shape s: verticalRulings) {
-            g.setColor(COLORS[(i++) % 5]);
-            g.draw(s);
+            g.drawOval((int)point.x, (int)point.y, 3, 3);
         }
 
         try {
@@ -99,6 +97,20 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         return new ArrayList<Rectangle>();
+    }
+
+    private List<Point2D.Float> getCrossingPoints(List<Line2D.Float> horizontalEdges, List<Line2D.Float> verticalEdges) {
+        List<Point2D.Float> crossingPoints = new ArrayList<Point2D.Float>();
+
+        for (Line2D.Float horizontalEdge : horizontalEdges) {
+            for (Line2D.Float verticalEdge : verticalEdges) {
+                if (horizontalEdge.intersectsLine(verticalEdge)) {
+                    crossingPoints.add(new Point2D.Float(verticalEdge.x1, horizontalEdge.y1));
+                }
+            }
+        }
+
+        return crossingPoints;
     }
 
     private void snapEndpoints(List<Line2D.Float> horizontalRulings, List<Line2D.Float> verticalRulings) {
