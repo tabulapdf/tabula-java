@@ -9,6 +9,7 @@ import org.apache.pdfbox.util.ImageIOUtil;
 import org.apache.pdfbox.util.PDFOperator;
 import technology.tabula.*;
 import technology.tabula.Rectangle;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -102,7 +103,113 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
             List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
-            tableAreas = this.getTableAreasFromCells(cells);
+            if (cells.size() >= 4) {
+                // three or fewer cells does not a table make (let's say)
+                tableAreas = this.getTableAreasFromCells(cells);
+            }
+        }
+
+        // now find tables based on text position in the document
+        List<TextChunk> textChunks = TextElement.mergeWords(page.getText());
+        List<Line> lines = TextChunk.groupByLines(textChunks);
+
+        List<Line2D.Float> leftTextEdges = new ArrayList<Line2D.Float>();
+        List<Line2D.Float> midTextEdges = new ArrayList<Line2D.Float>();
+        List<Line2D.Float> rightTextEdges = new ArrayList<Line2D.Float>();
+
+        Map<Integer, List<TextChunk>> currLeftEdges = new HashMap<Integer, List<TextChunk>>();
+        Map<Integer, List<TextChunk>> currMidEdges = new HashMap<Integer, List<TextChunk>>();
+        Map<Integer, List<TextChunk>> currRightEdges = new HashMap<Integer, List<TextChunk>>();
+
+        for (Line textRow : lines) {
+            for (TextChunk text : textRow.getTextElements()) {
+                Integer left = new Integer((int)Math.floor(text.getLeft()));
+                Integer right = new Integer((int)Math.floor(text.getRight()));
+                Integer mid = new Integer(left + ((right - left)/2));
+
+                // first put this chunk into any edge buckets it belongs to
+                List<TextChunk> leftEdge = currLeftEdges.getOrDefault(left, new ArrayList<TextChunk>());
+                leftEdge.add(text);
+                currLeftEdges.put(left, leftEdge);
+
+                List<TextChunk> midEdge = currMidEdges.getOrDefault(mid, new ArrayList<TextChunk>());
+                midEdge.add(text);
+                currMidEdges.put(mid, midEdge);
+
+                List<TextChunk> rightEdge = currRightEdges.getOrDefault(right, new ArrayList<TextChunk>());
+                rightEdge.add(text);
+                currRightEdges.put(right, rightEdge);
+
+                // now see if this text chunk blows up any other edges
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currLeftEdges.entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
+                    Integer key = entry.getKey();
+                    if (key > left && key < right) {
+                        iterator.remove();
+                        List<TextChunk> edgeChunks = entry.getValue();
+                        if (edgeChunks.size() >= 4) {
+                            TextChunk first = edgeChunks.get(0);
+                            TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                            leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+                        }
+                    }
+                }
+
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currMidEdges.entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
+                    Integer key = entry.getKey();
+                    if (key > left && key < right && Math.abs(key - mid) > 2) {
+                        iterator.remove();
+                        List<TextChunk> edgeChunks = entry.getValue();
+                        if (edgeChunks.size() >= 4) {
+                            TextChunk first = edgeChunks.get(0);
+                            TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                            midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+                        }
+                    }
+                }
+
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currRightEdges.entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
+                    Integer key = entry.getKey();
+                    if (key > left && key < right) {
+                        iterator.remove();
+                        List<TextChunk> edgeChunks = entry.getValue();
+                        if (edgeChunks.size() >= 4) {
+                            TextChunk first = edgeChunks.get(0);
+                            TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                            rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Integer key : currLeftEdges.keySet()) {
+            List<TextChunk> edgeChunks = currLeftEdges.get(key);
+            if (edgeChunks.size() >= 4) {
+                TextChunk first = edgeChunks.get(0);
+                TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+            }
+        }
+
+        for (Integer key : currMidEdges.keySet()) {
+            List<TextChunk> edgeChunks = currMidEdges.get(key);
+            if (edgeChunks.size() >= 4) {
+                TextChunk first = edgeChunks.get(0);
+                TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+            }
+        }
+
+        for (Integer key : currRightEdges.keySet()) {
+            List<TextChunk> edgeChunks = currRightEdges.get(key);
+            if (edgeChunks.size() >= 4) {
+                TextChunk first = edgeChunks.get(0);
+                TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
+                rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+            }
         }
 
         // debugging stuff - spit out an image with what we want to see
@@ -118,6 +225,21 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         int i = 0;
         for (Shape s : tableAreas) {
             g.setColor(COLORS[(i++) % 5]);
+            g.draw(s);
+        }
+
+        g.setColor(COLORS[0]);
+        for (Shape s : leftTextEdges) {
+            g.draw(s);
+        }
+
+        g.setColor(COLORS[1]);
+        for (Shape s : midTextEdges) {
+            g.draw(s);
+        }
+
+        g.setColor(COLORS[3]);
+        for (Shape s : rightTextEdges) {
             g.draw(s);
         }
 
