@@ -295,18 +295,16 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     int lineX = x + 1;
 
-                    if (lineX < width) {
+                    while (lineX < width) {
                         int[] linePixel = r.getPixel(lineX, y, (int[]) null);
                         int[] abovePixel = r.getPixel(lineX, y - 1, (int[]) null);
 
-                        while (lineX < width
-                                && Math.abs(linePixel[0] - abovePixel[0]) > GRAYSCALE_INTENSITY_THRESHOLD
-                                && Math.abs(currPixel[0] - linePixel[0]) <= GRAYSCALE_INTENSITY_THRESHOLD) {
-
-                            lineX++;
-                            linePixel = r.getPixel(lineX, y, (int[]) null);
-                            abovePixel = r.getPixel(lineX, y - 1, (int[]) null);
+                        if (Math.abs(linePixel[0] - abovePixel[0]) <= GRAYSCALE_INTENSITY_THRESHOLD
+                                || Math.abs(currPixel[0] - linePixel[0]) > GRAYSCALE_INTENSITY_THRESHOLD) {
+                            break;
                         }
+
+                        lineX++;
                     }
 
                     int endX = lineX - 1;
@@ -357,18 +355,16 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     int lineY = y + 1;
 
-                    if (lineY < height) {
+                    while (lineY < height) {
                         int[] linePixel = r.getPixel(x, lineY, (int[]) null);
                         int[] leftPixel = r.getPixel(x - 1, lineY, (int[]) null);
 
-                        while (lineY < height
-                                && Math.abs(linePixel[0] - leftPixel[0]) > GRAYSCALE_INTENSITY_THRESHOLD
-                                && Math.abs(currPixel[0] - linePixel[0]) <= GRAYSCALE_INTENSITY_THRESHOLD) {
-
-                            lineY++;
-                            linePixel = r.getPixel(x, lineY, (int[]) null);
-                            leftPixel = r.getPixel(x - 1, lineY, (int[]) null);
+                        if (Math.abs(linePixel[0] - leftPixel[0]) <= GRAYSCALE_INTENSITY_THRESHOLD
+                                || Math.abs(currPixel[0] - linePixel[0]) > GRAYSCALE_INTENSITY_THRESHOLD) {
+                            break;
                         }
+
+                        lineY++;
                     }
 
                     int endY = lineY - 1;
