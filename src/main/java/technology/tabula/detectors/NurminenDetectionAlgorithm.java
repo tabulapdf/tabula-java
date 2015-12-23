@@ -90,15 +90,20 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             edge.setLine(edge.x1/2, edge.y1/2, edge.x2/2, edge.y2/2);
         }
 
-        // now we need to snap edge endpoints to a grid
-        Utils.snapPoints(allEdges, 2.5f, 2.5f);
+        List<Rectangle> tableAreas = new ArrayList<Rectangle>();
 
-        // next get the crossing points of all the edges
-        Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+        // if we found some edges, try to find some tables based on them
+        if (allEdges.size() > 0) {
+            // now we need to snap edge endpoints to a grid
+            Utils.snapPoints(allEdges, 2.5f, 2.5f);
 
-        List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
+            // next get the crossing points of all the edges
+            Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
 
-        List<Rectangle> tableAreas = this.getTableAreasFromCells(cells);
+            List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
+
+            tableAreas = this.getTableAreasFromCells(cells);
+        }
 
         // debugging stuff - spit out an image with what we want to see
         String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
