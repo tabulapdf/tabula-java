@@ -19,6 +19,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
@@ -154,7 +155,7 @@ public class CommandLineApp {
                     if (line.hasOption('g')) {
                         // guess the page areas to extract using a detection algorithm
                         // currently we only have a detector that uses spreadsheets to find table areas
-                        DetectionAlgorithm detector = new SpreadsheetDetectionAlgorithm();
+                        DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
                         List<Rectangle> guesses = detector.detect(page, pdfFile);
 
                         for (Rectangle guessRect : guesses) {

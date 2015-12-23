@@ -64,7 +64,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         BufferedImage debugImage;
         try {
             image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
-            debugImage = pdfPage.convertToImage(BufferedImage.TYPE_INT_RGB, 144);
+            debugImage = pdfPage.convertToImage(BufferedImage.TYPE_INT_RGB, 72);
         } catch (IOException e) {
             return new ArrayList<Rectangle>();
         }
@@ -81,11 +81,17 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         List<Line2D.Float> verticalRulings = this.getVerticalRulings(image);
 
-        // now we need to snap edge endpoints to a grid
+        // the image space is twice as big as the Page coordinate space,
+        // so halve all of our distances
         List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-        Utils.snapPoints(allEdges, 5, 5);
+        for (Line2D.Float edge : allEdges) {
+            edge.setLine(edge.x1/2, edge.y1/2, edge.x2/2, edge.y2/2);
+        }
+
+        // now we need to snap edge endpoints to a grid
+        Utils.snapPoints(allEdges, 2.5f, 2.5f);
 
         // next get the crossing points of all the edges
         Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
@@ -111,7 +117,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         try {
-            ImageIOUtil.writeImage(debugImage, debugFileOut, 144);
+            ImageIOUtil.writeImage(debugImage, debugFileOut, 72);
         } catch (IOException e) {
         }
 
@@ -131,7 +137,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     for (int i=0; i<candidateCorners.length; i++) {
                         for (int j=0; j<groupCellCorners.length; j++) {
-                            if (candidateCorners[i].distance(groupCellCorners[j]) < 5) {
+                            if (candidateCorners[i].distance(groupCellCorners[j]) < 2.5) {
                                 cellGroup.add(cell);
                                 addedToGroup = true;
                                 break cellCheck;
