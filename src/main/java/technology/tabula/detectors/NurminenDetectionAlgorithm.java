@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
-    private static final int GRAYSCALE_INTENSITY_THRESHOLD = 150;
+    private static final int GRAYSCALE_INTENSITY_THRESHOLD = 25;
 
     private static final Comparator<Point2D.Float> pointComparator = new Comparator<Point2D.Float>() {
         @Override
