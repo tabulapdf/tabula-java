@@ -90,6 +90,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
+
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
         List<Rectangle> cells = null;
         Set<Point2D.Float> crossingPoints = null;
@@ -102,12 +103,12 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             // next get the crossing points of all the edges
             crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
 
+            horizontalRulings = this.mergeHorizontalEdges(horizontalRulings);
+            verticalRulings = this.mergeVerticalEdges(verticalRulings);
+
             cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
-            if (cells.size() >= 4) {
-                // three or fewer cells does not a table make (let's say)
-                tableAreas = this.getTableAreasFromCells(cells);
-            }
+            tableAreas = this.getTableAreasFromCells(cells);
         }
 
         // now find tables based on text position in the document
@@ -213,14 +214,108 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
         }
 
+        this.debug(leftTextEdges);
+        this.debug(midTextEdges);
+        this.debug(rightTextEdges);
+
         for (Rectangle area : tableAreas) {
-            area.x = area.x/2;
-            area.y = area.y/2;
-            area.width = area.width/2;
-            area.height = area.height/2;
+            area.x = (float)Math.floor(area.x/2);
+            area.y = (float)Math.floor(area.y/2);
+            area.width = (float)Math.ceil(area.width/2);
+            area.height = (float)Math.ceil(area.height/2);
         }
 
+        this.debug(tableAreas);
+
         return tableAreas;
+    }
+
+    private List<Line2D.Float> mergeHorizontalEdges(List<Line2D.Float> horizontalEdges) {
+        if (horizontalEdges.size() == 0) {
+            return horizontalEdges;
+        }
+
+        List<Line2D.Float> horizontalRulings = new ArrayList<Line2D.Float>();
+
+        // sort rulings by top-leftmost first
+        Collections.sort(horizontalEdges, new Comparator<Line2D.Float>() {
+            @Override
+            public int compare(Line2D.Float o1, Line2D.Float o2) {
+                if (o1.equals(o2)) {
+                    return 0;
+                }
+
+                if (o1.y1 == o2.y1) {
+                    return Float.compare(o1.x1, o2.x1);
+                } else {
+                    return Float.compare(o1.y1, o2.y1);
+                }
+            }
+        });
+
+        Line2D.Float currentRuling = horizontalEdges.get(0);
+        for (int i=1; i<horizontalEdges.size(); i++) {
+            Line2D.Float nextEdge = horizontalEdges.get(i);
+
+            if (currentRuling.y1 == nextEdge.y1 &&
+                    nextEdge.x1 >= currentRuling.x1 &&
+                    nextEdge.x1 <= currentRuling.x2) {
+                // this line segment can be part of the current line
+                currentRuling.x2 = Math.max(nextEdge.x2, currentRuling.x2);
+            } else {
+                // store the complete line and continue
+                horizontalRulings.add(currentRuling);
+                currentRuling = nextEdge;
+            }
+        }
+
+        horizontalRulings.add(currentRuling);
+
+        return horizontalRulings;
+    }
+
+    private List<Line2D.Float> mergeVerticalEdges(List<Line2D.Float> verticalEdges) {
+        if (verticalEdges.size() == 0) {
+            return verticalEdges;
+        }
+
+        List<Line2D.Float> verticalRulings = new ArrayList<Line2D.Float>();
+
+        // sort by left-topmost first
+        Collections.sort(verticalEdges, new Comparator<Line2D.Float>() {
+            @Override
+            public int compare(Line2D.Float o1, Line2D.Float o2) {
+                if (o1.equals(o2)) {
+                    return 0;
+                }
+
+                if (o1.x1 == o2.x1) {
+                    return Float.compare(o1.y1, o2.y1);
+                } else {
+                    return Float.compare(o1.x1, o2.x1);
+                }
+            }
+        });
+
+        Line2D.Float currentRuling = verticalEdges.get(0);
+        for (int i=1; i<verticalEdges.size(); i++) {
+            Line2D.Float nextEdge = verticalEdges.get(i);
+
+            if (currentRuling.x1 == nextEdge.x1 &&
+                    nextEdge.y1 >= currentRuling.y1 &&
+                    nextEdge.y1 <= currentRuling.y2) {
+                // line segment is part of the current line
+                currentRuling.y2 = Math.max(nextEdge.y2, currentRuling.y2);
+            } else {
+                // store the complete line and continue
+                verticalRulings.add(currentRuling);
+                currentRuling = nextEdge;
+            }
+        }
+
+        verticalRulings.add(currentRuling);
+
+        return verticalRulings;
     }
 
     private void debug(Collection<? extends Shape> shapes) {
@@ -277,6 +372,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // create table areas based on cell group
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
         for (List<Rectangle> cellGroup : cellGroups) {
+            // less than four cells should not make a table
+            if (cellGroup.size() < 4) {
+                continue;
+            }
+
             float top = Float.MAX_VALUE;
             float left = Float.MAX_VALUE;
             float bottom = Float.MIN_VALUE;
