@@ -47,6 +47,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
     };
 
+    BufferedImage debugImage;
+    String debugFileOut;
+
     @Override
     public List<Rectangle> detect(Page page, File referenceDocument) {
 
@@ -61,8 +64,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // get the page in question
         PDPage pdfPage = (PDPage) pdfDocument.getDocumentCatalog().getAllPages().get(page.getPageNumber() - 1);
 
+        // debugging stuff - spit out an image with what we want to see
+        debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
+
         BufferedImage image;
-        BufferedImage debugImage;
         try {
             image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
             debugImage = pdfPage.convertToImage(BufferedImage.TYPE_INT_RGB, 72);
@@ -92,16 +97,18 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
+        List<Rectangle> cells = null;
+        Set<Point2D.Float> crossingPoints = null;
 
         // if we found some edges, try to find some tables based on them
         if (allEdges.size() > 0) {
             // now we need to snap edge endpoints to a grid
-            Utils.snapPoints(allEdges, 2.5f, 2.5f);
+            Utils.snapPoints(allEdges, 4f, 4f);
 
             // next get the crossing points of all the edges
-            Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+            crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
 
-            List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
+            cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
             if (cells.size() >= 4) {
                 // three or fewer cells does not a table make (let's say)
@@ -212,9 +219,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
         }
 
-        // debugging stuff - spit out an image with what we want to see
-        String debugFileOut = referenceDocument.getAbsolutePath().replace(".pdf", "-" + page.getPageNumber() + ".jpg");
+        return tableAreas;
+    }
 
+    private void debug(Collection<? extends Shape> shapes) {
         Color[] COLORS = { new Color(27, 158, 119),
                 new Color(217, 95, 2), new Color(117, 112, 179),
                 new Color(231, 41, 138), new Color(102, 166, 30) };
@@ -223,23 +231,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         g.setStroke(new BasicStroke(2f));
         int i = 0;
-        for (Shape s : tableAreas) {
+
+        for (Shape s : shapes) {
             g.setColor(COLORS[(i++) % 5]);
-            g.draw(s);
-        }
-
-        g.setColor(COLORS[0]);
-        for (Shape s : leftTextEdges) {
-            g.draw(s);
-        }
-
-        g.setColor(COLORS[1]);
-        for (Shape s : midTextEdges) {
-            g.draw(s);
-        }
-
-        g.setColor(COLORS[3]);
-        for (Shape s : rightTextEdges) {
             g.draw(s);
         }
 
@@ -247,8 +241,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             ImageIOUtil.writeImage(debugImage, debugFileOut, 72);
         } catch (IOException e) {
         }
-
-        return tableAreas;
     }
 
     private List<Rectangle> getTableAreasFromCells(List<Rectangle> cells) {
@@ -264,7 +256,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     for (int i=0; i<candidateCorners.length; i++) {
                         for (int j=0; j<groupCellCorners.length; j++) {
-                            if (candidateCorners[i].distance(groupCellCorners[j]) < 2.5) {
+                            if (candidateCorners[i].distance(groupCellCorners[j]) < 5) {
                                 cellGroup.add(cell);
                                 addedToGroup = true;
                                 break cellCheck;
@@ -353,6 +345,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                                 bottomRightPoint.x - topLeftPoint.x,
                                 bottomRightPoint.y - topLeftPoint.y)
                         );
+
+                        this.debug(foundRectangles);
 
                         break nextCrossingPoint;
                     }
