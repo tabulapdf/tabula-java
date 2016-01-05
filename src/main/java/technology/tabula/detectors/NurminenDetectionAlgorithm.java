@@ -330,9 +330,26 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
         */
 
-        this.debug(tableAreas);
+        // before we return the table areas remove all duplicates
+        Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
+            @Override
+            public int compare(Rectangle o1, Rectangle o2) {
 
-        return tableAreas;
+                float overlap = o1.overlapRatio(o2);
+                System.out.println("Overlap ratio of " + o1.toString() + " and " + o2.toString() + " is " + overlap);
+                if (overlap >= 0.98) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        tableSet.addAll(tableAreas);
+
+        this.debug(tableSet);
+
+        return new ArrayList<Rectangle>(tableSet);
     }
 
     private List<Line2D.Float> mergeHorizontalEdges(List<Line2D.Float> horizontalEdges) {
