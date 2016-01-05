@@ -4,5 +4,6 @@
 .classpath
 /bin/
 /src/test/**/*.jpg
+/src/test/resources/technology/tabula/icdar2013-dataset/test-statistics.json
 /target/
 *.iml
