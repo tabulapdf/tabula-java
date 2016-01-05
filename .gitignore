@@ -3,5 +3,6 @@
 .project
 .classpath
 /bin/
+/src/test/**/*.jpg
 /target/
 *.iml

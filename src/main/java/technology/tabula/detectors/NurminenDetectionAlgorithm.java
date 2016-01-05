@@ -31,6 +31,7 @@ import java.util.List;
 public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
     private static final int GRAYSCALE_INTENSITY_THRESHOLD = 25;
+    private static final float TABLE_PADDING_AMOUNT = 1.0f;
 
     private static final Comparator<Point2D.Float> pointComparator = new Comparator<Point2D.Float>() {
         @Override
@@ -90,7 +91,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
         List<Rectangle> cells = null;
         Set<Point2D.Float> crossingPoints = null;
@@ -103,15 +103,18 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             // next get the crossing points of all the edges
             crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
 
+            // merge the edge lines into rulings - this makes finding edges between crossing points in the next step easier
             horizontalRulings = this.mergeHorizontalEdges(horizontalRulings);
             verticalRulings = this.mergeVerticalEdges(verticalRulings);
 
+            // use the rulings and points to find cells
             cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
 
+            // then use those cells to make table areas
             tableAreas = this.getTableAreasFromCells(cells);
         }
 
-        // now find tables based on text position in the document
+        // now find text alignments in the document
         List<TextChunk> textChunks = TextElement.mergeWords(page.getText());
         List<Line> lines = TextChunk.groupByLines(textChunks);
 
@@ -187,6 +190,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
         }
 
+        // add the leftovers
         for (Integer key : currLeftEdges.keySet()) {
             List<TextChunk> edgeChunks = currLeftEdges.get(key);
             if (edgeChunks.size() >= 4) {
@@ -214,16 +218,117 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
         }
 
+        //this.debug(lines);
+
         this.debug(leftTextEdges);
         this.debug(midTextEdges);
         this.debug(rightTextEdges);
 
-        for (Rectangle area : tableAreas) {
-            area.x = (float)Math.floor(area.x/2);
-            area.y = (float)Math.floor(area.y/2);
-            area.width = (float)Math.ceil(area.width/2);
-            area.height = (float)Math.ceil(area.height/2);
+        // next find any vertical rulings that intersect tables - sometimes these won't have completely been captured as
+        // cells if there are missing horizontal lines (which there often are)
+        // let's assume though that these lines should be part of the table
+        //Map<Line2D.Float, Rectangle> verticalTableRulings = new HashMap<Line2D.Float, Rectangle>();
+        for (Line2D.Float verticalRuling : verticalRulings) {
+            for (Rectangle tableArea : tableAreas) {
+                if (verticalRuling.intersects(tableArea) &&
+                        !(tableArea.contains(verticalRuling.getP1()) && tableArea.contains(verticalRuling.getP2()))) {
+
+                    //verticalTableRulings.put(verticalRuling, tableArea);
+                    tableArea.setTop((float)Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
+                    tableArea.setBottom((float)Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
+                    break;
+                }
+            }
         }
+
+        // the tabula Page coordinate space is half the size of the PDFBox image coordinate space
+        // so halve the table area size before proceeding and add a bit of padding to make sure we capture everything
+        for (Rectangle area : tableAreas) {
+            area.x = (float)Math.floor(area.x/2) - TABLE_PADDING_AMOUNT;
+            area.y = (float)Math.floor(area.y/2) - TABLE_PADDING_AMOUNT;
+            area.width = (float)Math.ceil(area.width/2) + TABLE_PADDING_AMOUNT;
+            area.height = (float)Math.ceil(area.height/2) + TABLE_PADDING_AMOUNT;
+        }
+
+        // now look at each text row and see what kind of and how many vertical rulings it intersects
+        // this will help us figure out what text rows should be part of a table
+
+        // first look for text rows that intersect an existing table - those lines should probably be part of the table
+        for (Line textRow : lines) {
+            for (Rectangle tableArea : tableAreas) {
+                if (!tableArea.contains(textRow) && textRow.intersects(tableArea)) {
+                    // expand the table area to contain the rest of the text row
+                    tableArea.setLeft((float)Math.floor(Math.min(textRow.getLeft(), tableArea.getLeft())));
+                    tableArea.setRight((float)Math.ceil(Math.max(textRow.getRight(), tableArea.getRight())));
+                }
+            }
+        }
+
+        //this.debug(verticalTableRulings.keySet());
+
+        // again look for text that intersects one of these rulings and extend the table accordingly
+        /*
+        for (Line textRow : lines) {
+            for (Line2D.Float verticalRuling : verticalTableRulings.keySet()) {
+                if (verticalRuling.intersects(textRow)) {
+                    Rectangle tableArea = verticalTableRulings.get(verticalRuling);
+
+                    if (!tableArea.contains(textRow)) {
+                        tableArea.setLeft(Math.min(textRow.getLeft(), tableArea.getLeft()));
+                        tableArea.setTop(Math.min(textRow.getTop(), tableArea.getTop()));
+                        tableArea.setRight(Math.max(textRow.getRight(), tableArea.getRight()));
+                        tableArea.setBottom(Math.max(textRow.getBottom(), tableArea.getBottom()));
+                    }
+                }
+            }
+        }
+
+        // then use the text edges as a guide to what rows should be part of tables
+        // first find edges that intersect existing table areas
+
+        List<Line2D.Float> allTextEdges = new ArrayList<Line2D.Float>(leftTextEdges);
+        allTextEdges.addAll(midTextEdges);
+        allTextEdges.addAll(rightTextEdges);
+
+        for (Line2D.Float edge : allTextEdges) {
+            for (Rectangle tableArea : tableAreas) {
+                if (!(tableArea.contains(edge.getP1()) && tableArea.contains(edge.getP2())) &&
+                        edge.intersects(tableArea)) {
+
+                    // ok this line intersects. now find all intersecting text lines that aren't in the table
+                    // maybe they should be part of it!
+                    // decide based on spacing of rows above and below and whether those rows are part of a table
+
+                    float tableRowHeight = 0f;
+                    float tableRowDistance = 0f;
+
+                    Iterator<Line> iterator = lines.iterator();
+                    Line prevRow = iterator.next();
+
+                    while (prevRow != null && iterator.hasNext()) {
+                        Line currRow = iterator.next();
+
+                        if (tableArea.contains(currRow) && tableArea.contains(prevRow)) {
+                            tableRowHeight = currRow.height;
+                            tableRowDistance = currRow.getTop() - prevRow.getTop();
+                        } else if (tableArea.contains(prevRow) && !tableArea.contains(currRow) &&
+                                tableRowDistance > 0 && currRow.intersectsLine(edge)) {
+
+                            float heightDiff = Math.abs(tableRowHeight - currRow.height);
+                            float distanceDiff = Math.abs(tableRowDistance - (currRow.getTop() - prevRow.getTop()));
+
+                            if (heightDiff <= 1.0 && distanceDiff <= 1.0) {
+                                // let's extend the table down to include this row
+                                tableArea.setBottom(currRow.getBottom());
+                            }
+                        }
+
+                        prevRow = currRow;
+                    }
+                }
+            }
+        }
+        */
 
         this.debug(tableAreas);
 
