@@ -264,79 +264,29 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
         }
 
-        //this.debug(verticalTableRulings.keySet());
+        // lastly, there may be some tables that don't have any vertical rulings at all
+        // use the text edges we've found to try and guess which text rows are part of a table
+        // candidate heuristics:
+        // two or more of the same type of edge? - then follow the edge to the end? or follow but only take rows that are a similar space apart
+        // or - find the rows with multiples of the same type of edge, and take those to be the default
+        // only take rows who have similar amounts of the same edge
 
-        // again look for text that intersects one of these rulings and extend the table accordingly
-        /*
-        for (Line textRow : lines) {
-            for (Line2D.Float verticalRuling : verticalTableRulings.keySet()) {
-                if (verticalRuling.intersects(textRow)) {
-                    Rectangle tableArea = verticalTableRulings.get(verticalRuling);
-
-                    if (!tableArea.contains(textRow)) {
-                        tableArea.setLeft(Math.min(textRow.getLeft(), tableArea.getLeft()));
-                        tableArea.setTop(Math.min(textRow.getTop(), tableArea.getTop()));
-                        tableArea.setRight(Math.max(textRow.getRight(), tableArea.getRight()));
-                        tableArea.setBottom(Math.max(textRow.getBottom(), tableArea.getBottom()));
-                    }
-                }
-            }
-        }
-
-        // then use the text edges as a guide to what rows should be part of tables
-        // first find edges that intersect existing table areas
-
-        List<Line2D.Float> allTextEdges = new ArrayList<Line2D.Float>(leftTextEdges);
-        allTextEdges.addAll(midTextEdges);
-        allTextEdges.addAll(rightTextEdges);
-
-        for (Line2D.Float edge : allTextEdges) {
-            for (Rectangle tableArea : tableAreas) {
-                if (!(tableArea.contains(edge.getP1()) && tableArea.contains(edge.getP2())) &&
-                        edge.intersects(tableArea)) {
-
-                    // ok this line intersects. now find all intersecting text lines that aren't in the table
-                    // maybe they should be part of it!
-                    // decide based on spacing of rows above and below and whether those rows are part of a table
-
-                    float tableRowHeight = 0f;
-                    float tableRowDistance = 0f;
-
-                    Iterator<Line> iterator = lines.iterator();
-                    Line prevRow = iterator.next();
-
-                    while (prevRow != null && iterator.hasNext()) {
-                        Line currRow = iterator.next();
-
-                        if (tableArea.contains(currRow) && tableArea.contains(prevRow)) {
-                            tableRowHeight = currRow.height;
-                            tableRowDistance = currRow.getTop() - prevRow.getTop();
-                        } else if (tableArea.contains(prevRow) && !tableArea.contains(currRow) &&
-                                tableRowDistance > 0 && currRow.intersectsLine(edge)) {
-
-                            float heightDiff = Math.abs(tableRowHeight - currRow.height);
-                            float distanceDiff = Math.abs(tableRowDistance - (currRow.getTop() - prevRow.getTop()));
-
-                            if (heightDiff <= 1.0 && distanceDiff <= 1.0) {
-                                // let's extend the table down to include this row
-                                tableArea.setBottom(currRow.getBottom());
-                            }
-                        }
-
-                        prevRow = currRow;
-                    }
-                }
-            }
-        }
-        */
 
         // before we return the table areas remove all duplicates
         Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
             @Override
             public int compare(Rectangle o1, Rectangle o2) {
+                if (o1.equals(o2)) {
+                    return 0;
+                }
 
+                // o1 is "equal" to o2 if o2 contains all of o1
+                if (o2.contains(o1)) {
+                    return 0;
+                }
+
+                // otherwise see if these tables are "mostly" the same
                 float overlap = o1.overlapRatio(o2);
-                System.out.println("Overlap ratio of " + o1.toString() + " and " + o2.toString() + " is " + overlap);
                 if (overlap >= 0.98) {
                     return 0;
                 } else {
@@ -346,6 +296,23 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         });
 
         tableSet.addAll(tableAreas);
+
+        // get rid of tables that DO NOT intersect any text areas - these are likely graphs or some sort of graphic
+        for (Iterator<Rectangle> iterator = tableSet.iterator(); iterator.hasNext();) {
+            Rectangle table = iterator.next();
+
+            boolean intersectsText = false;
+            for (Line textRow : lines) {
+                if (table.intersects(textRow)) {
+                    intersectsText = true;
+                    break;
+                }
+            }
+
+            if (!intersectsText) {
+                iterator.remove();
+            }
+        }
 
         this.debug(tableSet);
 
