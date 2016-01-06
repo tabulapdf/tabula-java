@@ -31,7 +31,14 @@ import java.util.List;
 public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
     private static final int GRAYSCALE_INTENSITY_THRESHOLD = 25;
+    private static final int HORIZONTAL_EDGE_WIDTH_MINIMUM = 50;
+    private static final int VERTICAL_EDGE_HEIGHT_MINIMUM = 10;
+    private static final int CELL_CORNER_DISTANCE_MAXIMUM = 10;
+    private static final float POINT_SNAP_DISTANCE_THRESHOLD = 8f;
     private static final float TABLE_PADDING_AMOUNT = 1.0f;
+    private static final int REQUIRED_TEXT_LINES_FOR_EDGE = 4;
+    private static final int REQUIRED_CELLS_FOR_TABLE = 4;
+    private static final float IDENTICAL_TABLE_OVERLAP_RATIO = 0.98f;
 
     private static final Comparator<Point2D.Float> pointComparator = new Comparator<Point2D.Float>() {
         @Override
@@ -49,6 +56,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     };
 
     BufferedImage debugImage;
+    BufferedImage debugImage2x;
     String debugFileOut;
 
     @Override
@@ -72,6 +80,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         try {
             image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
             debugImage = pdfPage.convertToImage(BufferedImage.TYPE_INT_RGB, 72);
+            debugImage2x = pdfPage.convertToImage(BufferedImage.TYPE_INT_RGB, 144);
         } catch (IOException e) {
             return new ArrayList<Rectangle>();
         }
@@ -98,7 +107,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // if we found some edges, try to find some tables based on them
         if (allEdges.size() > 0) {
             // now we need to snap edge endpoints to a grid
-            Utils.snapPoints(allEdges, 8f, 8f);
+            Utils.snapPoints(allEdges, POINT_SNAP_DISTANCE_THRESHOLD, POINT_SNAP_DISTANCE_THRESHOLD);
 
             // next get the crossing points of all the edges
             crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
@@ -152,7 +161,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     if (key > left && key < right) {
                         iterator.remove();
                         List<TextChunk> edgeChunks = entry.getValue();
-                        if (edgeChunks.size() >= 4) {
+                        if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                             leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -166,7 +175,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     if (key > left && key < right && Math.abs(key - mid) > 2) {
                         iterator.remove();
                         List<TextChunk> edgeChunks = entry.getValue();
-                        if (edgeChunks.size() >= 4) {
+                        if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                             midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -180,7 +189,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     if (key > left && key < right) {
                         iterator.remove();
                         List<TextChunk> edgeChunks = entry.getValue();
-                        if (edgeChunks.size() >= 4) {
+                        if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                             rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -193,7 +202,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // add the leftovers
         for (Integer key : currLeftEdges.keySet()) {
             List<TextChunk> edgeChunks = currLeftEdges.get(key);
-            if (edgeChunks.size() >= 4) {
+            if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                 leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -202,7 +211,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         for (Integer key : currMidEdges.keySet()) {
             List<TextChunk> edgeChunks = currMidEdges.get(key);
-            if (edgeChunks.size() >= 4) {
+            if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                 midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -211,7 +220,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         for (Integer key : currRightEdges.keySet()) {
             List<TextChunk> edgeChunks = currRightEdges.get(key);
-            if (edgeChunks.size() >= 4) {
+            if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
                 rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
@@ -220,9 +229,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         //this.debug(lines);
 
-        this.debug(leftTextEdges);
-        this.debug(midTextEdges);
-        this.debug(rightTextEdges);
+        //this.debug(leftTextEdges);
+        //this.debug(midTextEdges);
+        //this.debug(rightTextEdges);
 
         // next find any vertical rulings that intersect tables - sometimes these won't have completely been captured as
         // cells if there are missing horizontal lines (which there often are)
@@ -287,7 +296,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                 // otherwise see if these tables are "mostly" the same
                 float overlap = o1.overlapRatio(o2);
-                if (overlap >= 0.98) {
+                if (overlap >= IDENTICAL_TABLE_OVERLAP_RATIO) {
                     return 0;
                 } else {
                     return 1;
@@ -408,11 +417,21 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     }
 
     private void debug(Collection<? extends Shape> shapes) {
+        this.debug(shapes, false);
+    }
+
+    private void debug(Collection<? extends Shape> shapes, boolean twox) {
         Color[] COLORS = { new Color(27, 158, 119),
                 new Color(217, 95, 2), new Color(117, 112, 179),
                 new Color(231, 41, 138), new Color(102, 166, 30) };
 
-        Graphics2D g = (Graphics2D) debugImage.getGraphics();
+        Graphics2D g;
+
+        if (twox) {
+            g = (Graphics2D) debugImage2x.getGraphics();
+        } else {
+            g = (Graphics2D) debugImage.getGraphics();
+        }
 
         g.setStroke(new BasicStroke(2f));
         int i = 0;
@@ -423,7 +442,28 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         try {
-            ImageIOUtil.writeImage(debugImage, debugFileOut, 72);
+            ImageIOUtil.writeImage(twox ? debugImage2x : debugImage, debugFileOut, twox ? 144 : 72);
+        } catch (IOException e) {
+        }
+    }
+
+    private void debugPoints(Collection<Point2D.Float> points) {
+        Color[] COLORS = { new Color(27, 158, 119),
+                new Color(217, 95, 2), new Color(117, 112, 179),
+                new Color(231, 41, 138), new Color(102, 166, 30) };
+
+        Graphics2D g = (Graphics2D) debugImage2x.getGraphics();
+
+        g.setStroke(new BasicStroke(2f));
+        int i = 0;
+
+        for (Point2D.Float p : points) {
+            g.setColor(COLORS[(i++) % 5]);
+            g.drawOval((int)Math.floor(p.getX()) - 5, (int)Math.floor(p.getY()) - 5, 10, 10);
+        }
+
+        try {
+            ImageIOUtil.writeImage(debugImage2x, debugFileOut, 144);
         } catch (IOException e) {
         }
     }
@@ -441,7 +481,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     for (int i=0; i<candidateCorners.length; i++) {
                         for (int j=0; j<groupCellCorners.length; j++) {
-                            if (candidateCorners[i].distance(groupCellCorners[j]) < 10) {
+                            if (candidateCorners[i].distance(groupCellCorners[j]) < CELL_CORNER_DISTANCE_MAXIMUM) {
                                 cellGroup.add(cell);
                                 addedToGroup = true;
                                 break cellCheck;
@@ -462,7 +502,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
         for (List<Rectangle> cellGroup : cellGroups) {
             // less than four cells should not make a table
-            if (cellGroup.size() < 4) {
+            if (cellGroup.size() < REQUIRED_CELLS_FOR_TABLE) {
                 continue;
             }
 
@@ -618,7 +658,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     int endX = lineX - 1;
                     int lineWidth = endX - x;
-                    if (lineWidth > 100) {
+                    if (lineWidth > HORIZONTAL_EDGE_WIDTH_MINIMUM) {
                         horizontalRulings.add(new Line2D.Float(x, y, endX, y));
                     }
                 }
@@ -678,7 +718,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
                     int endY = lineY - 1;
                     int lineLength = endY - y;
-                    if (lineLength > 10) {
+                    if (lineLength > VERTICAL_EDGE_HEIGHT_MINIMUM) {
                         verticalRulings.add(new Line2D.Float(x, y, x, endY));
                     }
                 }
