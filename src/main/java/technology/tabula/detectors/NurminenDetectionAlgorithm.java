@@ -55,6 +55,20 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
     };
 
+    private static final class TextEdge extends Line2D.Float {
+        public static final int LEFT = 0;
+        public static final int MID = 1;
+        public static final int RIGHT = 2;
+        public static final int NUM_TYPES = 3;
+
+        public int intersectingTextRowCount;
+
+        public TextEdge(float x1, float y1, float x2, float y2) {
+            super(x1, y1, x2, y2);
+            this.intersectingTextRowCount = 0;
+        }
+    }
+
     BufferedImage debugImage;
     BufferedImage debugImage2x;
     String debugFileOut;
@@ -127,9 +141,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<TextChunk> textChunks = TextElement.mergeWords(page.getText());
         List<Line> lines = TextChunk.groupByLines(textChunks);
 
-        List<Line2D.Float> leftTextEdges = new ArrayList<Line2D.Float>();
-        List<Line2D.Float> midTextEdges = new ArrayList<Line2D.Float>();
-        List<Line2D.Float> rightTextEdges = new ArrayList<Line2D.Float>();
+        List<TextEdge> leftTextEdges = new ArrayList<TextEdge>();
+        List<TextEdge> midTextEdges = new ArrayList<TextEdge>();
+        List<TextEdge> rightTextEdges = new ArrayList<TextEdge>();
 
         Map<Integer, List<TextChunk>> currLeftEdges = new HashMap<Integer, List<TextChunk>>();
         Map<Integer, List<TextChunk>> currMidEdges = new HashMap<Integer, List<TextChunk>>();
@@ -164,7 +178,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                         if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                            leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                            TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                            edge.intersectingTextRowCount = edgeChunks.size();
+
+                            leftTextEdges.add(edge);
                         }
                     }
                 }
@@ -178,7 +196,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                         if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                            midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                            TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                            edge.intersectingTextRowCount = edgeChunks.size();
+
+                            midTextEdges.add(edge);
                         }
                     }
                 }
@@ -192,7 +214,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                         if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                             TextChunk first = edgeChunks.get(0);
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                            rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                            TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                            edge.intersectingTextRowCount = edgeChunks.size();
+
+                            rightTextEdges.add(edge);
                         }
                     }
                 }
@@ -205,7 +231,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                leftTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                edge.intersectingTextRowCount = edgeChunks.size();
+
+                leftTextEdges.add(edge);
             }
         }
 
@@ -214,7 +244,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                midTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                edge.intersectingTextRowCount = edgeChunks.size();
+
+                midTextEdges.add(edge);
             }
         }
 
@@ -223,26 +257,26 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             if (edgeChunks.size() >= REQUIRED_TEXT_LINES_FOR_EDGE) {
                 TextChunk first = edgeChunks.get(0);
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
-                rightTextEdges.add(new Line2D.Float(key, first.getTop(), key, last.getBottom()));
+
+                TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
+                edge.intersectingTextRowCount = edgeChunks.size();
+
+                rightTextEdges.add(edge);
             }
         }
 
-        //this.debug(lines);
-
-        //this.debug(leftTextEdges);
-        //this.debug(midTextEdges);
-        //this.debug(rightTextEdges);
+        this.debug(leftTextEdges);
+        this.debug(midTextEdges);
+        this.debug(rightTextEdges);
 
         // next find any vertical rulings that intersect tables - sometimes these won't have completely been captured as
         // cells if there are missing horizontal lines (which there often are)
         // let's assume though that these lines should be part of the table
-        //Map<Line2D.Float, Rectangle> verticalTableRulings = new HashMap<Line2D.Float, Rectangle>();
         for (Line2D.Float verticalRuling : verticalRulings) {
             for (Rectangle tableArea : tableAreas) {
                 if (verticalRuling.intersects(tableArea) &&
                         !(tableArea.contains(verticalRuling.getP1()) && tableArea.contains(verticalRuling.getP2()))) {
 
-                    //verticalTableRulings.put(verticalRuling, tableArea);
                     tableArea.setTop((float)Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
                     tableArea.setBottom((float)Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
                     break;
@@ -275,11 +309,118 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         // lastly, there may be some tables that don't have any vertical rulings at all
         // use the text edges we've found to try and guess which text rows are part of a table
-        // candidate heuristics:
-        // two or more of the same type of edge? - then follow the edge to the end? or follow but only take rows that are a similar space apart
-        // or - find the rows with multiples of the same type of edge, and take those to be the default
-        // only take rows who have similar amounts of the same edge
 
+        // in his thesis nurminen goes through every row to try to assign a probability that the line is in a table
+        // we're going to try a general heuristic instead, trying to find what type of edge (left/right/mid) intersects
+        // the most text rows, and then use that magic number of "relevant" edges to decide what text rows should be
+        // part of a table.
+
+        // first we'll find the number of lines each type of edge crosses
+        int[][] edgeCountsPerLine = new int[lines.size()][TextEdge.NUM_TYPES];
+
+        for (TextEdge edge : leftTextEdges) {
+            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.LEFT]++;
+        }
+
+        for (TextEdge edge : midTextEdges) {
+            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.MID]++;
+        }
+
+        for (TextEdge edge : rightTextEdges) {
+            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.RIGHT]++;
+        }
+
+        // now let's find the relevant edge type and the number of those edges we should look for
+        // we'll only take a minimum of two edges to look for tables
+        int relevantEdgeType = -1;
+        int relevantEdgeCount = 0;
+        for (int i=edgeCountsPerLine.length - 1; i>2; i--) {
+            if (edgeCountsPerLine[i][TextEdge.LEFT] > 1 &&
+                    edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
+                    edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.MID]) {
+                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.LEFT];
+                relevantEdgeType = TextEdge.LEFT;
+                break;
+            }
+
+            if (edgeCountsPerLine[i][TextEdge.RIGHT] > 1 &&
+                    edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.LEFT] &&
+                    edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.MID]) {
+                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.RIGHT];
+                relevantEdgeType = TextEdge.RIGHT;
+                break;
+            }
+
+            if (edgeCountsPerLine[i][TextEdge.MID] > 1 &&
+                    edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
+                    edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.LEFT]) {
+                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.MID];
+                relevantEdgeType = TextEdge.MID;
+                break;
+            }
+        }
+
+        // we found something relevant so let's look for rows that fit our criteria
+        if (relevantEdgeType != -1) {
+            List<TextEdge> relevantEdges = null;
+            switch(relevantEdgeType) {
+                case TextEdge.LEFT:
+                    relevantEdges = leftTextEdges;
+                    break;
+                case TextEdge.MID:
+                    relevantEdges = midTextEdges;
+                    break;
+                case TextEdge.RIGHT:
+                    relevantEdges = rightTextEdges;
+                    break;
+            }
+
+            // go through the lines and find the ones that have the correct count of the relevant edges
+            Rectangle table = new Rectangle();
+
+            for (Line textRow : lines) {
+                int numRelevantEdges = 0;
+
+                // for larger tables, be a little lenient on the number of relevant rows the text intersects
+                // for smaller tables, not so much - otherwise we'll end up treating paragraphs as tables too
+                int relativeEdgeDifferenceThreshold = 1;
+                if (relevantEdgeCount <= 3) {
+                    relativeEdgeDifferenceThreshold = 0;
+                }
+
+                for (TextEdge edge : relevantEdges) {
+                    if (textRow.intersectsLine(edge)) {
+                        numRelevantEdges++;
+                    }
+
+                    if (numRelevantEdges >= (relevantEdgeCount - relativeEdgeDifferenceThreshold)) {
+                        if (table.getArea() == 0) {
+                            table.setRect(textRow);
+                        } else {
+                            table.setLeft(Math.min(table.getLeft(), textRow.getLeft()));
+                            table.setBottom(Math.max(table.getBottom(), textRow.getBottom()));
+                            table.setRight(Math.max(table.getRight(), textRow.getRight()));
+                        }
+                    }
+                }
+            }
+
+            if (table.getArea() > 0) {
+                // only add the table if it doesn't overlap with any existing tables
+                // we don't want to get too carried away with adding tables based solely on text
+                boolean overlaps = false;
+                for (Rectangle existing : tableAreas) {
+                    if (table.intersects(existing)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    tableAreas.add(table);
+                }
+            }
+        }
 
         // before we return the table areas remove all duplicates
         Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
