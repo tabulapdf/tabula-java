@@ -315,6 +315,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // the most text rows, and then use that magic number of "relevant" edges to decide what text rows should be
         // part of a table.
 
+        // TODO: this will only find one text-based table per page. add a loop that removes all text edges that intersect
+        // existing tables until we don't find any tables using text so we can find multiples if they exist
+
+        // TODO: use horizontal lines to find table tops & bottoms
+
         // first we'll find the number of lines each type of edge crosses
         int[][] edgeCountsPerLine = new int[lines.size()][TextEdge.NUM_TYPES];
 
