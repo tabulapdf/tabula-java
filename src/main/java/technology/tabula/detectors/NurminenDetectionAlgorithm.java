@@ -69,9 +69,18 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
     }
 
-    BufferedImage debugImage;
-    BufferedImage debugImage2x;
-    String debugFileOut;
+    private static final class TextEdges extends ArrayList<List<TextEdge>> {
+        public TextEdges(List<TextEdge> leftEdges, List<TextEdge> midEdges, List<TextEdge> rightEdges) {
+            super(3);
+            this.add(leftEdges);
+            this.add(midEdges);
+            this.add(rightEdges);
+        }
+    }
+
+    private BufferedImage debugImage;
+    private BufferedImage debugImage2x;
+    private String debugFileOut;
 
     @Override
     public List<Rectangle> detect(Page page, File referenceDocument) {
@@ -137,10 +146,353 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             tableAreas = this.getTableAreasFromCells(cells);
         }
 
-        // now find text alignments in the document
+        // next find any vertical rulings that intersect tables - sometimes these won't have completely been captured as
+        // cells if there are missing horizontal lines (which there often are)
+        // let's assume though that these lines should be part of the table
+        for (Line2D.Float verticalRuling : verticalRulings) {
+            for (Rectangle tableArea : tableAreas) {
+                if (verticalRuling.intersects(tableArea) &&
+                        !(tableArea.contains(verticalRuling.getP1()) && tableArea.contains(verticalRuling.getP2()))) {
+
+                    tableArea.setTop((float)Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
+                    tableArea.setBottom((float)Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
+                    break;
+                }
+            }
+        }
+
+        // the tabula Page coordinate space is half the size of the PDFBox image coordinate space
+        // so halve the table area size before proceeding and add a bit of padding to make sure we capture everything
+        for (Rectangle area : tableAreas) {
+            area.x = (float)Math.floor(area.x/2) - TABLE_PADDING_AMOUNT;
+            area.y = (float)Math.floor(area.y/2) - TABLE_PADDING_AMOUNT;
+            area.width = (float)Math.ceil(area.width/2) + TABLE_PADDING_AMOUNT;
+            area.height = (float)Math.ceil(area.height/2) + TABLE_PADDING_AMOUNT;
+        }
+
+        // we're going to want halved horizontal lines later too
+        for (Line2D.Float ruling : horizontalRulings) {
+            ruling.x1 = ruling.x1/2;
+            ruling.y1 = ruling.y1/2;
+            ruling.x2 = ruling.x2/2;
+            ruling.y2 = ruling.y2/2;
+        }
+
+        // now look at text rows to help us find more tables and flesh out existing ones
+
+        // find text alignments in the document
         List<TextChunk> textChunks = TextElement.mergeWords(page.getText());
         List<Line> lines = TextChunk.groupByLines(textChunks);
 
+        // first look for text rows that intersect an existing table - those lines should probably be part of the table
+        for (Line textRow : lines) {
+            for (Rectangle tableArea : tableAreas) {
+                if (!tableArea.contains(textRow) && textRow.intersects(tableArea)) {
+                    // expand the table area to contain the rest of the text row
+                    tableArea.setLeft((float)Math.floor(Math.min(textRow.getLeft(), tableArea.getLeft())));
+                    tableArea.setRight((float)Math.ceil(Math.max(textRow.getRight(), tableArea.getRight())));
+                }
+            }
+        }
+
+        // get rid of tables that DO NOT intersect any text areas - these are likely graphs or some sort of graphic
+        for (Iterator<Rectangle> iterator = tableAreas.iterator(); iterator.hasNext();) {
+            Rectangle table = iterator.next();
+
+            boolean intersectsText = false;
+            for (Line textRow : lines) {
+                if (table.intersects(textRow)) {
+                    intersectsText = true;
+                    break;
+                }
+            }
+
+            if (!intersectsText) {
+                iterator.remove();
+            }
+        }
+
+        // lastly, there may be some tables that don't have any vertical rulings at all
+        // use the text edges we've found to try and guess which text rows are part of a table
+
+        // in his thesis nurminen goes through every row to try to assign a probability that the line is in a table
+        // we're going to try a general heuristic instead, trying to find what type of edge (left/right/mid) intersects
+        // the most text rows, and then use that magic number of "relevant" edges to decide what text rows should be
+        // part of a table.
+
+        boolean foundTable;
+
+        do {
+            foundTable = false;
+
+            // get rid of any text lines contained within existing tables, this allows us to find more tables
+            for (Iterator<Line> iterator = lines.iterator(); iterator.hasNext();) {
+                Line textRow = iterator.next();
+                for (Rectangle table : tableAreas) {
+                    if (table.contains(textRow)) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+
+            TextEdges textEdges = this.getTextEdges(lines);
+
+            List<TextEdge> leftTextEdges = textEdges.get(TextEdge.LEFT);
+            List<TextEdge> midTextEdges = textEdges.get(TextEdge.MID);
+            List<TextEdge> rightTextEdges = textEdges.get(TextEdge.RIGHT);
+
+            // first we'll find the number of lines each type of edge crosses
+            int[][] edgeCountsPerLine = new int[lines.size()][TextEdge.NUM_TYPES];
+
+            for (TextEdge edge : leftTextEdges) {
+                edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.LEFT]++;
+            }
+
+            for (TextEdge edge : midTextEdges) {
+                edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.MID]++;
+            }
+
+            for (TextEdge edge : rightTextEdges) {
+                edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.RIGHT]++;
+            }
+
+            // now let's find the relevant edge type and the number of those edges we should look for
+            // we'll only take a minimum of two edges to look for tables TODO try three? different thresholds for different types? probably left edges should need 3 - 3 is the max to get rid of justified columns of text
+            int relevantEdgeType = -1;
+            int relevantEdgeCount = 0;
+            for (int i=edgeCountsPerLine.length - 1; i>2; i--) {
+                if (edgeCountsPerLine[i][TextEdge.LEFT] > 2 &&
+                        edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
+                        edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.MID]) {
+                    relevantEdgeCount = edgeCountsPerLine[i][TextEdge.LEFT];
+                    relevantEdgeType = TextEdge.LEFT;
+                    break;
+                }
+
+                if (edgeCountsPerLine[i][TextEdge.RIGHT] > 1 &&
+                        edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.LEFT] &&
+                        edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.MID]) {
+                    relevantEdgeCount = edgeCountsPerLine[i][TextEdge.RIGHT];
+                    relevantEdgeType = TextEdge.RIGHT;
+                    break;
+                }
+
+                if (edgeCountsPerLine[i][TextEdge.MID] > 1 &&
+                        edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
+                        edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.LEFT]) {
+                    relevantEdgeCount = edgeCountsPerLine[i][TextEdge.MID];
+                    relevantEdgeType = TextEdge.MID;
+                    break;
+                }
+            }
+
+            // we found something relevant so let's look for rows that fit our criteria
+            if (relevantEdgeType != -1) {
+                List<TextEdge> relevantEdges = null;
+                switch(relevantEdgeType) {
+                    case TextEdge.LEFT:
+                        relevantEdges = leftTextEdges;
+                        break;
+                    case TextEdge.MID:
+                        relevantEdges = midTextEdges;
+                        break;
+                    case TextEdge.RIGHT:
+                        relevantEdges = rightTextEdges;
+                        break;
+                }
+
+                // go through the lines and find the ones that have the correct count of the relevant edges
+                Rectangle table = new Rectangle();
+
+                Line prevRow = null;
+                Line firstTableRow = null;
+                Line lastTableRow = null;
+
+                int tableSpaceCount = 0;
+                float totalRowSpacing = 0;
+
+                for (Line textRow : lines) {
+                    int numRelevantEdges = 0;
+
+                    if (firstTableRow != null && tableSpaceCount > 0) {
+                        // check to make sure this text row is within a line or so of the other lines already added
+                        // if it's not, we should stop the table here
+                        float tableLineThreshold = (totalRowSpacing / tableSpaceCount) * 2.5f;
+                        float lineDistance = textRow.getTop() - prevRow.getTop();
+
+                        if (lineDistance > tableLineThreshold) {
+                            lastTableRow = prevRow;
+                            break;
+                        }
+                    }
+
+                    // for larger tables, be a little lenient on the number of relevant rows the text intersects
+                    // for smaller tables, not so much - otherwise we'll end up treating paragraphs as tables too
+                    int relativeEdgeDifferenceThreshold = 1;
+                    if (relevantEdgeCount <= 3) {
+                        relativeEdgeDifferenceThreshold = 0;
+                    }
+
+                    for (TextEdge edge : relevantEdges) {
+                        if (textRow.intersectsLine(edge)) {
+                            numRelevantEdges++;
+                        }
+                    }
+
+                    if (numRelevantEdges >= (relevantEdgeCount - relativeEdgeDifferenceThreshold)) {
+                        // keep track of table row spacing
+                        if (prevRow != null && firstTableRow != null) {
+                            tableSpaceCount++;
+                            totalRowSpacing += (textRow.getTop() - prevRow.getTop());
+                        }
+
+                        // row is part of a table
+                        if (table.getArea() == 0) {
+                            firstTableRow = textRow;
+                            table.setRect(textRow);
+                        } else {
+                            table.setLeft(Math.min(table.getLeft(), textRow.getLeft()));
+                            table.setBottom(Math.max(table.getBottom(), textRow.getBottom()));
+                            table.setRight(Math.max(table.getRight(), textRow.getRight()));
+                        }
+                    } else {
+                        // no dice
+                        // if we're at the end of the table, save the last row
+                        if (firstTableRow != null && lastTableRow == null) {
+                            lastTableRow = prevRow;
+                        }
+                    }
+
+                    prevRow = textRow;
+                }
+
+                if (table.getArea() > 0) {
+                    if (lastTableRow == null) {
+                        // takes care of one-row tables or tables that end at the bottom of a page
+                        lastTableRow = prevRow;
+                    }
+
+                    // use the average row height and nearby horizontal lines to extend the table area to get all headings
+                    float avgRowHeight;
+                    if (tableSpaceCount > 0) {
+                        avgRowHeight = totalRowSpacing / tableSpaceCount;
+                    } else {
+                        avgRowHeight = lastTableRow.height;
+                    }
+
+                    float rowHeightThreshold = avgRowHeight * 1.5f;
+
+                    // check lines after the bottom of the table
+                    for (Line2D.Float ruling : horizontalRulings) {
+
+                        if (ruling.getY1() < table.getBottom()) {
+                            continue;
+                        }
+
+                        float distanceFromTable = (float)ruling.getY1() - table.getBottom();
+                        if (distanceFromTable <= rowHeightThreshold) {
+                            // use this ruling to help define the table
+                            table.setBottom((float)Math.max(table.getBottom(), ruling.getY1()));
+                            table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
+                            table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
+                        } else {
+                            // no use checking any further
+                            break;
+                        }
+                    }
+
+                    // do the same for lines at the top, but make the threshold greater since table headings tend to be
+                    // larger to fit up to two-ish rows of text
+                    rowHeightThreshold = avgRowHeight * 2.5f;
+
+                    for (int i=horizontalRulings.size() - 1; i>=0; i--) {
+                        Line2D.Float ruling = horizontalRulings.get(i);
+
+                        if (ruling.getY1() > table.getTop()) {
+                            continue;
+                        }
+
+                        float distanceFromTable = table.getTop() - (float)ruling.getY1();
+                        if (distanceFromTable <= rowHeightThreshold) {
+                            table.setTop((float)Math.min(table.getTop(), ruling.getY1()));
+                            table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
+                            table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
+                        } else {
+                            break;
+                        }
+                    }
+
+                    // add a bit of padding since the halved horizontal lines are a little fuzzy anyways
+                    table.setTop((float)Math.floor(table.getTop()) - TABLE_PADDING_AMOUNT);
+                    table.setBottom((float)Math.ceil(table.getBottom()) + TABLE_PADDING_AMOUNT);
+                    table.setLeft((float)Math.floor(table.getLeft()) - TABLE_PADDING_AMOUNT);
+                    table.setRight((float)Math.ceil(table.getRight()) + TABLE_PADDING_AMOUNT);
+
+                    /*
+                    // only add the table if it doesn't overlap with any existing tables
+                    // we don't want to get too carried away with adding tables based solely on text
+                    boolean overlaps = false;
+                    for (Rectangle existing : tableAreas) {
+                        if (table.intersects(existing)) {
+                            overlaps = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlaps) {
+                        tableAreas.add(table);
+                    }
+                    */
+
+                    boolean alreadyAdded = false;
+                    for (Rectangle existing : tableAreas) {
+                        if (table.equals(existing)) {
+                            alreadyAdded = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyAdded) {
+                        tableAreas.add(table);
+                        this.debug(tableAreas);
+                        foundTable = true;
+                    }
+                }
+            }
+        } while (foundTable);
+
+        // create a set of our current tables that will eliminate duplicate tables
+        Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
+            @Override
+            public int compare(Rectangle o1, Rectangle o2) {
+                if (o1.equals(o2)) {
+                    return 0;
+                }
+
+                // o1 is "equal" to o2 if o2 contains all of o1
+                if (o2.contains(o1)) {
+                    return 0;
+                }
+
+                // otherwise see if these tables are "mostly" the same
+                float overlap = o1.overlapRatio(o2);
+                if (overlap >= IDENTICAL_TABLE_OVERLAP_RATIO) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        tableSet.addAll(tableAreas);
+
+        this.debug(tableSet);
+
+        return new ArrayList<Rectangle>(tableSet);
+    }
+
+    private TextEdges getTextEdges(List<Line> lines) {
         List<TextEdge> leftTextEdges = new ArrayList<TextEdge>();
         List<TextEdge> midTextEdges = new ArrayList<TextEdge>();
         List<TextEdge> rightTextEdges = new ArrayList<TextEdge>();
@@ -269,311 +621,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         this.debug(midTextEdges);
         this.debug(rightTextEdges);
 
-        // next find any vertical rulings that intersect tables - sometimes these won't have completely been captured as
-        // cells if there are missing horizontal lines (which there often are)
-        // let's assume though that these lines should be part of the table
-        for (Line2D.Float verticalRuling : verticalRulings) {
-            for (Rectangle tableArea : tableAreas) {
-                if (verticalRuling.intersects(tableArea) &&
-                        !(tableArea.contains(verticalRuling.getP1()) && tableArea.contains(verticalRuling.getP2()))) {
-
-                    tableArea.setTop((float)Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
-                    tableArea.setBottom((float)Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
-                    break;
-                }
-            }
-        }
-
-        // the tabula Page coordinate space is half the size of the PDFBox image coordinate space
-        // so halve the table area size before proceeding and add a bit of padding to make sure we capture everything
-        for (Rectangle area : tableAreas) {
-            area.x = (float)Math.floor(area.x/2) - TABLE_PADDING_AMOUNT;
-            area.y = (float)Math.floor(area.y/2) - TABLE_PADDING_AMOUNT;
-            area.width = (float)Math.ceil(area.width/2) + TABLE_PADDING_AMOUNT;
-            area.height = (float)Math.ceil(area.height/2) + TABLE_PADDING_AMOUNT;
-        }
-
-        // we're going to want halved horizontal lines later too
-        for (Line2D.Float ruling : horizontalRulings) {
-            ruling.x1 = ruling.x1/2;
-            ruling.y1 = ruling.y1/2;
-            ruling.x2 = ruling.x2/2;
-            ruling.y2 = ruling.y2/2;
-        }
-
-        // now look at each text row and see what kind of and how many vertical rulings it intersects
-        // this will help us figure out what text rows should be part of a table
-
-        // first look for text rows that intersect an existing table - those lines should probably be part of the table
-        for (Line textRow : lines) {
-            for (Rectangle tableArea : tableAreas) {
-                if (!tableArea.contains(textRow) && textRow.intersects(tableArea)) {
-                    // expand the table area to contain the rest of the text row
-                    tableArea.setLeft((float)Math.floor(Math.min(textRow.getLeft(), tableArea.getLeft())));
-                    tableArea.setRight((float)Math.ceil(Math.max(textRow.getRight(), tableArea.getRight())));
-                }
-            }
-        }
-
-        // lastly, there may be some tables that don't have any vertical rulings at all
-        // use the text edges we've found to try and guess which text rows are part of a table
-
-        // in his thesis nurminen goes through every row to try to assign a probability that the line is in a table
-        // we're going to try a general heuristic instead, trying to find what type of edge (left/right/mid) intersects
-        // the most text rows, and then use that magic number of "relevant" edges to decide what text rows should be
-        // part of a table.
-
-        // TODO: this will only find one text-based table per page. add a loop that removes all text edges that intersect
-        // existing tables until we don't find any tables using text so we can find multiples if they exist
-
-        // first we'll find the number of lines each type of edge crosses
-        int[][] edgeCountsPerLine = new int[lines.size()][TextEdge.NUM_TYPES];
-
-        for (TextEdge edge : leftTextEdges) {
-            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.LEFT]++;
-        }
-
-        for (TextEdge edge : midTextEdges) {
-            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.MID]++;
-        }
-
-        for (TextEdge edge : rightTextEdges) {
-            edgeCountsPerLine[edge.intersectingTextRowCount - 1][TextEdge.RIGHT]++;
-        }
-
-        // now let's find the relevant edge type and the number of those edges we should look for
-        // we'll only take a minimum of two edges to look for tables TODO try three? different thresholds for different types? probably left edges should need 3 - 3 is the max to get rid of justified columns of text
-        int relevantEdgeType = -1;
-        int relevantEdgeCount = 0;
-        for (int i=edgeCountsPerLine.length - 1; i>2; i--) {
-            if (edgeCountsPerLine[i][TextEdge.LEFT] > 1 &&
-                    edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
-                    edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.MID]) {
-                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.LEFT];
-                relevantEdgeType = TextEdge.LEFT;
-                break;
-            }
-
-            if (edgeCountsPerLine[i][TextEdge.RIGHT] > 1 &&
-                    edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.LEFT] &&
-                    edgeCountsPerLine[i][TextEdge.RIGHT] >= edgeCountsPerLine[i][TextEdge.MID]) {
-                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.RIGHT];
-                relevantEdgeType = TextEdge.RIGHT;
-                break;
-            }
-
-            if (edgeCountsPerLine[i][TextEdge.MID] > 1 &&
-                    edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
-                    edgeCountsPerLine[i][TextEdge.MID] >= edgeCountsPerLine[i][TextEdge.LEFT]) {
-                relevantEdgeCount = edgeCountsPerLine[i][TextEdge.MID];
-                relevantEdgeType = TextEdge.MID;
-                break;
-            }
-        }
-
-        // we found something relevant so let's look for rows that fit our criteria
-        if (relevantEdgeType != -1) {
-            List<TextEdge> relevantEdges = null;
-            switch(relevantEdgeType) {
-                case TextEdge.LEFT:
-                    relevantEdges = leftTextEdges;
-                    break;
-                case TextEdge.MID:
-                    relevantEdges = midTextEdges;
-                    break;
-                case TextEdge.RIGHT:
-                    relevantEdges = rightTextEdges;
-                    break;
-            }
-
-            // go through the lines and find the ones that have the correct count of the relevant edges
-            Rectangle table = new Rectangle();
-
-            Line prevRow = null;
-            Line firstTableRow = null;
-            Line lastTableRow = null;
-
-            int tableSpaceCount = 0;
-            float totalRowSpacing = 0;
-
-            for (Line textRow : lines) {
-                int numRelevantEdges = 0;
-
-                if (firstTableRow != null && tableSpaceCount > 0) {
-                    // check to make sure this text row is within a line or so of the other lines already added
-                    // if it's not, we should stop the table here
-                    float tableLineThreshold = (totalRowSpacing / tableSpaceCount) * 2.5f;
-                    float lineDistance = textRow.getTop() - prevRow.getTop();
-
-                    if (lineDistance > tableLineThreshold) {
-                        lastTableRow = prevRow;
-                        break;
-                    }
-                }
-
-                // for larger tables, be a little lenient on the number of relevant rows the text intersects
-                // for smaller tables, not so much - otherwise we'll end up treating paragraphs as tables too
-                int relativeEdgeDifferenceThreshold = 1;
-                if (relevantEdgeCount <= 3) {
-                    relativeEdgeDifferenceThreshold = 0;
-                }
-
-                for (TextEdge edge : relevantEdges) {
-                    if (textRow.intersectsLine(edge)) {
-                        numRelevantEdges++;
-                    }
-                }
-
-                if (numRelevantEdges >= (relevantEdgeCount - relativeEdgeDifferenceThreshold)) {
-                    // row is part of a table
-                    if (table.getArea() == 0) {
-                        firstTableRow = textRow;
-                        table.setRect(textRow);
-                    } else {
-                        table.setLeft(Math.min(table.getLeft(), textRow.getLeft()));
-                        table.setBottom(Math.max(table.getBottom(), textRow.getBottom()));
-                        table.setRight(Math.max(table.getRight(), textRow.getRight()));
-                    }
-
-                    // keep track of table row spacing
-                    if (prevRow != null) {
-                        tableSpaceCount++;
-                        totalRowSpacing += (textRow.getTop() - prevRow.getTop());
-                    }
-                } else {
-                    // no dice
-                    // if we're at the end of the table, save the last row
-                    if (firstTableRow != null && lastTableRow == null) {
-                        lastTableRow = prevRow;
-                    }
-                }
-
-                prevRow = textRow;
-            }
-
-            if (table.getArea() > 0) {
-                if (lastTableRow == null) {
-                    // takes care of one-row tables or tables that end at the bottom of a page
-                    lastTableRow = prevRow;
-                }
-
-                // use the average row height and nearby horizontal lines to extend the table area to get all headings
-                float avgRowHeight;
-                if (tableSpaceCount > 0) {
-                    avgRowHeight = totalRowSpacing / tableSpaceCount;
-                } else {
-                    avgRowHeight = lastTableRow.height;
-                }
-
-                float rowHeightThreshold = avgRowHeight * 1.5f;
-
-                // check lines after the bottom of the table
-                for (Line2D.Float ruling : horizontalRulings) {
-
-                    if (ruling.getY1() < table.getBottom()) {
-                        continue;
-                    }
-
-                    float distanceFromTable = (float)ruling.getY1() - table.getBottom();
-                    if (distanceFromTable <= rowHeightThreshold) {
-                        // use this ruling to help define the table
-                        table.setBottom((float)Math.max(table.getBottom(), ruling.getY1()));
-                        table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
-                        table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
-                    } else {
-                        // no use checking any further
-                        break;
-                    }
-                }
-
-                // do the same for lines at the top, but make the threshold greater since table headings tend to be
-                // larger to fit up to two-ish rows of text
-                rowHeightThreshold = avgRowHeight * 2.5f;
-
-                for (int i=horizontalRulings.size() - 1; i>=0; i--) {
-                    Line2D.Float ruling = horizontalRulings.get(i);
-
-                    if (ruling.getY1() > table.getTop()) {
-                        continue;
-                    }
-
-                    float distanceFromTable = table.getTop() - (float)ruling.getY1();
-                    if (distanceFromTable <= rowHeightThreshold) {
-                        table.setTop((float)Math.min(table.getTop(), ruling.getY1()));
-                        table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
-                        table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
-                    } else {
-                        break;
-                    }
-                }
-
-                // add a bit of padding since the halved horizontal lines are a little fuzzy anyways
-                table.setTop((float)Math.floor(table.getTop()) - TABLE_PADDING_AMOUNT);
-                table.setBottom((float)Math.ceil(table.getBottom()) + TABLE_PADDING_AMOUNT);
-                table.setLeft((float)Math.floor(table.getLeft()) - TABLE_PADDING_AMOUNT);
-                table.setRight((float)Math.ceil(table.getRight()) + TABLE_PADDING_AMOUNT);
-
-                // only add the table if it doesn't overlap with any existing tables
-                // we don't want to get too carried away with adding tables based solely on text
-                boolean overlaps = false;
-                for (Rectangle existing : tableAreas) {
-                    if (table.intersects(existing)) {
-                        overlaps = true;
-                        break;
-                    }
-                }
-
-                if (!overlaps) {
-                    tableAreas.add(table);
-                }
-            }
-        }
-
-        // before we return the table areas remove all duplicates
-        Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
-            @Override
-            public int compare(Rectangle o1, Rectangle o2) {
-                if (o1.equals(o2)) {
-                    return 0;
-                }
-
-                // o1 is "equal" to o2 if o2 contains all of o1
-                if (o2.contains(o1)) {
-                    return 0;
-                }
-
-                // otherwise see if these tables are "mostly" the same
-                float overlap = o1.overlapRatio(o2);
-                if (overlap >= IDENTICAL_TABLE_OVERLAP_RATIO) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            }
-        });
-
-        tableSet.addAll(tableAreas);
-
-        // get rid of tables that DO NOT intersect any text areas - these are likely graphs or some sort of graphic
-        for (Iterator<Rectangle> iterator = tableSet.iterator(); iterator.hasNext();) {
-            Rectangle table = iterator.next();
-
-            boolean intersectsText = false;
-            for (Line textRow : lines) {
-                if (table.intersects(textRow)) {
-                    intersectsText = true;
-                    break;
-                }
-            }
-
-            if (!intersectsText) {
-                iterator.remove();
-            }
-        }
-
-        this.debug(tableSet);
-
-        return new ArrayList<Rectangle>(tableSet);
+        return new TextEdges(leftTextEdges, midTextEdges, rightTextEdges);
     }
 
     private List<Line2D.Float> mergeHorizontalEdges(List<Line2D.Float> horizontalEdges) {
