@@ -532,17 +532,26 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 Integer mid = new Integer(left + ((right - left)/2));
 
                 // first put this chunk into any edge buckets it belongs to
-                List<TextChunk> leftEdge = currLeftEdges.getOrDefault(left, new ArrayList<TextChunk>());
+                List<TextChunk> leftEdge = currLeftEdges.get(left);
+                if (leftEdge == null) {
+                    leftEdge = new ArrayList<TextChunk>();
+                    currLeftEdges.put(left, leftEdge);
+                }
                 leftEdge.add(text);
-                currLeftEdges.put(left, leftEdge);
 
-                List<TextChunk> midEdge = currMidEdges.getOrDefault(mid, new ArrayList<TextChunk>());
+                List<TextChunk> midEdge = currMidEdges.get(mid);
+                if (midEdge == null) {
+                    midEdge = new ArrayList<TextChunk>();
+                    currMidEdges.put(mid, midEdge);
+                }
                 midEdge.add(text);
-                currMidEdges.put(mid, midEdge);
 
-                List<TextChunk> rightEdge = currRightEdges.getOrDefault(right, new ArrayList<TextChunk>());
+                List<TextChunk> rightEdge = currRightEdges.get(right);
+                if (rightEdge == null) {
+                    rightEdge = new ArrayList<TextChunk>();
+                    currRightEdges.put(right, rightEdge);
+                }
                 rightEdge.add(text);
-                currRightEdges.put(right, rightEdge);
 
                 // now see if this text chunk blows up any other edges
                 for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currLeftEdges.entrySet().iterator(); iterator.hasNext();) {
