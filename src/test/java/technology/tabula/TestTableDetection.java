@@ -4,13 +4,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.*;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,9 +20,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 
 /**
  * Created by matt on 2015-12-14.
@@ -124,7 +120,7 @@ public class TestTableDetection {
         }
     }
 
-    //@Ignore("Test is ignored until better table detection algorithms are implemented")
+    @Ignore("Test is ignored until better table detection algorithms are implemented")
     @Test
     public void testDetectionOfTables() throws Exception {
 
