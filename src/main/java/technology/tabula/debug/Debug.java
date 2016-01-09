@@ -211,8 +211,7 @@ public class Debug {
             boolean drawUnprocessedRulings, boolean drawProjectionProfile, boolean drawClippingPaths) throws IOException {
         PDDocument document = PDDocument.load(pdfPath);
         
-        ObjectExtractor oe = new ObjectExtractor(document);
-        oe.setDebugClippingPaths(drawClippingPaths);
+        ObjectExtractor oe = new ObjectExtractor(document, true);
         
         Page page = oe.extract(pageNumber + 1);
         
