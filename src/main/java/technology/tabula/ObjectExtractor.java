@@ -122,12 +122,11 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         		h = pdPage.findCropBox().getHeight();
         	}
         	
-        	return new Page(0, 0, w, h, pageRotation, page_number, this.characters,
+        	return new Page(0, 0, w, h, pageRotation, page_number, pdPage, this.characters,
         			this.rulings, this.minCharWidth, this.minCharHeight,
         			this.spatialIndex);
         }
         return null;//TODO: content is empty, return null? or empty Page? or exception?
-
     }
 
     public PageIterator extract(Iterable<Integer> pages) {

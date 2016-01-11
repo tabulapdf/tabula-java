@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.pdfbox.pdmodel.PDPage;
+
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that
 public class Page extends Rectangle {
@@ -20,27 +22,29 @@ public class Page extends Rectangle {
     private float minCharWidth;
     private float minCharHeight;
     private RectangleSpatialIndex<TextElement> spatial_index;
+    private PDPage pdPage;
 
-    public Page(float top, float left, float width, float height, int rotation, int page_number) {
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage) {
         super(top, left, width, height);
         this.rotation = rotation;
         this.pageNumber = page_number;
+        this.pdPage = pdPage;
     }
     
-    public Page(float top, float left, float width, float height, int rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage,
             List<TextElement> characters, List<Ruling> rulings) {
 
-        this(top, left, width, height, rotation, page_number);
+        this(top, left, width, height, rotation, page_number, pdPage);
         this.texts = characters;
         this.rulings = rulings;
     }
 
 
-    public Page(float top, float left, float width, float height, int rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage,
             List<TextElement> characters, List<Ruling> rulings,
             float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
 
-        this(top, left, width, height, rotation, page_number, characters, rulings);
+        this(top, left, width, height, rotation, page_number, pdPage, characters, rulings);
         this.minCharHeight = minCharHeight;
         this.minCharWidth = minCharWidth;
         this.spatial_index = index;
@@ -56,6 +60,7 @@ public class Page extends Rectangle {
                 (float) area.getHeight(),
                 rotation,
                 pageNumber,
+                pdPage,
                 t,
                 Ruling.cropRulingsToArea(getRulings(), area),
 
@@ -215,7 +220,11 @@ public class Page extends Rectangle {
     public float getMinCharHeight() {
         return minCharHeight;
     }
-    
+
+    public PDPage getPDPage() {
+    	return pdPage;
+    }
+
     public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
     }
