@@ -101,34 +101,17 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
     }
 
-    // for debugging
-    private File currentDoc;
-    private Page currentPage;
-    private PDPage currentPDPage;
-
     @Override
-    public List<Rectangle> detect(Page page, File referenceDocument) {
-
-        // open a PDDocument to read stuff in
-        PDDocument pdfDocument;
-        try {
-            pdfDocument = PDDocument.load(referenceDocument);
-        } catch (Exception e) {
-            return new ArrayList<Rectangle>();
-        }
-
-        // get the page in question (and keep refs for debugging)
-        this.currentPDPage = (PDPage) pdfDocument.getDocumentCatalog().getAllPages().get(page.getPageNumber() - 1);
-        this.currentDoc = referenceDocument;
-        this.currentPage = page;
+    public List<Rectangle> detect(Page page) {
 
         // get horizontal & vertical lines
         // we get these from an image of the PDF and not the PDF itself because sometimes there are invisible PDF
         // instructions that are interpreted incorrectly as visible elements - we really want to capture what a
         // person sees when they look at the PDF
         BufferedImage image;
+        PDPage pdfPage = page.getPDPage();
         try {
-            image = this.currentPDPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
+            image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
         } catch (IOException e) {
             return new ArrayList<Rectangle>();
         }
@@ -137,8 +120,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         // now check the page for vertical lines, but remove the text first to make things less confusing
         try {
-            this.removeText(pdfDocument, this.currentPDPage);
-            image = this.currentPDPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
+            this.removeText(pdfPage);
+            image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
         } catch (Exception e) {
             return new ArrayList<Rectangle>();
         }
@@ -322,10 +305,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         });
 
         tableSet.addAll(tableAreas);
-
-        this.currentDoc = null;
-        this.currentPage = null;
-        this.currentPDPage = null;
 
         return new ArrayList<Rectangle>(tableSet);
     }
@@ -846,7 +825,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     }
 
     // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
-    private void removeText(PDDocument document, PDPage page) throws IOException {
+    private void removeText(PDPage page) throws IOException {
         PDFStreamParser parser = new PDFStreamParser(page.getContents());
         parser.parse();
 
@@ -865,40 +844,13 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             newTokens.add(token);
         }
 
+        PDDocument document = new PDDocument();
+        document.addPage(page);
+
         PDStream newContents = new PDStream(document);
         ContentStreamWriter writer = new ContentStreamWriter(newContents.createOutputStream());
         writer.writeTokens(newTokens);
         newContents.addCompression();
         page.setContents(newContents);
-    }
-
-    private void debug(Collection<? extends Shape> shapes) {
-        this.debug(shapes, false);
-    }
-
-    private void debug(Collection<? extends Shape> shapes, boolean twox) {
-        Color[] COLORS = { new Color(27, 158, 119),
-                new Color(217, 95, 2), new Color(117, 112, 179),
-                new Color(231, 41, 138), new Color(102, 166, 30) };
-
-        try {
-            int res = twox ? 144 : 72;
-
-            BufferedImage image = this.currentPDPage.convertToImage(BufferedImage.TYPE_INT_RGB, res);
-            Graphics2D g = (Graphics2D) image.getGraphics();
-
-            g.setStroke(new BasicStroke(2f));
-            int i = 0;
-
-            for (Shape s : shapes) {
-                g.setColor(COLORS[(i++) % 5]);
-                g.draw(s);
-            }
-
-            String debugFileOut = this.currentDoc.getAbsolutePath().replace(".pdf", "-" + this.currentPage.getPageNumber() + ".jpg");
-
-            ImageIOUtil.writeImage(image, debugFileOut, res);
-        } catch (IOException e) {
-        }
     }
 }

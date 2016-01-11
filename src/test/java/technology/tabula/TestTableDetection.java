@@ -181,7 +181,7 @@ public class TestTableDetection {
         PageIterator pages = extractor.extract();
         while (pages.hasNext()) {
             Page page = pages.next();
-            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page, this.pdf);
+            List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
             if (tablesOnPage.size() > 0) {
                 detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
             }
