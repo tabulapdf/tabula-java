@@ -270,7 +270,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         return cellsFound;
     }
     
-    public List<Rectangle> findSpreadsheetsFromCells(List<? extends Rectangle> cells) {
+    public static List<Rectangle> findSpreadsheetsFromCells(List<? extends Rectangle> cells) {
         // via: http://stackoverflow.com/questions/13746284/merging-multiple-adjacent-rectangles-into-one-polygon
         List<Rectangle> rectangles = new ArrayList<Rectangle>();
         Set<Point2D> pointSet = new HashSet<Point2D>();
@@ -386,7 +386,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         VERTICAL
     }
     
-     class PolygonVertex {
+     static class PolygonVertex {
         Point2D point;
         Direction direction;
         

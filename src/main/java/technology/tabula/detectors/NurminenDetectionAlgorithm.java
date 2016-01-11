@@ -9,6 +9,7 @@ import org.apache.pdfbox.util.ImageIOUtil;
 import org.apache.pdfbox.util.PDFOperator;
 import technology.tabula.*;
 import technology.tabula.Rectangle;
+import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -132,7 +133,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             return new ArrayList<Rectangle>();
         }
 
-        List<Line2D.Float> horizontalRulings = this.getHorizontalRulings(image);
+        List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
 
         // now check the page for vertical lines, but remove the text first to make things less confusing
         try {
@@ -142,9 +143,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             return new ArrayList<Rectangle>();
         }
 
-        List<Line2D.Float> verticalRulings = this.getVerticalRulings(image);
+        List<Ruling> verticalRulings = this.getVerticalRulings(image);
 
-        List<Line2D.Float> allEdges = new ArrayList<Line2D.Float>(horizontalRulings);
+        List<Ruling> allEdges = new ArrayList<Ruling>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
         List<Rectangle> tableAreas = new ArrayList<Rectangle>();
@@ -154,15 +155,24 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             // now we need to snap edge endpoints to a grid
             Utils.snapPoints(allEdges, POINT_SNAP_DISTANCE_THRESHOLD, POINT_SNAP_DISTANCE_THRESHOLD);
 
-            // next get the crossing points of all the edges
-            Set<Point2D.Float> crossingPoints = this.getCrossingPoints(horizontalRulings, verticalRulings);
+            // normalize the rulings to make sure snapping didn't create any wacky non-horizontal/vertical rulings
+            for (List<Ruling> rulings : Arrays.asList(horizontalRulings, verticalRulings)) {
+                for (Iterator<Ruling> iterator = rulings.iterator(); iterator.hasNext();) {
+                    Ruling ruling = iterator.next();
+
+                    ruling.normalize();
+                    if (ruling.oblique()) {
+                        iterator.remove();
+                    }
+                }
+            }
 
             // merge the edge lines into rulings - this makes finding edges between crossing points in the next step easier
-            horizontalRulings = this.mergeHorizontalEdges(horizontalRulings);
-            verticalRulings = this.mergeVerticalEdges(verticalRulings);
+            horizontalRulings = Ruling.collapseOrientedRulings(horizontalRulings);
+            verticalRulings = Ruling.collapseOrientedRulings(verticalRulings);
 
             // use the rulings and points to find cells
-            List<Rectangle> cells = this.findRectangles(crossingPoints, horizontalRulings, verticalRulings);
+            List<? extends Rectangle> cells = SpreadsheetExtractionAlgorithm.findCells(horizontalRulings, verticalRulings);
 
             // then use those cells to make table areas
             tableAreas = this.getTableAreasFromCells(cells);
@@ -323,7 +333,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     private Rectangle getTableFromText(List<Line> lines,
                                        List<TextEdge> relevantEdges,
                                        int relevantEdgeCount,
-                                       List<Line2D.Float> horizontalRulings) {
+                                       List<Ruling> horizontalRulings) {
 
         Rectangle table = new Rectangle();
 
@@ -653,95 +663,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return new TextEdges(leftTextEdges, midTextEdges, rightTextEdges);
     }
 
-    private List<Line2D.Float> mergeHorizontalEdges(List<Line2D.Float> horizontalEdges) {
-        if (horizontalEdges.size() == 0) {
-            return horizontalEdges;
-        }
-
-        List<Line2D.Float> horizontalRulings = new ArrayList<Line2D.Float>();
-
-        // sort rulings by top-leftmost first
-        Collections.sort(horizontalEdges, new Comparator<Line2D.Float>() {
-            @Override
-            public int compare(Line2D.Float o1, Line2D.Float o2) {
-                if (o1.equals(o2)) {
-                    return 0;
-                }
-
-                if (o1.y1 == o2.y1) {
-                    return Float.compare(o1.x1, o2.x1);
-                } else {
-                    return Float.compare(o1.y1, o2.y1);
-                }
-            }
-        });
-
-        Line2D.Float currentRuling = horizontalEdges.get(0);
-        for (int i=1; i<horizontalEdges.size(); i++) {
-            Line2D.Float nextEdge = horizontalEdges.get(i);
-
-            if (currentRuling.y1 == nextEdge.y1 &&
-                    nextEdge.x1 >= currentRuling.x1 &&
-                    nextEdge.x1 <= currentRuling.x2) {
-                // this line segment can be part of the current line
-                currentRuling.x2 = Math.max(nextEdge.x2, currentRuling.x2);
-            } else {
-                // store the complete line and continue
-                horizontalRulings.add(currentRuling);
-                currentRuling = nextEdge;
-            }
-        }
-
-        horizontalRulings.add(currentRuling);
-
-        return horizontalRulings;
-    }
-
-    private List<Line2D.Float> mergeVerticalEdges(List<Line2D.Float> verticalEdges) {
-        if (verticalEdges.size() == 0) {
-            return verticalEdges;
-        }
-
-        List<Line2D.Float> verticalRulings = new ArrayList<Line2D.Float>();
-
-        // sort by left-topmost first
-        Collections.sort(verticalEdges, new Comparator<Line2D.Float>() {
-            @Override
-            public int compare(Line2D.Float o1, Line2D.Float o2) {
-                if (o1.equals(o2)) {
-                    return 0;
-                }
-
-                if (o1.x1 == o2.x1) {
-                    return Float.compare(o1.y1, o2.y1);
-                } else {
-                    return Float.compare(o1.x1, o2.x1);
-                }
-            }
-        });
-
-        Line2D.Float currentRuling = verticalEdges.get(0);
-        for (int i=1; i<verticalEdges.size(); i++) {
-            Line2D.Float nextEdge = verticalEdges.get(i);
-
-            if (currentRuling.x1 == nextEdge.x1 &&
-                    nextEdge.y1 >= currentRuling.y1 &&
-                    nextEdge.y1 <= currentRuling.y2) {
-                // line segment is part of the current line
-                currentRuling.y2 = Math.max(nextEdge.y2, currentRuling.y2);
-            } else {
-                // store the complete line and continue
-                verticalRulings.add(currentRuling);
-                currentRuling = nextEdge;
-            }
-        }
-
-        verticalRulings.add(currentRuling);
-
-        return verticalRulings;
-    }
-
-    private List<Rectangle> getTableAreasFromCells(List<Rectangle> cells) {
+    private List<Rectangle> getTableAreasFromCells(List<? extends Rectangle> cells) {
         List<List<Rectangle>> cellGroups = new ArrayList<List<Rectangle>>();
         for (Rectangle cell : cells) {
             boolean addedToGroup = false;
@@ -797,97 +719,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return tableAreas;
     }
 
-    private List<Rectangle> findRectangles(
-            Set<Point2D.Float> crossingPoints,
-            List<Line2D.Float> horizontalEdges,
-            List<Line2D.Float> verticalEdges) {
-
-        List<Rectangle> foundRectangles = new ArrayList<Rectangle>();
-
-        ArrayList<Point2D.Float> sortedPoints = new ArrayList<Point2D.Float>(crossingPoints);
-
-        // sort all points by y value and then x value - this means that the first element
-        // is always the top-leftmost point
-        Collections.sort(sortedPoints, pointComparator);
-
-        for (int i=0; i<sortedPoints.size(); i++) {
-            Point2D.Float topLeftPoint = sortedPoints.get(i);
-
-            ArrayList<Point2D.Float> pointsBelow = new ArrayList<Point2D.Float>();
-            ArrayList<Point2D.Float> pointsRight = new ArrayList<Point2D.Float>();
-
-            for (int j=i+1; j<sortedPoints.size(); j++) {
-                Point2D.Float checkPoint = sortedPoints.get(j);
-                if (topLeftPoint.getX() == checkPoint.getX() && topLeftPoint.getY() < checkPoint.getY()) {
-                    pointsBelow.add(checkPoint);
-                } else if (topLeftPoint.getY() == checkPoint.getY() && topLeftPoint.getX() < checkPoint.getX()) {
-                    pointsRight.add(checkPoint);
-                }
-            }
-
-            nextCrossingPoint:
-            for (Point2D.Float belowPoint : pointsBelow) {
-                if (!this.edgeExistsBetween(topLeftPoint, belowPoint, verticalEdges)) {
-                    break nextCrossingPoint;
-                }
-
-                for (Point2D.Float rightPoint : pointsRight) {
-                    if (!this.edgeExistsBetween(topLeftPoint, rightPoint, horizontalEdges)) {
-                        break nextCrossingPoint;
-                    }
-
-                    Point2D.Float bottomRightPoint = new Point2D.Float(rightPoint.x, belowPoint.y);
-
-                    if (sortedPoints.contains(bottomRightPoint)
-                            && this.edgeExistsBetween(belowPoint, bottomRightPoint, horizontalEdges)
-                            && this.edgeExistsBetween(rightPoint, bottomRightPoint, verticalEdges)) {
-
-                        foundRectangles.add(new Rectangle(
-                                topLeftPoint.y,
-                                topLeftPoint.x,
-                                bottomRightPoint.x - topLeftPoint.x,
-                                bottomRightPoint.y - topLeftPoint.y)
-                        );
-
-                        break nextCrossingPoint;
-                    }
-                }
-            }
-        }
-
-        return foundRectangles;
-    }
-
-    private boolean edgeExistsBetween(Point2D.Float p1, Point2D.Float p2, List<Line2D.Float> edges) {
-        for (Line2D.Float edge : edges) {
-            if (p1.x >= edge.x1 && p1.x <= edge.x2 && p1.y >= edge.y1 && p1.y <= edge.y2
-                    && p2.x >= edge.x1 && p2.x <= edge.x2 && p2.y >= edge.y1 && p2.y <= edge.y2) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private Set<Point2D.Float> getCrossingPoints(List<Line2D.Float> horizontalEdges, List<Line2D.Float> verticalEdges) {
-        Set<Point2D.Float> crossingPoints = new HashSet<Point2D.Float>();
-
-        for (Line2D.Float horizontalEdge : horizontalEdges) {
-            for (Line2D.Float verticalEdge : verticalEdges) {
-                if (horizontalEdge.intersectsLine(verticalEdge)) {
-                    crossingPoints.add(new Point2D.Float(verticalEdge.x1, horizontalEdge.y1));
-                }
-            }
-        }
-
-        return crossingPoints;
-    }
-
-    private List<Line2D.Float> getHorizontalRulings(BufferedImage image) {
+    private List<Ruling> getHorizontalRulings(BufferedImage image) {
 
         // get all horizontal edges, which we'll define as a change in grayscale colour
         // along a straight line of a certain length
-        ArrayList<Line2D.Float> horizontalRulings = new ArrayList<Line2D.Float>();
+        ArrayList<Ruling> horizontalRulings = new ArrayList<Ruling>();
 
         Raster r = image.getRaster();
         int width = r.getWidth();
@@ -935,7 +771,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     int endX = lineX - 1;
                     int lineWidth = endX - x;
                     if (lineWidth > HORIZONTAL_EDGE_WIDTH_MINIMUM) {
-                        horizontalRulings.add(new Line2D.Float(x, y, endX, y));
+                        horizontalRulings.add(new Ruling(new Point2D.Float(x, y), new Point2D.Float(endX, y)));
                     }
                 }
 
@@ -946,11 +782,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return horizontalRulings;
     }
 
-    private List<Line2D.Float> getVerticalRulings(BufferedImage image) {
+    private List<Ruling> getVerticalRulings(BufferedImage image) {
 
         // get all vertical edges, which we'll define as a change in grayscale colour
         // along a straight line of a certain length
-        ArrayList<Line2D.Float> verticalRulings = new ArrayList<Line2D.Float>();
+        ArrayList<Ruling> verticalRulings = new ArrayList<Ruling>();
 
         Raster r = image.getRaster();
         int width = r.getWidth();
@@ -998,7 +834,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     int endY = lineY - 1;
                     int lineLength = endY - y;
                     if (lineLength > VERTICAL_EDGE_HEIGHT_MINIMUM) {
-                        verticalRulings.add(new Line2D.Float(x, y, x, endY));
+                        verticalRulings.add(new Ruling(new Point2D.Float(x, y), new Point2D.Float(x, endY)));
                     }
                 }
 

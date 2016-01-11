@@ -24,8 +24,14 @@ public class Ruling extends Line2D.Float {
     
     public Ruling(Point2D p1, Point2D p2) {
         super(p1, p2);
-        
-        // normalize almost vertical or almost horizontal lines
+        this.normalize();
+    }
+
+    /**
+     * Normalize almost horizontal or almost vertical lines
+     */
+    public void normalize() {
+
         double angle = this.getAngle();
         if (Utils.within(angle, 0, 1) || Utils.within(angle, 180, 1)) { // almost horizontal
             this.setLine(this.x1, this.y1, this.x2, this.y1);
