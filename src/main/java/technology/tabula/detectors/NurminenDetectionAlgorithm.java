@@ -431,8 +431,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         // do the same for lines at the top, but make the threshold greater since table headings tend to be
-        // larger to fit up to two-ish rows of text (at least but we don't want to grab too much)
-        rowHeightThreshold = avgRowHeight * 2.5f;
+        // larger to fit up to three-ish rows of text (at least but we don't want to grab too much)
+        rowHeightThreshold = avgRowHeight * 3.5f;
 
         for (int i=horizontalRulings.size() - 1; i>=0; i--) {
             Line2D.Float ruling = horizontalRulings.get(i);
