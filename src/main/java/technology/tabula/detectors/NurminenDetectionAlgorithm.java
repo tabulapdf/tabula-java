@@ -5,18 +5,15 @@ import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.util.ImageIOUtil;
 import org.apache.pdfbox.util.PDFOperator;
 import technology.tabula.*;
 import technology.tabula.Rectangle;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
-import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -39,24 +36,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     private static final int REQUIRED_TEXT_LINES_FOR_EDGE = 4;
     private static final int REQUIRED_CELLS_FOR_TABLE = 4;
     private static final float IDENTICAL_TABLE_OVERLAP_RATIO = 0.98f;
-
-    /**
-     * Comparator to sort points by top-leftmost first
-     */
-    private static final Comparator<Point2D.Float> pointComparator = new Comparator<Point2D.Float>() {
-        @Override
-        public int compare(Point2D.Float o1, Point2D.Float o2) {
-            if (o1.equals(o2)) {
-                return 0;
-            }
-
-            if (o1.getY() == o2.getY()) {
-                return Double.compare(o1.getX(), o2.getX());
-            } else {
-                return Double.compare(o1.getY(), o2.getY());
-            }
-        }
-    };
 
     /**
      * Helper class that encapsulates a text edge
