@@ -28,17 +28,65 @@ import technology.tabula.detectors.NurminenDetectionAlgorithm;
 @RunWith(Parameterized.class)
 public class TestTableDetection {
 
-    private class TestStatistics {
+    private static int numTests = 0;
+    private static int numPassingTests = 0;
+    private static int totalExpectedTables = 0;
+    private static int totalCorrectlyDetectedTables = 0;
+    private static int totalErroneouslyDetectedTables = 0;
+
+    private static final class TestStatus {
         public int numExpectedTables;
-        public int numDetectedTables;
-        public TestStatistics() {
+        public int numCorrectlyDetectedTables;
+        public int numErroneouslyDetectedTables;
+        public boolean expectedFailure;
+
+        private transient boolean firstRun;
+        private transient String pdfFilename;
+
+        public TestStatus() {
+            this(null);
+        }
+
+        public TestStatus(String pdfFilename) {
             this.numExpectedTables = 0;
-            this.numDetectedTables = 0;
+            this.numCorrectlyDetectedTables = 0;
+            this.expectedFailure = false;
+            this.pdfFilename = pdfFilename;
+        }
+
+        public static TestStatus load(String pdfFilename) {
+            TestStatus status;
+
+            try {
+                String json = UtilsForTesting.loadJson(jsonFilename(pdfFilename));
+                status = new Gson().fromJson(json, TestStatus.class);
+                status.pdfFilename = pdfFilename;
+            } catch (IOException ioe) {
+                status = new TestStatus(pdfFilename);
+                status.firstRun = true;
+            }
+
+            return status;
+        }
+
+        public void save() {
+            try {
+                FileWriter w = new FileWriter(jsonFilename(this.pdfFilename));
+                Gson gson = new Gson();
+                w.write(gson.toJson(this));
+                w.close();
+            } catch (Exception e) {
+            }
+        }
+
+        public boolean isFirstRun() {
+            return this.firstRun;
+        }
+
+        private static String jsonFilename(String pdfFilename) {
+            return pdfFilename.replace(".pdf", ".json");
         }
     }
-
-    private static final String STATISTICS_FILE = "src/test/resources/technology/tabula/icdar2013-dataset/test-statistics.json";
-    private static final boolean ASSERT = true;
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -65,48 +113,20 @@ public class TestTableDetection {
         return data;
     }
 
-    @BeforeClass
-    public static void clearStats() {
-        try {
-            File statsFile = new File(STATISTICS_FILE);
-            statsFile.delete();
-        } catch (Exception e) {
-            // file must not exist in the first place
-        }
-    }
-
     private File pdf;
     private DocumentBuilder builder;
+    private TestStatus status;
 
-    private TestStatistics stats;
+    private int numCorrectlyDetectedTables = 0;
+    private int numErroneouslyDetectedTables = 0;
 
     public TestTableDetection(File pdf) {
         this.pdf = pdf;
+        this.status = TestStatus.load(pdf.getAbsolutePath());
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             this.builder = factory.newDocumentBuilder();
-        } catch (Exception e) {
-        }
-
-        // read in the overall test statistics
-        Gson gson = new Gson();
-        String statsJson;
-        try {
-            statsJson = UtilsForTesting.loadJson(STATISTICS_FILE);
-            this.stats = gson.fromJson(statsJson, TestStatistics.class);
-        } catch (IOException ioe) {
-            // file must not exist
-            this.stats = new TestStatistics();
-        }
-    }
-
-    private void saveStats() {
-        try {
-            FileWriter w = new FileWriter(STATISTICS_FILE);
-            Gson gson = new Gson();
-            w.write(gson.toJson(this.stats));
-            w.close();
         } catch (Exception e) {
         }
     }
@@ -120,9 +140,9 @@ public class TestTableDetection {
         }
     }
 
-    @Ignore("Test is ignored until better table detection algorithms are implemented")
     @Test
     public void testDetectionOfTables() throws Exception {
+        numTests++;
 
         // xml parsing stuff for ground truth
         Document regionDocument = this.builder.parse(this.pdf.getAbsolutePath().replace(".pdf", "-reg.xml"));
@@ -134,6 +154,7 @@ public class TestTableDetection {
 
         // parse expected tables from the ground truth dataset
         Map<Integer, List<Rectangle>> expectedTables = new HashMap<Integer, List<Rectangle>>();
+
         int numExpectedTables = 0;
 
         for (int i=0; i<tables.getLength(); i++) {
@@ -169,9 +190,6 @@ public class TestTableDetection {
             numExpectedTables++;
         }
 
-        // save some stats
-        this.stats.numExpectedTables += numExpectedTables;
-
         // now find tables detected by tabula-java
         Map<Integer, List<Rectangle>> detectedTables = new HashMap<Integer, List<Rectangle>>();
 
@@ -197,73 +215,118 @@ public class TestTableDetection {
         System.out.println("Detected Tables:");
         this.printTables(detectedTables);
 
-        if (ASSERT) {
-            assertEquals("Did not detect tables on the same number of pages", expectedTables.size(), detectedTables.size());
-        } else if (expectedTables.size() != detectedTables.size()) {
-            System.out.println("Did not detect tables on the same number of pages");
-        }
+        List<String> errors = new ArrayList<String>();
+        this.status.numExpectedTables = numExpectedTables;
+        totalExpectedTables += numExpectedTables;
 
         for (Integer page : expectedTables.keySet()) {
             List<Rectangle> expectedPageTables = expectedTables.get(page);
             List<Rectangle> detectedPageTables = detectedTables.get(page);
 
-            if (ASSERT) {
-                assertNotNull("Expected tables not found on page " + page.toString(), detectedPageTables);
-            } else if (detectedPageTables == null) {
-                System.out.println("Expected tables not found on page " + page.toString());
+            if (detectedPageTables == null) {
+                errors.add("Page " + page.toString() + ": " + expectedPageTables.size() + " expected tables not found");
                 continue;
             }
 
-            int maxTableNum = expectedPageTables.size();
-            if (ASSERT) {
-                assertEquals("Did not find the same number of tables on page " + page.toString(), expectedPageTables.size(), detectedPageTables.size());
-            } else if (expectedPageTables.size() != detectedPageTables.size()) {
-                System.out.println("Did not find the same number of tables on page " + page.toString());
-                maxTableNum = Math.min(expectedPageTables.size(), detectedPageTables.size());
+            errors.addAll(this.comparePages(page, detectedPageTables, expectedPageTables));
+
+            detectedTables.remove(page);
+        }
+
+        // leftover pages means we detected extra tables
+        for (Integer page : detectedTables.keySet()) {
+            List<Rectangle> detectedPageTables = detectedTables.get(page);
+            errors.add("Page " + page.toString() + ": " + detectedPageTables.size() + " tables detected where there are none");
+
+            this.numErroneouslyDetectedTables += detectedPageTables.size();
+            totalErroneouslyDetectedTables += detectedPageTables.size();
+        }
+
+        boolean failed = errors.size() > 0;
+
+        if (failed) {
+            System.out.println("==== CURRENT TEST ERRORS ====");
+            for (String error : errors) {
+                System.out.println(error);
             }
+        } else {
+            numPassingTests++;
+        }
 
-            // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):
-            // for other (e.g.“black-box”) algorithms, bounding boxes and content are used. A region is correct if it
-            // contains the minimal bounding box of the ground truth without intersecting additional content.
-            int correctlyDetected = 0;
-            for (int i=0; i<maxTableNum; i++) {
-                Rectangle detectedTable = detectedPageTables.get(i);
-                Rectangle expectedTable = expectedPageTables.get(i);
+        System.out.println("==== CUMULATIVE TEST STATISTICS ====");
 
-                // make sure the detected table contains the expected table
-                if (ASSERT) {
-                    assertTrue(detectedTable.toString() + "\ndoes not contain " + expectedTable.toString(), detectedTable.contains(expectedTable));
-                } else if (!detectedTable.contains(expectedTable)) {
-                    System.out.println(detectedTable.toString() + "\ndoes not contain " + expectedTable.toString());
-                    continue;
-                }
+        System.out.println(numPassingTests + " out of " + numTests + " currently passing");
+        System.out.println(totalCorrectlyDetectedTables + " out of " + totalExpectedTables + " expected tables detected");
+        System.out.println(totalErroneouslyDetectedTables + " tables incorrectly detected");
 
-                // now make sure it doesn't intersect any other tables on the page
-                Rectangle incorrectlyIntersectedTable = null;
-                for (int j=0; j<expectedPageTables.size(); j++) {
-                    if (j != i) {
-                        Rectangle otherTable = expectedPageTables.get(j);
-                        if (ASSERT) {
-                            assertFalse(detectedTable.toString() + "\nintersects " + otherTable.toString(), detectedTable.intersects(otherTable));
-                        } else if (detectedTable.intersects(otherTable)) {
-                            incorrectlyIntersectedTable = otherTable;
+
+        if(this.status.isFirstRun()) {
+            // make the baseline
+            this.status.expectedFailure = failed;
+            this.status.numCorrectlyDetectedTables = this.numCorrectlyDetectedTables;
+            this.status.numErroneouslyDetectedTables = this.numErroneouslyDetectedTables;
+            this.status.save();
+        } else {
+            // compare to baseline
+            if (this.status.expectedFailure) {
+                // make sure the failure didn't get worse
+                assertTrue("This test is an expected failure, but it now detects even fewer tables.", this.numCorrectlyDetectedTables >= this.status.numCorrectlyDetectedTables);
+                assertTrue("This test is an expected failure, but it now detects more bad tables.", this.numErroneouslyDetectedTables <= this.status.numErroneouslyDetectedTables);
+                assertTrue("This test used to fail but now it passes! Hooray! Please update the test's JSON file accordingly.", failed);
+            } else {
+                assertFalse("Table detection failed. Please see the error messages for more information.", failed);
+            }
+        }
+    }
+
+    private List<String> comparePages(Integer page, List<Rectangle> detected, List<Rectangle> expected) {
+        ArrayList<String> errors = new ArrayList<String>();
+
+        // go through the detected tables and try to match them with expected tables
+        // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):
+        // for other (e.g.“black-box”) algorithms, bounding boxes and content are used. A region is correct if it
+        // contains the minimal bounding box of the ground truth without intersecting additional content.
+        for (Iterator<Rectangle> detectedIterator = detected.iterator(); detectedIterator.hasNext();) {
+            Rectangle detectedTable = detectedIterator.next();
+
+            for (int i=0; i<expected.size(); i++) {
+                if (detectedTable.contains(expected.get(i))) {
+                    // we have a candidate for the detected table, make sure it doesn't intersect any others
+                    boolean intersectsOthers = false;
+                    for (int j=0; j<expected.size(); j++) {
+                        if (i == j) continue;
+                        if (detectedTable.intersects(expected.get(j))) {
+                            intersectsOthers = true;
                             break;
                         }
                     }
-                }
 
-                if (incorrectlyIntersectedTable != null) {
-                    System.out.println(detectedTable.toString() + "\nintersects " + incorrectlyIntersectedTable.toString());
-                    continue;
-                }
+                    if (!intersectsOthers) {
+                        // success
+                        detectedIterator.remove();
+                        expected.remove(i);
 
-                // made it, this table checks out
-                System.out.println("Table " + i + " on page " + page.toString() + " OK");
-                correctlyDetected++;
+                        this.numCorrectlyDetectedTables++;
+                        totalCorrectlyDetectedTables++;
+
+                        break;
+                    }
+                }
             }
-
-            this.stats.numDetectedTables += correctlyDetected;
-            this.saveStats();
         }
+
+        // any expected tables left over weren't detected
+        for (Rectangle expectedTable : expected) {
+            errors.add("Page " + page.toString() + ": " + expectedTable.toString() + " not detected");
+        }
+
+        // any detected tables left over were detected erroneously
+        for (Rectangle detectedTable : detected) {
+            errors.add("Page " + page.toString() + ": " + detectedTable.toString() + " detected where there is no table");
+            this.numErroneouslyDetectedTables++;
+            totalErroneouslyDetectedTables++;
+        }
+
+        return errors;
     }
 }
