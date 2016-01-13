@@ -5,10 +5,13 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
 import com.google.gson.Gson;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,6 +36,8 @@ public class TestTableDetection {
     private static int totalExpectedTables = 0;
     private static int totalCorrectlyDetectedTables = 0;
     private static int totalErroneouslyDetectedTables = 0;
+
+    private static Level defaultLogLevel;
 
     private static final class TestStatus {
         public int numExpectedTables;
@@ -86,6 +91,18 @@ public class TestTableDetection {
         private static String jsonFilename(String pdfFilename) {
             return pdfFilename.replace(".pdf", ".json");
         }
+    }
+
+    @BeforeClass
+    public static void disableLogging() {
+        Logger pdfboxLogger = Logger.getLogger("org.apache.pdfbox");
+        defaultLogLevel = pdfboxLogger.getLevel();
+        pdfboxLogger.setLevel(Level.OFF);
+    }
+
+    @AfterClass
+    public static void enableLogging() {
+        Logger.getLogger("org.apache.pdfbox").setLevel(defaultLogLevel);
     }
 
     @Parameterized.Parameters
@@ -207,13 +224,6 @@ public class TestTableDetection {
 
         // now compare
         System.out.println("Testing " + this.pdf.getName());
-
-        // for now for easier debugging spit out all expected/detected tables
-        System.out.println("Expected Tables:");
-        this.printTables(expectedTables);
-
-        System.out.println("Detected Tables:");
-        this.printTables(detectedTables);
 
         List<String> errors = new ArrayList<String>();
         this.status.numExpectedTables = numExpectedTables;
