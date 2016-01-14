@@ -831,5 +831,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         writer.writeTokens(newTokens);
         newContents.addCompression();
         page.setContents(newContents);
+
+        try {
+            document.close();
+        } catch (Exception e) {}
     }
 }
