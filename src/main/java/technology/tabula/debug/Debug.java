@@ -27,6 +27,8 @@ import technology.tabula.Table;
 import technology.tabula.TextChunk;
 import technology.tabula.TextElement;
 import technology.tabula.Utils;
+import technology.tabula.detectors.DetectionAlgorithm;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import org.apache.commons.cli.CommandLine;
@@ -104,6 +106,12 @@ public class Debug {
         SpreadsheetExtractionAlgorithm ea = new SpreadsheetExtractionAlgorithm();
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(h, v);
         drawShapes(g, cells);
+    }
+
+    private static void debugDetectedTables(Graphics2D g, Page page) {
+        NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
+        List<Rectangle> tables = detectionAlgorithm.detect(page);
+        drawShapes(g, tables);
     }
     
     private static void drawShapes(Graphics2D g, Collection<? extends Shape> shapes, Stroke stroke) {
@@ -208,7 +216,8 @@ public class Debug {
     public static void renderPage(String pdfPath, String outPath, int pageNumber, Rectangle area,
             boolean drawTextChunks, boolean drawSpreadsheets, boolean drawRulings, boolean drawIntersections,
             boolean drawColumns, boolean drawCharacters, boolean drawArea, boolean drawCells, 
-            boolean drawUnprocessedRulings, boolean drawProjectionProfile, boolean drawClippingPaths) throws IOException {
+            boolean drawUnprocessedRulings, boolean drawProjectionProfile, boolean drawClippingPaths,
+            boolean drawDetectedTables) throws IOException {
         PDDocument document = PDDocument.load(pdfPath);
         
         ObjectExtractor oe = new ObjectExtractor(document, true);
@@ -262,6 +271,9 @@ public class Debug {
         if (drawClippingPaths) {
             drawShapes(g, oe.clippingPaths, new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[] { 3f }, 0f));
         }
+        if (drawDetectedTables) {
+            debugDetectedTables(g, page);
+        }
 
         document.close();
         
@@ -284,6 +296,7 @@ public class Debug {
         o.addOption("u", "unprocessed-rulings", false, "Show non-cleaned rulings");
         o.addOption("f", "profile", false, "Show projection profile");
         o.addOption("n", "clipping-paths", false, "Show clipping paths");
+        o.addOption("d", "detected-tables", false, "Show detected tables");
 
         o.addOption(OptionBuilder.withLongOpt("area")
                 .withDescription("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
@@ -354,7 +367,8 @@ public class Debug {
                            line.hasOption('l'),
                            line.hasOption('u'),
                            line.hasOption('f'),
-                           line.hasOption('n'));
+                           line.hasOption('n'),
+                           line.hasOption('d'));
             }
         }
         catch (ParseException e) {
