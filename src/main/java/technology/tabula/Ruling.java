@@ -135,10 +135,14 @@ public class Ruling extends Line2D.Float {
     // because the expansions are additive
     // (e.g. two vertical lines, at x = 100, with one having y2 of 98 and the other having y1 of 102 would
     // erroneously be said to nearlyIntersect if they were each expanded by 2 (since they'd both terminate at 100).
-    // The COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT is only 1 so the total expansion is 2.
+    // By default the COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT is only 1 so the total expansion is 2.
     // A total expansion amount of 2 is empirically verified to work sometimes. It's not a magic number from any
     // source other than a little bit of experience.)
     public boolean nearlyIntersects(Ruling another) {
+        return this.nearlyIntersects(another, COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT);
+    }
+
+    public boolean nearlyIntersects(Ruling another, int colinearOrParallelExpandAmount) {
         if (this.intersectsLine(another)) {
             return true;
         }
@@ -149,8 +153,8 @@ public class Ruling extends Line2D.Float {
             rv = this.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT).intersectsLine(another);
         }
         else {
-            rv = this.expand(COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT)
-                    .intersectsLine(another.expand(COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT));
+            rv = this.expand(colinearOrParallelExpandAmount)
+                    .intersectsLine(another.expand(colinearOrParallelExpandAmount));
         }
         
         return rv;
@@ -385,8 +389,12 @@ public class Ruling extends Line2D.Float {
         return rv;
         
     }
-    
+
     public static List<Ruling> collapseOrientedRulings(List<Ruling> lines) {
+        return collapseOrientedRulings(lines, COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT);
+    }
+    
+    public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
         ArrayList<Ruling> rv = new ArrayList<Ruling>();
         if (lines.size() == 0) {
             return rv;
@@ -402,7 +410,7 @@ public class Ruling extends Line2D.Float {
         for (Ruling next_line : lines) {
             Ruling last = rv.get(rv.size() - 1);
             // if current line colinear with next, and are "close enough": expand current line
-            if (Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line)) {
+            if (Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
                 last.setStart(next_line.getStart() < last.getStart() ? next_line.getStart() : last.getStart());
                 last.setEnd(next_line.getEnd() < last.getEnd() ? last.getEnd() : next_line.getEnd());
             }

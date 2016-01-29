@@ -130,8 +130,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
 
             // merge the edge lines into rulings - this makes finding edges between crossing points in the next step easier
-            horizontalRulings = Ruling.collapseOrientedRulings(horizontalRulings);
-            verticalRulings = Ruling.collapseOrientedRulings(verticalRulings);
+            // we use a larger pixel expansion than the normal spreadsheet extraction method to cover gaps in the
+            // edge detection/pixel snapping steps
+            horizontalRulings = Ruling.collapseOrientedRulings(horizontalRulings, 5);
+            verticalRulings = Ruling.collapseOrientedRulings(verticalRulings, 5);
 
             // use the rulings and points to find cells
             List<? extends Rectangle> cells = SpreadsheetExtractionAlgorithm.findCells(horizontalRulings, verticalRulings);
