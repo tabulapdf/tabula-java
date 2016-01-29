@@ -535,7 +535,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                             TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                            edge.intersectingTextRowCount = edgeChunks.size();
+                            edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                             leftTextEdges.add(edge);
                         }
@@ -553,7 +553,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                             TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                            edge.intersectingTextRowCount = edgeChunks.size();
+                            edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                             midTextEdges.add(edge);
                         }
@@ -571,7 +571,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                             TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                             TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                            edge.intersectingTextRowCount = edgeChunks.size();
+                            edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                             rightTextEdges.add(edge);
                         }
@@ -588,7 +588,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                 TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                edge.intersectingTextRowCount = edgeChunks.size();
+                edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                 leftTextEdges.add(edge);
             }
@@ -601,7 +601,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                 TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                edge.intersectingTextRowCount = edgeChunks.size();
+                edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                 midTextEdges.add(edge);
             }
@@ -614,7 +614,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 TextChunk last = edgeChunks.get(edgeChunks.size() - 1);
 
                 TextEdge edge = new TextEdge(key, first.getTop(), key, last.getBottom());
-                edge.intersectingTextRowCount = edgeChunks.size();
+                edge.intersectingTextRowCount = Math.min(edgeChunks.size(), lines.size());
 
                 rightTextEdges.add(edge);
             }
