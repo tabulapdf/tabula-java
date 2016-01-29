@@ -35,7 +35,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     private static final float TABLE_PADDING_AMOUNT = 1.0f;
     private static final int REQUIRED_TEXT_LINES_FOR_EDGE = 4;
     private static final int REQUIRED_CELLS_FOR_TABLE = 4;
-    private static final float IDENTICAL_TABLE_OVERLAP_RATIO = 0.98f;
+    private static final float IDENTICAL_TABLE_OVERLAP_RATIO = 0.9f;
 
     /**
      * Helper class that encapsulates a text edge
