@@ -192,8 +192,13 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
     }
     
     public static List<Line> groupByLines(List<TextChunk> textChunks) {
-        float bbwidth = Rectangle.boundingBoxOf(textChunks).width;
         List<Line> lines = new ArrayList<Line>();
+
+        if (textChunks.size() == 0) {
+            return lines;
+        }
+
+        float bbwidth = Rectangle.boundingBoxOf(textChunks).width;
         
         Line l = new Line();
         l.addTextChunk(textChunks.get(0));

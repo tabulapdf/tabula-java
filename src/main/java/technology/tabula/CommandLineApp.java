@@ -18,6 +18,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.GnuParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import technology.tabula.detectors.DetectionAlgorithm;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
@@ -122,10 +125,12 @@ public class CommandLineApp {
         boolean useLineReturns = line.hasOption('u');
         
         try {
+
+            PDDocument pdfDocument = PDDocument.load(pdfFile);
      
             ObjectExtractor oe = line.hasOption('s') ? 
-                    new ObjectExtractor(PDDocument.load(pdfFile), line.getOptionValue('s')) : 
-                    new ObjectExtractor(PDDocument.load(pdfFile));
+                    new ObjectExtractor(pdfDocument, line.getOptionValue('s')) :
+                    new ObjectExtractor(pdfDocument);
             BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
             SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
                     
@@ -148,9 +153,18 @@ public class CommandLineApp {
                 switch(method) {
                 case BASIC:
                     if (line.hasOption('g')) {
-                        
+                        // guess the page areas to extract using a detection algorithm
+                        // currently we only have a detector that uses spreadsheets to find table areas
+                        DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
+                        List<Rectangle> guesses = detector.detect(page);
+
+                        for (Rectangle guessRect : guesses) {
+                            Page guess = page.getArea(guessRect);
+                            tables.addAll(basicExtractor.extract(guess));
+                        }
+                    } else {
+                        tables.addAll(verticalRulingPositions == null ? basicExtractor.extract(page) : basicExtractor.extract(page, verticalRulingPositions));
                     }
-                    tables.addAll(verticalRulingPositions == null ? basicExtractor.extract(page) : basicExtractor.extract(page, verticalRulingPositions));
                     
                     break;
                 case SPREADSHEET:
