@@ -102,23 +102,23 @@ public final class CohenSutherlandClipping
 
             if ((c & LEFT) != INSIDE) {
                 qx = xMin;
-                qy = (qx-p1x)*slope + p1y;
+                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*slope + p1y;
             }
             else if ((c & RIGHT) != INSIDE) {
                 qx = xMax;
-                qy = (qx-p1x)*slope + p1y;
+                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*slope + p1y;
             }
             else if ((c & BOTTOM) != INSIDE) {
                 qy = yMin;
                 qx = vertical
                     ? p1x
-                    : (qy-p1y)/slope + p1x;
+                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/slope + p1x;
             }
             else if ((c & TOP) != INSIDE) {
                 qy = yMax;
                 qx = vertical
                     ? p1x
-                    : (qy-p1y)/slope + p1x;
+                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/slope + p1x;
             }
 
             if (c == c1) {
