@@ -66,7 +66,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     
     /**
-     * @return true if text contained in this TextChunk is the same repeated character
+     * Returns true if text contained in this TextChunk is the same repeated character
      */
     public boolean isSameChar(Character c) {
         return isSameChar(new Character[] { c });
@@ -82,9 +82,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
     }
     
     /** Splits a TextChunk in two, at the position of the i-th TextElement
-     * @param textChunk the TextChunk to split
-     * @param i
-     * @return Two TextChunks, contained in a TextChunk[]
      */
     public TextChunk[] splitAt(int i) {
         if (i < 1 || i >= this.getTextElements().size()) {
@@ -103,10 +100,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
      * For example, if the TextChunk contains this string of characters: "1234xxxxx56xx"
      * and c == 'x' and minRunLength == 4, this method will return a list of TextChunk
      * such that: ["1234", "56xx"]
-     * 
-     * @param c the Character to remove
-     * @param minRunLength minimum run length to consider. 
-     * @return
      */
     public List<TextChunk> squeeze(Character c, int minRunLength) {
         Character currentChar, lastChar = null;

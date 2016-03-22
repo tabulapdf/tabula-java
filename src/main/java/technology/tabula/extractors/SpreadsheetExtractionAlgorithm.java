@@ -80,45 +80,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         }
     };
 
-//    @Override
-//    public List<? extends Table> extract(Page page) {
-//        List<Cell> cells = findCells(page.getHorizontalRulings(), page.getVerticalRulings());
-//        List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
-//        
-//        List<TableWithRulingLines> spreadsheets = new ArrayList<TableWithRulingLines>();
-//        for (Rectangle area: spreadsheetAreas) {
-//
-//            List<Cell> overlappingCells = new ArrayList<Cell>();
-//            for (Cell c: cells) {
-//                if (c.intersects(area)) {
-//                    c.setTextElements(TextElement.mergeWords(page.getText(c)));
-//                    overlappingCells.add(c);
-//                }
-//            }
-//
-//            List<Ruling> horizontalOverlappingRulings = new ArrayList<Ruling>();
-//            for (Ruling hr: page.getHorizontalRulings()) {
-//                if (area.intersectsLine(hr)) {
-//                    horizontalOverlappingRulings.add(hr);
-//                }
-//            }
-//            List<Ruling> verticalOverlappingRulings = new ArrayList<Ruling>();
-//            for (Ruling vr: page.getHorizontalRulings()) {
-//                if (area.intersectsLine(vr)) {
-//                    verticalOverlappingRulings.add(vr);
-//                }
-//            }
-//            
-//            TableWithRulingLines t = new TableWithRulingLines(area, page, overlappingCells,
-//                    horizontalOverlappingRulings, verticalOverlappingRulings);
-//            
-//            t.setExtractionAlgorithm(this);
-//            
-//            spreadsheets.add(t);
-//        }
-//        
-//        return spreadsheets;
-//    }
     
     @Override
     public List<? extends Table> extract(Page page) {
@@ -127,9 +88,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     /**
      * Extract a list of Table from page using rulings as separators
-     * @param page
-     * @param rulings
-     * @return
      */
     public List<? extends Table> extract(Page page, List<Ruling> rulings) {
         // split rulings into horizontal and vertical

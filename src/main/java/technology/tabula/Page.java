@@ -133,7 +133,6 @@ public class Page extends Rectangle {
     
     /**
      * Returns the minimum bounding box that contains all the TextElements on this Page
-     * @return
      */
     public Rectangle getTextBounds() {
         List<TextElement> texts = this.getText();

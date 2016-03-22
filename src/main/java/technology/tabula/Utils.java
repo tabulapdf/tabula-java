@@ -117,7 +117,6 @@ public class Utils {
     /**
      * Wrap Collections.sort so we can fallback to a non-stable quicksort
      * if we're running on JDK7+ 
-     * @param list
      */
     public static <T extends Comparable<? super T>> void sort(List<T> list) {
         if (useQuickSort) {

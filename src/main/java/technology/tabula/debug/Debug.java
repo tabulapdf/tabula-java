@@ -27,7 +27,6 @@ import technology.tabula.Table;
 import technology.tabula.TextChunk;
 import technology.tabula.TextElement;
 import technology.tabula.Utils;
-import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
