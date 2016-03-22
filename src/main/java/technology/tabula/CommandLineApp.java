@@ -31,10 +31,10 @@ import technology.tabula.writers.Writer;
 
 public class CommandLineApp {
 
-    private static String VERSION = "0.8.0";
-    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2014 Manuel Aristarán", VERSION);
+    private static String VERSION = "0.9.0";
+    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2016 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
-    
+
     private Appendable defaultOutput;
 
     public static void main(String[] args) {
@@ -42,23 +42,23 @@ public class CommandLineApp {
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(buildOptions(), args );
-            
+
             if (line.hasOption('h')) {
                 printHelp();
                 System.exit(0);
             }
-            
+
             if (line.hasOption('v')) {
                 System.out.println(VERSION_STRING);
                 System.exit(0);
             }
-            
+
             if (line.getArgs().length != 1) {
                 throw new ParseException("Need one filename\nTry --help for help");
             }
-                        
+
             new CommandLineApp(System.out).extractTables(line);
-            
+
         }
         catch( ParseException exp ) {
             System.err.println("Error: " + exp.getMessage());
@@ -66,21 +66,21 @@ public class CommandLineApp {
         }
         System.exit(0);
     }
-    
+
     public CommandLineApp(Appendable defaultOutput) {
 		this.defaultOutput = defaultOutput;
 	}
-    
+
     public void extractTables(CommandLine line) throws ParseException {
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
         }
-        
+
         OutputFormat of = OutputFormat.CSV;
         if (line.hasOption('f')) {
             try {
-                of = OutputFormat.valueOf(line.getOptionValue('f'));    
+                of = OutputFormat.valueOf(line.getOptionValue('f'));
             }
             catch (IllegalArgumentException e) {
                 throw new ParseException(String.format(
@@ -88,13 +88,13 @@ public class CommandLineApp {
                         line.getOptionValue('f'),
                         Utils.join(",", OutputFormat.formatNames())));
             }
-            
+
         }
-        
+
         Appendable outFile = this.defaultOutput;
         if (line.hasOption('o')) {
             File file = new File(line.getOptionValue('o'));
-            
+
             try {
                 file.createNewFile();
                 outFile = new BufferedWriter(new FileWriter(
@@ -104,7 +104,7 @@ public class CommandLineApp {
                         + line.getOptionValue('o'));
             }
         }
-        
+
         Rectangle area = null;
         if (line.hasOption('a')) {
             List<Float> f = parseFloatList(line.getOptionValue('a'));
@@ -113,34 +113,34 @@ public class CommandLineApp {
             }
             area = new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
         }
-        
+
         List<Float> verticalRulingPositions = null;
         if (line.hasOption('c')) {
             verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
         }
-        
+
         String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
         List<Integer> pages = Utils.parsePagesOption(pagesOption);
         ExtractionMethod method = whichExtractionMethod(line);
         boolean useLineReturns = line.hasOption('u');
-        
+
         try {
 
             PDDocument pdfDocument = PDDocument.load(pdfFile);
-     
-            ObjectExtractor oe = line.hasOption('s') ? 
+
+            ObjectExtractor oe = line.hasOption('s') ?
                     new ObjectExtractor(pdfDocument, line.getOptionValue('s')) :
                     new ObjectExtractor(pdfDocument);
             BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
             SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
-                    
+
             PageIterator pageIterator = pages == null ? oe.extract() : oe.extract(pages);
             Page page;
             List<Table> tables = new ArrayList<Table>();
 
             while (pageIterator.hasNext()) {
                 page = pageIterator.next();
-                
+
                 if (area != null) {
                     page = page.getArea(area);
 
@@ -149,7 +149,7 @@ public class CommandLineApp {
                 if (method == ExtractionMethod.DECIDE) {
                     method = spreadsheetExtractor.isTabular(page) ? ExtractionMethod.SPREADSHEET : ExtractionMethod.BASIC;
                 }
-                
+
                 switch(method) {
                 case BASIC:
                     if (line.hasOption('g')) {
@@ -165,7 +165,7 @@ public class CommandLineApp {
                     } else {
                         tables.addAll(verticalRulingPositions == null ? basicExtractor.extract(page) : basicExtractor.extract(page, verticalRulingPositions));
                     }
-                    
+
                     break;
                 case SPREADSHEET:
                     // TODO add useLineReturns
@@ -175,14 +175,14 @@ public class CommandLineApp {
                 }
             }
             writeTables(of, tables, outFile);
-            
+
 
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         }
 
     }
-    
+
     private void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
         switch (format) {
@@ -198,7 +198,7 @@ public class CommandLineApp {
         }
         writer.write(out, tables);
     }
-    
+
     private ExtractionMethod whichExtractionMethod(CommandLine line) {
         ExtractionMethod rv = ExtractionMethod.DECIDE;
         if (line.hasOption('r')) {
@@ -209,9 +209,9 @@ public class CommandLineApp {
         }
         return rv;
     }
-    
-    
-    
+
+
+
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");
         List<Float> rv = new ArrayList<Float>();
@@ -224,16 +224,16 @@ public class CommandLineApp {
             throw new ParseException("Wrong number syntax");
         }
     }
-    
+
     private static void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("tabula", BANNER, buildOptions(), "", true);
     }
-    
+
     @SuppressWarnings("static-access")
     public static Options buildOptions() {
         Options o = new Options();
-        
+
         o.addOption("v", "version", false, "Print version and exit.");
         o.addOption("h", "help", false, "Print this help text.");
         o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
@@ -273,15 +273,15 @@ public class CommandLineApp {
                                  .hasArg()
                                  .withArgName("PAGES")
                                  .create("p"));
-        
+
         return o;
     }
-    
+
     private enum OutputFormat {
         CSV,
         TSV,
         JSON;
-        
+
         static String[] formatNames() {
             OutputFormat[] values = OutputFormat.values();
             String[] rv = new String[values.length];
@@ -290,25 +290,25 @@ public class CommandLineApp {
             }
             return rv;
         }
-        
+
     }
-        
+
     private enum ExtractionMethod {
         BASIC,
         SPREADSHEET,
         DECIDE
     }
-    
+
     private class DebugOutput {
         private boolean debugEnabled;
 
         public DebugOutput(boolean debug) {
             this.debugEnabled = debug;
         }
-        
+
         public void debug(String msg) {
             if (this.debugEnabled) {
-                System.err.println(msg);    
+                System.err.println(msg);
             }
         }
     }
