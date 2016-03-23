@@ -109,10 +109,6 @@ public class TextElement extends Rectangle implements HasText {
      * heuristically merge a list of TextElement into a list of TextChunk
      * ported from from PDFBox's PDFTextStripper.writePage, with modifications.
      * Here be dragons
-     * 
-     * @param textElements
-     * @param verticalRulings
-     * @return
      */
     public static List<TextChunk> mergeWords(List<TextElement> textElements, List<Ruling> verticalRulings) {
         
