@@ -32,7 +32,6 @@ public class JSONWriter implements Writer {
     }
 
     
-    //final GsonBuilder gsonBuilder;
     final Gson gson;
     
     public JSONWriter() {

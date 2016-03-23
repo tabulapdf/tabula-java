@@ -174,7 +174,6 @@ public class ProjectionProfile {
     
     /** 
      * Simple Low pass filter
-     * @return
      */
     public static float[] filter(float[] data, float alpha) {
 

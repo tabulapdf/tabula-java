@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.pdfbox.pdmodel.PDPage;
+
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that
 public class Page extends Rectangle {
@@ -20,27 +22,29 @@ public class Page extends Rectangle {
     private float minCharWidth;
     private float minCharHeight;
     private RectangleSpatialIndex<TextElement> spatial_index;
+    private PDPage pdPage;
 
-    public Page(float top, float left, float width, float height, int rotation, int page_number) {
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage) {
         super(top, left, width, height);
         this.rotation = rotation;
         this.pageNumber = page_number;
+        this.pdPage = pdPage;
     }
     
-    public Page(float top, float left, float width, float height, int rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage,
             List<TextElement> characters, List<Ruling> rulings) {
 
-        this(top, left, width, height, rotation, page_number);
+        this(top, left, width, height, rotation, page_number, pdPage);
         this.texts = characters;
         this.rulings = rulings;
     }
 
 
-    public Page(float top, float left, float width, float height, int rotation, int page_number,
+    public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage,
             List<TextElement> characters, List<Ruling> rulings,
             float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
 
-        this(top, left, width, height, rotation, page_number, characters, rulings);
+        this(top, left, width, height, rotation, page_number, pdPage, characters, rulings);
         this.minCharHeight = minCharHeight;
         this.minCharWidth = minCharWidth;
         this.spatial_index = index;
@@ -56,6 +60,7 @@ public class Page extends Rectangle {
                 (float) area.getHeight(),
                 rotation,
                 pageNumber,
+                pdPage,
                 t,
                 Ruling.cropRulingsToArea(getRulings(), area),
 
@@ -128,7 +133,6 @@ public class Page extends Rectangle {
     
     /**
      * Returns the minimum bounding box that contains all the TextElements on this Page
-     * @return
      */
     public Rectangle getTextBounds() {
         List<TextElement> texts = this.getText();
@@ -152,7 +156,7 @@ public class Page extends Rectangle {
             return new ArrayList<Ruling>();
         }
         
-        this.snapPoints();
+        Utils.snapPoints(this.rulings, this.minCharWidth, this.minCharHeight);
         
         List<Ruling> vrs = new ArrayList<Ruling>();
         for (Ruling vr: this.rulings) {
@@ -215,100 +219,17 @@ public class Page extends Rectangle {
     public float getMinCharHeight() {
         return minCharHeight;
     }
-    
+
+    public PDPage getPDPage() {
+    	return pdPage;
+    }
+
     public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
     }
     
     public boolean hasText() {
         return this.texts.size() > 0;
-    }
-    
-    
-    public void snapPoints() {
-
-        // collect points and keep a Line -> p1,p2 map
-        Map<Ruling, Point2D[]> linesToPoints = new HashMap<Ruling, Point2D[]>();
-        List<Point2D> points = new ArrayList<Point2D>();
-        for (Ruling r: this.rulings) {
-            Point2D p1 = r.getP1();
-            Point2D p2 = r.getP2();
-            linesToPoints.put(r, new Point2D[] { p1, p2 });
-            points.add(p1);
-            points.add(p2);
-        }
-        
-        // snap by X
-        Collections.sort(points, new Comparator<Point2D>() {
-            @Override
-            public int compare(Point2D arg0, Point2D arg1) {
-                return java.lang.Double.compare(arg0.getX(), arg1.getX());
-            }
-        });
-        
-        List<List<Point2D>> groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
-        
-        for (Point2D p: points.subList(1, points.size() - 1)) {
-            List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
-            if (Math.abs(p.getX() - last.get(0).getX()) < this.minCharWidth) {
-                groupedPoints.get(groupedPoints.size() - 1).add(p);
-            }
-            else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
-            }
-        }
-        
-        for(List<Point2D> group: groupedPoints) {
-            float avgLoc = 0;
-            for(Point2D p: group) {
-                avgLoc += p.getX();
-            }
-            avgLoc /= group.size();
-            for(Point2D p: group) {
-                p.setLocation(avgLoc, p.getY());
-            }
-        }
-        // ---
-
-        // snap by Y
-        Collections.sort(points, new Comparator<Point2D>() {
-            @Override
-            public int compare(Point2D arg0, Point2D arg1) {
-                return java.lang.Double.compare(arg0.getY(), arg1.getY());
-            }
-        });
-        
-        groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
-        
-        for (Point2D p: points.subList(1, points.size() - 1)) {
-            List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
-            if (Math.abs(p.getY() - last.get(0).getY()) < this.minCharHeight) {
-                groupedPoints.get(groupedPoints.size() - 1).add(p);
-            }
-            else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
-            }
-        }
-        
-        for(List<Point2D> group: groupedPoints) {
-            float avgLoc = 0;
-            for(Point2D p: group) {
-                avgLoc += p.getY();
-            }
-            avgLoc /= group.size();
-            for(Point2D p: group) {
-                p.setLocation(p.getX(), avgLoc);
-            }
-        }
-        // ---
-        
-        // finally, modify lines
-        for(Map.Entry<Ruling, Point2D[]> ltp: linesToPoints.entrySet()) {
-            Point2D[] p = ltp.getValue();
-            ltp.getKey().setLine(p[0], p[1]);
-        }
     }
     
     

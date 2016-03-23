@@ -42,9 +42,6 @@ public class QuickSort
 
     /**
      * Sorts the given list using the given comparator.
-     * 
-     * @param list list to be sorted
-     * @param cmp comparator used to compare the object swithin the list
      */
     public static <T> void sort(List<T> list, Comparator<T> cmp)
     {
@@ -53,8 +50,6 @@ public class QuickSort
 
     /**
      * Sorts the given list using compareTo as comparator.
-     * 
-     * @param list list to be sorted
      */
     public static <T extends Comparable> void sort(List<T> list)
     {

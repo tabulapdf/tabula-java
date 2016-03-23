@@ -29,62 +29,53 @@ import org.apache.pdfbox.text.TextPosition;
 
 public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine{
 
-    class PointComparator implements Comparator<Point2D> {
-        @Override
-        public int compare(Point2D o1, Point2D o2) {
-            float o1X = Utils.round(o1.getX(), 2);
-            float o1Y = Utils.round(o1.getY(), 2);
-            float o2X = Utils.round(o2.getX(), 2);
-            float o2Y = Utils.round(o2.getY(), 2);
-
-            if (o1Y > o2Y)
-                return 1;
-            if (o1Y < o2Y)
-                return -1;
-            if (o1X > o2X)
-                return 1;
-            if (o1X < o2X)
-                return -1;
-            return 0;
-        }
-    }
-
     private static final char[] spaceLikeChars = { ' ', '-', '1', 'i' };
     private static final String NBSP = "\u00A0";
 
-    private float minCharWidth = Float.MAX_VALUE,
-            minCharHeight = Float.MAX_VALUE;
+    private float minCharWidth;
+    private float minCharHeight;
     private List<TextElement> characters;
     private List<Ruling> rulings;
     private RectangleSpatialIndex<TextElement> spatialIndex;
     private AffineTransform pageTransform;
-    private Shape clippingPath;
-    public List<Shape> clippingPaths = new ArrayList<Shape>();
-    private boolean debugClippingPaths = false;
-    private Rectangle2D transformedClippingPathBounds;
-    private Shape transformedClippingPath;
-    private boolean extractRulingLines = true;
+    public List<Shape> clippingPaths;
+    private boolean debugClippingPaths;
+    private boolean extractRulingLines;
     private final PDDocument pdf_document;
     protected List pdf_document_pages;
 
 
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
-        this(pdf_document, null);
+        this(pdf_document, null, true, false);
     }
 
-    public ObjectExtractor(PDDocument pdf_document, String password)
+    public ObjectExtractor(PDDocument pdf_document, boolean debugClippingPaths) throws IOException {
+        this(pdf_document, null, true, debugClippingPaths);
+    }
+
+    public ObjectExtractor(PDDocument pdf_document, String password) throws IOException {
+        this(pdf_document, password, true, false);
+    }
+
+    public ObjectExtractor(PDDocument pdf_document, String password, boolean extractRulingLines, boolean debugClippingPaths)
             throws IOException {
         super();
-        
+
+        this.clippingPaths = new ArrayList<Shape>();
+        this.debugClippingPaths = debugClippingPaths;
+        this.extractRulingLines = extractRulingLines;
+
+        this.initialize();
+
         // patch PageDrawer: dummy Graphics2D context so some drawing operators don't complain
         try {
             Field field = PageDrawer.class.getDeclaredField("graphics");
             field.setAccessible(true);
             field.set(this, new DummyGraphics2D());
-        } 
+        }
         catch (Exception e1) {
         }
-        
+
         if (pdf_document.isEncrypted()) {
             try {
                 pdf_document
@@ -105,14 +96,15 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     protected Page extractPage(Integer page_number) throws IOException {
 
-        if (page_number - 1 > this.pdf_document_pages.size() || page_number < 1) {
+        if (page_number > this.pdf_document_pages.size() || page_number < 1) {
             throw new java.lang.IndexOutOfBoundsException(
                     "Page number does not exist");
         }
+        this.initialize();
 
         PDPage p = (PDPage) this.pdf_document_pages.get(page_number - 1);
         InputStream contents = p.getContents();
-        
+
         if (contents == null) {
             return null;
         }
@@ -132,10 +124,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
             w = p.getCropBox().getWidth();
             h = p.getCropBox().getHeight();
         }
-
-        return new Page(0, 0, w, h, pageRotation, page_number, this.characters,
-                this.getRulings(), this.minCharWidth, this.minCharHeight,
-                this.spatialIndex);
+        return null;//TODO: content is empty, return null? or empty Page? or exception?
     }
 
     public PageIterator extract(Iterable<Integer> pages) {
@@ -154,13 +143,15 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         this.pdf_document.close();
     }
 
-    public void drawPage(PDPage p) throws IOException {
-        page = p;
+    private PDPage drawPage(PDPage p) throws IOException {
+        this.page = p;
         PDStream contents = p.getContents();
         if (contents != null) {
             ensurePageSize();
             this.processStream(p, p.findResources(), contents.getStream());
+            return p;
         }
+        return null;
     }
 
     private void ensurePageSize() {
@@ -171,7 +162,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         }
     }
 
-    private void clear() {
+    private void initialize() {
         this.characters = new ArrayList<TextElement>();
         this.rulings = new ArrayList<Ruling>();
         this.pageTransform = null;
@@ -336,14 +327,6 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     }
 
-    public float getMinCharWidth() {
-        return minCharWidth;
-    }
-
-    public float getMinCharHeight() {
-        return minCharHeight;
-    }
-
     public AffineTransform getPageTransform() {
 
         if (this.pageTransform != null) {
@@ -364,36 +347,19 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         return this.pageTransform;
     }
 
-    //public Rectangle2D currentClippingPath() {
     public Rectangle2D currentClippingPath() {
-        // Shape cp = this.getGraphicsState().getCurrentClippingPath();
-        // if (cp == this.clippingPath) {
-        // return this.transformedClippingPathBounds;
-        // }
 
-        this.clippingPath = this.getGraphicsState().getCurrentClippingPath();
-        this.transformedClippingPath = this.getPageTransform()
-                .createTransformedShape(this.clippingPath);
-        this.transformedClippingPathBounds = this.transformedClippingPath
+    	Shape clippingPath = this.getGraphicsState().getCurrentClippingPath();
+        Shape transformedClippingPath = this.getPageTransform()
+                .createTransformedShape(clippingPath);
+        Rectangle2D transformedClippingPathBounds = transformedClippingPath
                 .getBounds2D();
 
-        return this.transformedClippingPathBounds;
+        return transformedClippingPathBounds;
     }
 
     public boolean isExtractRulingLines() {
         return extractRulingLines;
-    }
-
-    public void setExtractRulingLines(boolean extractRulingLines) {
-        this.extractRulingLines = extractRulingLines;
-    }
-
-    public List<Ruling> getRulings() {
-        return rulings;
-    }
-
-    public List<TextElement> getCharacters() {
-        return characters;
     }
 
     private static boolean isPrintable(String s) {
@@ -407,12 +373,28 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         return debugClippingPaths;
     }
 
-    public void setDebugClippingPaths(boolean debugClippingPaths) {
-        this.debugClippingPaths = debugClippingPaths;
-    }
-
     public int getPageCount() {
         return this.pdf_document_pages.size();
+    }
+
+    class PointComparator implements Comparator<Point2D> {
+        @Override
+        public int compare(Point2D o1, Point2D o2) {
+            float o1X = Utils.round(o1.getX(), 2);
+            float o1Y = Utils.round(o1.getY(), 2);
+            float o2X = Utils.round(o2.getX(), 2);
+            float o2Y = Utils.round(o2.getY(), 2);
+
+            if (o1Y > o2Y)
+                return 1;
+            if (o1Y < o2Y)
+                return -1;
+            if (o1X > o2X)
+                return 1;
+            if (o1X < o2X)
+                return -1;
+            return 0;
+        }
     }
 
 }
