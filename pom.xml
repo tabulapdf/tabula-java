@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>technology.tabula</groupId>
     <artifactId>tabula</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <name>Tabula</name>
     <description>Extract tables from PDF files</description>
     <url>http://github.com/tabulapdf/tabula-java</url>
@@ -36,7 +36,7 @@
         <connection>scm:git:git@github.com:tabulapdf/tabula-java.git</connection>
         <developerConnection>scm:git:git@github.com:tabulapdf/tabula-java.git</developerConnection>
         <url>git@github.com:tabulapdf/tabula-java.git</url>
-      <tag>tabula-0.9.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <repositories>
