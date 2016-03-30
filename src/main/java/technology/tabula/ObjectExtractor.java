@@ -27,7 +27,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.text.TextPosition;
 
-public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine{
+public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine {
 
     private static final char[] spaceLikeChars = { ' ', '-', '1', 'i' };
     private static final String NBSP = "\u00A0";
