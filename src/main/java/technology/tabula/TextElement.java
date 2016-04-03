@@ -252,6 +252,41 @@ public class TextElement extends Rectangle implements HasText {
             lastWordSpacing = wordSpacing;
             previousAveCharWidth = (float) (sp != null ? (averageCharWidth + sp.getWidth()) / 2.0f : averageCharWidth);
         }
+
+        // count up characters by directionality
+        for (TextChunk chunk : textChunks) {
+            int ltrCnt = 0;
+            int rtlCnt = 0;
+            for (int i = 0; i < chunk.getTextElements().size(); i++)
+            {
+                String elementText = chunk.getTextElements().get(i).getText();
+                for (int j=0; j<elementText.length();j++){
+                    byte dir = Character.getDirectionality( elementText.charAt(j) );
+                    if ((dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT ) ||
+                            (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING) ||
+                            (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE ))
+                    {
+                        ltrCnt++;
+                    }
+                    else if ((dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ) ||
+                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) ||
+                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING) ||
+                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE ))
+                    {
+                        rtlCnt++;
+                    }
+                }
+            }
+            // choose the dominant direction
+            boolean isRtlDominant = rtlCnt > ltrCnt;
+            boolean hasRtl = rtlCnt > 0;
+            
+            if (isRtlDominant){
+                chunk.reverseTextElements();
+            }
+        }
+
+
         return textChunks;
     }
     
