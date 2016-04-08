@@ -120,13 +120,13 @@ public class TextElement extends Rectangle implements HasText {
         
         textChunks.add(new TextChunk(textElements.remove(0)));
         TextChunk firstTC = textChunks.get(0); 
-        
-        float previousAveCharWidth = (float) firstTC.getWidth();
+
+        List<java.lang.Float> charWidthsSoFar = new ArrayList<java.lang.Float>();
+        List<java.lang.Float> wordSpacingsSoFar = new ArrayList<java.lang.Float>();
         float endOfLastTextX = (float) firstTC.getRight();
         float maxYForLine = (float) firstTC.getBottom();
         float maxHeightForLine = (float) firstTC.getHeight();
         float minYTopForLine = (float) firstTC.getTop();
-        float lastWordSpacing = -1;
         float wordSpacing, deltaSpace, averageCharWidth, deltaCharWidth;
         float expectedStartOfNextWordX, dist;
         TextElement sp, prevChar;
@@ -147,10 +147,11 @@ public class TextElement extends Rectangle implements HasText {
                 continue;
             }
             
-            // Resets the average character width when we see a change in font
+            // Resets the character/spacing widths (used for averages) when we see a change in font
             // or a change in the font size
             if ((chr.getFont() != prevChar.getFont()) || !Utils.feq(chr.getFontSize(), prevChar.getFontSize())) {
-                previousAveCharWidth = -1;
+              charWidthsSoFar = new ArrayList<java.lang.Float>();
+              wordSpacingsSoFar = new ArrayList<java.lang.Float>();
             }
 
             // is there any vertical ruling that goes across chr and prevChar?
@@ -166,30 +167,34 @@ public class TextElement extends Rectangle implements HasText {
             } 
             
             // Estimate the expected width of the space based on the
-            // space character with some margin.
+            // average width of the space character with some margin.
             wordSpacing = chr.getWidthOfSpace();
             deltaSpace = 0;
             if (java.lang.Float.isNaN(wordSpacing) || wordSpacing == 0) {
                 deltaSpace = java.lang.Float.MAX_VALUE;
             }
-            else if (lastWordSpacing < 0) {
+            else if (wordSpacingsSoFar.size() == 0) {
                 deltaSpace = wordSpacing * 0.5f; // 0.5 == spacing tolerance
             }
             else {
-                deltaSpace = ((wordSpacing + lastWordSpacing) / 2.0f) * 0.5f;
+                float sumWordSpacings = 0.0f;
+                for(float pastWordSpacing : wordSpacingsSoFar){
+                    sumWordSpacings += pastWordSpacing;
+                }
+                deltaSpace = (sumWordSpacings / wordSpacingsSoFar.size() ) * 0.5f;
             }
+
+            wordSpacingsSoFar.add((float) wordSpacing);
+            charWidthsSoFar.add((float) chr.getWidth());
             
             // Estimate the expected width of the space based on the
-            // average character width with some margin. This calculation does not
-            // make a true average (average of averages) but we found that it gave the
-            // best results after numerous experiments. Based on experiments we also found that
+            // average character width with some margin. Based on experiments we also found that 
             // .3 worked well.
-            if (previousAveCharWidth < 0) {
-                averageCharWidth = (float) (chr.getWidth() / chr.getText().length());
+            float sumCharWidths = 0.0f;
+            for(float pastCharWidth : charWidthsSoFar){
+                sumCharWidths += pastCharWidth;
             }
-            else {
-                averageCharWidth = (float) ((previousAveCharWidth + (chr.getWidth() / chr.getText().length())) / 2.0f);
-            }
+            averageCharWidth = (sumCharWidths / charWidthsSoFar.size() ) * 0.5f;
             deltaCharWidth = averageCharWidth * AVERAGE_CHAR_TOLERANCE;
             
             // Compares the values obtained by the average method and the wordSpacing method and picks
@@ -211,8 +216,19 @@ public class TextElement extends Rectangle implements HasText {
                 sameLine = false;
             }
             
-            endOfLastTextX = (float) chr.getRight();
-            
+            // characters tend to be ordered by their left location
+            // in determining whether to add a space, we need to know the distance
+            // between the current character's left and the nearest character's 
+            // right. The nearest character may not be the previous character, so we
+            // need to keep track of the character with the greatest right x-axis
+            // location -- that's endOfLastTextX
+            // (in some fonts, one character may be completely "on top of"
+            // another character, with the wider character starting to the left and 
+            // ending to the right of the narrower character,  e.g. ANSI 
+            // representations of some South Asian languages, see 
+            // https://github.com/tabulapdf/tabula/issues/303)
+            endOfLastTextX = Math.max((float) chr.getRight(), endOfLastTextX);
+
             // should we add a space?
             if (!acrossVerticalRuling &&
                 sameLine &&
@@ -248,10 +264,13 @@ public class TextElement extends Rectangle implements HasText {
             else { // create a new chunk
                textChunks.add(new TextChunk(chr));
             }
-            
-            lastWordSpacing = wordSpacing;
-            previousAveCharWidth = (float) (sp != null ? (averageCharWidth + sp.getWidth()) / 2.0f : averageCharWidth);
         }
+
+        // sort each textChunk's textElements by their center
+        for (TextChunk textChunk : textChunks) {
+            textChunk.sortByCenters();
+        }
+
         return textChunks;
     }
     
