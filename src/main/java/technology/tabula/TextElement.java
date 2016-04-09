@@ -253,6 +253,12 @@ public class TextElement extends Rectangle implements HasText {
             previousAveCharWidth = (float) (sp != null ? (averageCharWidth + sp.getWidth()) / 2.0f : averageCharWidth);
         }
 
+        // System.out.println("before grouping");
+        // for(TextChunk q : textChunks){
+        //     System.out.println("'" + q.getText() + "'");
+        // }
+
+        List<TextChunk> textChunksSeparatedByDirectionality = new ArrayList<TextChunk>();
         // count up characters by directionality
         for (TextChunk chunk : textChunks) {
             int ltrCnt = 0;
@@ -280,14 +286,14 @@ public class TextElement extends Rectangle implements HasText {
             // choose the dominant direction
             boolean isRtlDominant = rtlCnt > ltrCnt;
             boolean hasRtl = rtlCnt > 0;
-            
-            if (isRtlDominant){
-                chunk.reverseTextElements();
-            }
+            TextChunk dirChunk = chunk.groupByDirectionality(!isRtlDominant);
+            textChunksSeparatedByDirectionality.add( dirChunk );
         }
-
-
-        return textChunks;
+        // System.out.println("after grouping");
+        // for(TextChunk q : textChunksSeparatedByDirectionality){
+        //     System.out.println("'" + q.getText() + "'");
+        // }
+        return textChunksSeparatedByDirectionality;
     }
     
     private static boolean verticallyOverlapsRuling(TextElement te, Ruling r) {
