@@ -44,7 +44,7 @@ public class TestLine {
 		line.addTextChunk(0, tChunk);
 		line.addTextChunk(0, tChunk);
 		
-		assertEquals("test", line.getTextElements().get(0).getText());
+		assertEquals("testtest", line.getTextElements().get(0).getText());
 		}
 	
 	@Test(expected = IllegalArgumentException.class)
