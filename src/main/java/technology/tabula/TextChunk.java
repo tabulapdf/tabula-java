@@ -3,6 +3,8 @@ package technology.tabula;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collections;
+
 
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> implements HasText { 
@@ -23,6 +25,11 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         for (int i = 1; i < textElements.size(); i++) {
             this.add(textElements.get(i));
         }
+    }
+
+    // used for "normalizing" RTL languages.
+    public void reverseTextElements(){
+        Collections.reverse(this.textElements);
     }
         
     

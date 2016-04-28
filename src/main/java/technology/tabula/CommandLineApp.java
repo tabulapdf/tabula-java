@@ -92,13 +92,15 @@ public class CommandLineApp {
         }
 
         Appendable outFile = this.defaultOutput;
+        BufferedWriter bufferedWriter = null;
         if (line.hasOption('o')) {
             File file = new File(line.getOptionValue('o'));
 
             try {
                 file.createNewFile();
-                outFile = new BufferedWriter(new FileWriter(
+                bufferedWriter = new BufferedWriter(new FileWriter(
                         file.getAbsoluteFile()));
+                outFile = bufferedWriter;
             } catch (IOException e) {
                 throw new ParseException("Cannot create file "
                         + line.getOptionValue('o'));
@@ -179,6 +181,14 @@ public class CommandLineApp {
 
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
+        } finally {
+        	if (bufferedWriter != null) {
+        		try {
+        			bufferedWriter.close();
+				} catch (IOException e) {
+					System.out.println("Error in closing the BufferedWriter" + e);
+				}
+        	}
         }
 
     }

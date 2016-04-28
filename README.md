@@ -1,26 +1,22 @@
 tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Join the chat at https://gitter.im/tabulapdf/tabula-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tabulapdf/tabula-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ===========
 
-`tabula-java` is a library for extracting tables from PDF files. It is a Java rewrite of [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor), that is a thin wrapper around this library.
+`tabula-java` is a library for extracting tables from PDF files — it is the table extraction engine that used to power [Tabula](http://tabula.technology/) ([repo](http://github.com/tabulapdf/tabula)). You can use `tabula-java` as a command-line tool to programmatically extract tables from PDFs.
+
+(This is the new version of the extraction engine; the previous code can be found at [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor).)
+
+© 2014-2016 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
 
 ## Download
 
 Download a version of the tabula-java's jar, with all dependencies included, that works on Mac, Windows and Linux from our [releases page](../../releases).
 
-## Build instructions
-
-Clone this repo and run:
-
-```
-mvn clean compile assembly:single
-```
-
-## Examples
+## Usage Examples
 
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar ./target/tabula-0.8.0-jar-with-dependencies.jar --help
+$ java -jar ./target/tabula-0.9.0-jar-with-dependencies.jar --help
 
 usage: tabula [-a <AREA>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
        [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
@@ -59,8 +55,14 @@ Tabula helps you extract tables from PDFs
 
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-0.8.0-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-0.9.0-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 
-© 2014 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
+## Building from Source
+
+Clone this repo and run:
+
+```
+mvn clean compile assembly:single
+```
