@@ -85,8 +85,9 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         DirectionalityOptions buffDirectionality = DirectionalityOptions.NONE; // the directionality of the characters in buff;
 
         for(TextElement te: this.getTextElements()){
-            //TODO: we might need to loop over the textelement characters
-            //      is it possible for a textelement to contain multiple characters?
+            //TODO: we need to loop over the textelement characters
+            //      because it is possible for a textelement to contain multiple characters?
+
 
             // System.out.println(te.getText() + " is " + Character.getDirectionality(te.getText().charAt(0) ) + " " + directionalities.get(Character.getDirectionality(te.getText().charAt(0) )));
             if(buff.size() == 0){

@@ -21,6 +21,7 @@ import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.UtilsForTesting;
 import technology.tabula.writers.JSONWriter;
+import java.text.Normalizer;
 
 public class TestSpreadsheetExtractor {
 
@@ -528,11 +529,45 @@ public class TestSpreadsheetExtractor {
         assertEquals("من اين انت؟",                  table.getRows().get(2).get(1).getText());
         assertEquals("1234",                         table.getRows().get(3).get(0).getText());
         assertEquals("هل انت شباك؟",                 table.getRows().get(4).get(0).getText());
-        assertEquals("انا من ولاية كارولينا الشمال",  table.getRows().get(2).get(0).getText()); // conjoined lam-alif gets missed
-        assertEquals("اسمي Jeremy في الانجليزية",     table.getRows().get(4).get(1).getText()); // conjoined lam-alif gets missed
+        assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(2).get(0).getText()); // conjoined lam-alif gets missed
+        assertEquals("اسمي Jeremy في الانجليزية",    table.getRows().get(4).get(1).getText()); // conjoined lam-alif gets missed
         assertEquals("عندي 47 قطط",                  table.getRows().get(3).get(1).getText()); // the real right answer is 47.
         assertEquals("Jeremy is جرمي in Arabic",     table.getRows().get(5).get(0).getText()); // the real right answer is 47.
-        assertEquals("مرحبًا",                        table.getRows().get(1).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+        assertEquals("مرحبًا",                       table.getRows().get(1).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+
+        // there is one remaining problems that are not yet addressed
+        // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
+        // this should get fixed, but this is a good first stab at the problem.
+
+        // these (commented-out) tests reflect the theoretical correct answer,
+        // which is not currently possible because of the two problems listed above
+        // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+
+    }
+
+
+    @Test
+    public void testRealLifeRTL() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/mednine.pdf", 
+                1);
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        // assertEquals(1, tables.size());
+        Table table = tables.get(0);
+        
+        assertEquals("الانتخابات التشريعية  2014",     table.getRows().get(0).get(0).getText()); // the doubled spaces might be a bug in my implementation.
+        assertEquals("ورقة كشف نتائج دائرة مدنين",     table.getRows().get(1).get(0).getText());
+        assertEquals("426",                            table.getRows().get(4).get(0).getText());
+        assertEquals("63",                             table.getRows().get(4).get(1).getText());
+        assertEquals("43",                             table.getRows().get(4).get(2).getText());
+        assertEquals("56",                             table.getRows().get(4).get(3).getText());
+        assertEquals("58",                             table.getRows().get(4).get(4).getText());
+        assertEquals("49",                             table.getRows().get(4).get(5).getText());
+        assertEquals("55",                             table.getRows().get(4).get(6).getText());
+        assertEquals("33",                             table.getRows().get(4).get(7).getText());
+        assertEquals("32",                             table.getRows().get(4).get(8).getText());
+        assertEquals("37",                             table.getRows().get(4).get(9).getText());
+        assertEquals("قائمة من أجل تحقيق سلطة الشعب",  table.getRows().get(4).get(10).getText());
 
         // there is one remaining problems that are not yet addressed
         // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
