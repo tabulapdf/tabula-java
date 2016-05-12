@@ -25,6 +25,7 @@ import org.apache.pdfbox.pdmodel.encryption.BadSecurityHandlerException;
 import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 import org.apache.pdfbox.text.TextPosition;
 
 public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine {
@@ -43,6 +44,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
     private boolean extractRulingLines;
     private final PDDocument pdf_document;
     protected List pdf_document_pages;
+    private PDPage page;
 
 
     public ObjectExtractor(PDDocument pdf_document) throws IOException {
@@ -59,7 +61,8 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     public ObjectExtractor(PDDocument pdf_document, String password, boolean extractRulingLines, boolean debugClippingPaths)
             throws IOException {
-        super();
+    	
+    	super();
 
         this.clippingPaths = new ArrayList<Shape>();
         this.debugClippingPaths = debugClippingPaths;
@@ -145,10 +148,11 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     private PDPage drawPage(PDPage p) throws IOException {
         this.page = p;
-        PDStream contents = p.getContents();
+        InputStream contents = p.getContents();
         if (contents != null) {
             ensurePageSize();
-            this.processStream(p, p.findResources(), contents.getStream());
+            //this.processStream(p, p.findResources(), contents.getStream());
+            this.processPage(p);
             return p;
         }
         return null;
@@ -157,8 +161,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
     private void ensurePageSize() {
         if (this.pageSize == null && this.page != null) {
             PDRectangle cropBox = this.page.getCropBox();
-            this.pageSize = cropBox == null ? null : cropBox
-                    .createDimension();
+            this.pageSize = cropBox == null ? null : cropBox.createDimension();
         }
     }
 
@@ -172,12 +175,13 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
     }
 
     @Override
-    public void drawImage(Image awtImage, AffineTransform at) {
+    public void drawImage(PDImage image) {
         // we just ignore images (for now)
     }
 
     public void strokeOrFillPath(boolean isFill) {
         GeneralPath path = this.getLinePath();
+       
 
         if (!this.extractRulingLines) {
             this.getLinePath().reset();
@@ -278,7 +282,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         //
         // float[] color_comps =
         // this.getGraphicsState().getNonStrokingColor().getJavaColor().getRGBColorComponents(null);
-        float[] color = this.getGraphicsState().getNonStrokingColor().getJavaColor().getComponents(null);
+        float[] color = this.getGraphicsState().getNonStrokingColor().getComponents();
         // TODO use color_comps as filter_by_color
         this.strokeOrFillPath(true);
     }
@@ -332,9 +336,10 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         if (this.pageTransform != null) {
             return this.pageTransform;
         }
+       
 
-        PDRectangle cb = page.findCropBox();
-        int rotation = Math.abs(page.findRotation());
+        PDRectangle cb = page.getCropBox();
+        int rotation = Math.abs(page.getRotation());
 
         this.pageTransform = new AffineTransform();
 
