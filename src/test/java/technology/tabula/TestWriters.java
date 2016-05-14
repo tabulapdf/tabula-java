@@ -15,7 +15,7 @@ import technology.tabula.writers.TSVWriter;
 
 public class TestWriters {
     
-    private static final String EXPECTED_CSV_WRITER_OUTPUT = "\"ABDALA de MATARAZZO, Norma Amanda \",\"Frente Cívico por Santiago \",\"Santiago del Estero \",AFIRMATIVO";
+    private static final String EXPECTED_CSV_WRITER_OUTPUT = "\"ABDALA de MATARAZZO, Norma Amanda\",Frente Cívico por Santiago,Santiago del Estero,AFIRMATIVO";
     private Table getTable() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();

@@ -7,7 +7,7 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle> {
 
-    private static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
+    protected static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
 
     public Rectangle() {
         super();
@@ -35,6 +35,10 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
        return rv;
     }
 
+    // I'm bad at Java and need this for fancy sorting in technology.tabula.TextChunk.
+    public int isLtrDominant(){
+        return 0;
+    }
 
 
     public float getArea() {

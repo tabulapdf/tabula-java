@@ -261,37 +261,15 @@ public class TextElement extends Rectangle implements HasText {
         List<TextChunk> textChunksSeparatedByDirectionality = new ArrayList<TextChunk>();
         // count up characters by directionality
         for (TextChunk chunk : textChunks) {
-            int ltrCnt = 0;
-            int rtlCnt = 0;
-            for (int i = 0; i < chunk.getTextElements().size(); i++)
-            {
-                String elementText = chunk.getTextElements().get(i).getText();
-                for (int j=0; j<elementText.length();j++){
-                    byte dir = Character.getDirectionality( elementText.charAt(j) );
-                    if ((dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT ) ||
-                            (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING) ||
-                            (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE ))
-                    {
-                        ltrCnt++;
-                    }
-                    else if ((dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ) ||
-                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) ||
-                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING) ||
-                            (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE ))
-                    {
-                        rtlCnt++;
-                    }
-                }
-            }
             // choose the dominant direction
-            boolean isRtlDominant = rtlCnt > ltrCnt;
-            boolean hasRtl = rtlCnt > 0;
-            TextChunk dirChunk = chunk.groupByDirectionality(!isRtlDominant);
+            // System.out.println("beforegrouping: '" + chunk.getText() + "'");
+            boolean isLtrDominant = chunk.isLtrDominant() != -1; // treat neutral as LTR
+            TextChunk dirChunk = chunk.groupByDirectionality(isLtrDominant);
             textChunksSeparatedByDirectionality.add( dirChunk );
         }
         // System.out.println("after grouping");
         // for(TextChunk q : textChunksSeparatedByDirectionality){
-        //     System.out.println("'" + q.getText() + "'");
+        //     System.out.println("after grouping: '" + q.getText() + "'");
         // }
         return textChunksSeparatedByDirectionality;
     }

@@ -28,14 +28,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         }
     }
 
-    // used for "normalizing" RTL languages.
-    // TEMPORARY TODO REMOVE etc.
-    public void reverseTextElements(){
-        Collections.reverse(this.textElements);
-    }
-
-
-
     private enum DirectionalityOptions {
         LTR, NONE, RTL
     }
@@ -133,6 +125,61 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return new TextChunk(everything);
     }
 
+    @Override
+    /*
+        We're comparing based on ordering in the logical ordering of text here. 
+        Assuming identical Y-axis positions, if TextChunk A has a lower X-axis 
+        than TextChunk B, then A is "before" it -- iff this is LTR text. Otherwise, 
+        it is A is after B.
+    */
+    public int compareTo(Rectangle other) {
+        double thisBottom = this.getBottom();
+        double otherBottom = other.getBottom();
+        int rv;
+
+       if (this.equals(other)) return 0;
+
+       if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
+            rv = java.lang.Double.compare(this.getX(), other.getX());
+
+            // reverse the ordering if both TextChunks are RTL
+            if(this.isLtrDominant() == -1 && other.isLtrDominant() == -1){ 
+                rv = -1 * rv;
+            }
+       }
+       else {
+           rv = java.lang.Double.compare(thisBottom, otherBottom);
+       }
+       return rv;
+    }
+
+    public int isLtrDominant(){
+        int ltrCnt = 0;
+        int rtlCnt = 0;
+        for (int i = 0; i < this.getTextElements().size(); i++)
+        {
+            String elementText = this.getTextElements().get(i).getText();
+            for (int j=0; j<elementText.length();j++){
+                byte dir = Character.getDirectionality( elementText.charAt(j) );
+                if ((dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT ) ||
+                        (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING) ||
+                        (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE ))
+                {
+                    ltrCnt++;
+                }
+                else if ((dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ) ||
+                        (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) ||
+                        (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING) ||
+                        (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE ))
+                {
+                    rtlCnt++;
+                }
+            }
+        }
+        return java.lang.Integer.compare(ltrCnt, rtlCnt); // 1 is LTR, 0 is neutral, -1 is RTL
+    }
+
+
 
     public TextChunk merge(TextChunk other) {
         super.merge(other);
@@ -163,7 +210,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         for (TextElement te: this.textElements) {
             sb.append(te.getText());
         }
-        return Normalizer.normalize(sb.toString(), Normalizer.Form.NFKC);
+        return Normalizer.normalize(sb.toString(), Normalizer.Form.NFKC).trim();
     }
     
     @Override
@@ -285,11 +332,28 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 	}
 
 	public static boolean allSameChar(List<TextChunk> textChunks) {
-        char first = textChunks.get(0).getText().charAt(0);
+        /* the previous, far more elegant version of this method failed when there was an empty TextChunk in textChunks.
+         * so I rewrote it in an ugly way. but it works!
+         * it would be good for this to get rewritten eventually
+         * the purpose is basically just to return true iff there are 2+ TextChunks and they're identical.
+         * -Jeremy 5/13/2016
+         */
+
+        if(textChunks.size() == 1) return false;
+        boolean hasHadAtLeastOneNonEmptyTextChunk = false;
+        char first = '\u0000';
         for (TextChunk tc: textChunks) {
-            if (!tc.isSameChar(first)) return false;
+            if (tc.getText().length() == 0) {
+                continue;
+            }
+            if (first == '\u0000'){
+                first = tc.getText().charAt(0);
+            }else{
+                hasHadAtLeastOneNonEmptyTextChunk = true;
+                if (!tc.isSameChar(first)) return false;
+            }
         }
-        return true;
+        return hasHadAtLeastOneNonEmptyTextChunk;
     }
     
     public static List<Line> groupByLines(List<TextChunk> textChunks) {
