@@ -59,6 +59,13 @@ It also includes a debugging tool, run `java -cp ./target/tabula-0.9.0-jar-with-
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 
+JVM start-up time is a lot of the cost of the `tabula` command, so if you're trying to extract many tables from PDFs, you have a few options for speeding it up:
+
+ - the [drip](https://github.com/ninjudd/drip) utility
+ - the [Ruby](http://github.com/tabulapdf/tabula-extractor) and [R](https://github.com/leeper/tabulizer) bindings
+ - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
+ - waiting for us to implement an API/server-style system (it's on the roadmap)
+
 ## Building from Source
 
 Clone this repo and run:
