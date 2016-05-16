@@ -1821,7 +1821,7 @@ public class TestBasicExtractor {
         List<RectangularTextContainer> sixthRow = table.getRows().get(5);
 
         assertTrue(sixthRow.get(0).getText().equals("VALSANGIACOMO BLANC"));
-        assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE "));
+        assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE"));
     }
 
     @Test
@@ -1862,7 +1862,7 @@ public class TestBasicExtractor {
         List<List<RectangularTextContainer>> rows = table.getRows();
         List<RectangularTextContainer> firstRow = rows.get(0);
         List<RectangularTextContainer> lastRow = rows.get(rows.size() - 1);
-        assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . "));
+        assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ."));
         assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
     }
 
@@ -1882,7 +1882,7 @@ public class TestBasicExtractor {
         //Column headers
         assertEquals("Project", cells.get(0).getText());
         assertEquals("Agency", cells.get(1).getText());
-        assertEquals(" Institution", cells.get(2).getText());
+        assertEquals("Institution", cells.get(2).getText());
 
         //First row
         assertEquals("Nanotechnology and its publics", cells.get(3).getText());
@@ -1890,20 +1890,20 @@ public class TestBasicExtractor {
         assertEquals("Pennsylvania State Universit", cells.get(5).getText());
         
         //Second row
-        assertEquals("Public information and deliberation in nanoscience and ", cells.get(6).getText());
-        assertEquals("North Carolina State ", cells.get(7).getText());
+        assertEquals("Public information and deliberation in nanoscience and", cells.get(6).getText());
+        assertEquals("North Carolina State", cells.get(7).getText());
         assertEquals("Interagency", cells.get(8).getText());
         assertEquals("nanotechnology policy (SGER)", cells.get(9).getText());
         assertEquals("University", cells.get(10).getText());
 
         //Third row
-        assertEquals("Social and ethical research and education in agrifood ", cells.get(11).getText());
+        assertEquals("Social and ethical research and education in agrifood", cells.get(11).getText());
         assertEquals("NSF", cells.get(12).getText());
         assertEquals("Michigan State University", cells.get(13).getText());
         assertEquals("nanotechnology (NIRT)", cells.get(14).getText());
         
         //Fourth row
-        assertEquals("From laboratory to society: developing an informed ", cells.get(15).getText());
+        assertEquals("From laboratory to society: developing an informed", cells.get(15).getText());
         assertEquals("NSF", cells.get(16).getText());
         assertEquals("University of South Carolina", cells.get(17).getText());
         assertEquals("approach to nanoscale science and engineering (NIRT)", cells.get(18).getText());
@@ -1919,23 +1919,23 @@ public class TestBasicExtractor {
         assertEquals("University of Virginia", cells.get(24).getText());
         
         //Seventh row
-        assertEquals("Undergraduate exploration of nanoscience, ", cells.get(25).getText());
-        assertEquals("Michigan Technological ", cells.get(26).getText());
+        assertEquals("Undergraduate exploration of nanoscience,", cells.get(25).getText());
+        assertEquals("Michigan Technological", cells.get(26).getText());
         assertEquals("NSF", cells.get(27).getText());
         assertEquals("applications and societal implications (NUE)", cells.get(28).getText());
         assertEquals("University", cells.get(29).getText());
         
         //Eighth row
-        assertEquals("Ethics and belief inside the development of ", cells.get(30).getText());
+        assertEquals("Ethics and belief inside the development of", cells.get(30).getText());
         assertEquals("NSF", cells.get(31).getText());
         assertEquals("University of Virginia", cells.get(32).getText());
         assertEquals("nanotechnology (CAREER)", cells.get(33).getText());
         
         //Ninth row
-        assertEquals("All centers, NNIN and NCN have a societal ", cells.get(34).getText());
-        assertEquals("NSF, DOE, ", cells.get(35).getText());
-        assertEquals("All nanotechnology centers ", cells.get(36).getText());
-        assertEquals("implications components ", cells.get(37).getText());
+        assertEquals("All centers, NNIN and NCN have a societal", cells.get(34).getText());
+        assertEquals("NSF, DOE,", cells.get(35).getText());
+        assertEquals("All nanotechnology centers", cells.get(36).getText());
+        assertEquals("implications components", cells.get(37).getText());
         assertEquals("DOD, and NIH", cells.get(38).getText());
         assertEquals("and networks", cells.get(39).getText());
           
@@ -1956,6 +1956,19 @@ public class TestBasicExtractor {
 			
 		}
 
+    }
+
+    @Test
+    public void testRealLifeRTL2() throws IOException {
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/indictb1h_14.csv");
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/indictb1h_14.pdf", 1,
+                        205.0f, 120.0f, 622.82f, 459.9f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Table table = bea.extract(page).get(0);
+
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        assertEquals(expectedCsv, sb.toString());
     }
 
 }
