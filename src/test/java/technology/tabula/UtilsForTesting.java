@@ -2,10 +2,7 @@ package technology.tabula;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -52,7 +49,7 @@ public class UtilsForTesting {
     
     public static String loadJson(String path) throws IOException {
     	
-    	BufferedReader reader = new BufferedReader( new FileReader (path));
+    	BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"));
     	StringBuilder  stringBuilder = new StringBuilder();
     	String line = null;
     	
