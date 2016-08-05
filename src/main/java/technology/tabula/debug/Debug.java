@@ -350,6 +350,20 @@ public class Debug {
                 }
                 area = new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
             }
+
+            if (pages == null) {
+                // user specified all pages
+                PDDocument document = PDDocument.load(pdfFile.getAbsolutePath());
+
+                int numPages = document.getNumberOfPages();
+                pages = new ArrayList<Integer>(numPages);
+
+                for (int i = 1; i <= numPages; i++) {
+                    pages.add(i);
+                }
+
+                document.close();
+            }
             
             for (int i: pages) {
                 renderPage(pdfFile.getAbsolutePath(),
