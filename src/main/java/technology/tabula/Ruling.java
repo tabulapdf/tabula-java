@@ -117,6 +117,20 @@ public class Ruling extends Line2D.Float {
             this.setRight(v);
         }
     }
+
+    private void setStartEnd(float start, float end) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setTop(start);
+            this.setBottom(end);
+        }
+        else {
+            this.setLeft(start);
+            this.setRight(end);
+        }
+    }
     
     // -----
         
@@ -396,23 +410,32 @@ public class Ruling extends Line2D.Float {
     
     public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
         ArrayList<Ruling> rv = new ArrayList<Ruling>();
-        if (lines.size() == 0) {
-            return rv;
-        }
         Collections.sort(lines, new Comparator<Ruling>() {
             @Override
             public int compare(Ruling a, Ruling b) {
-                return (int) (!Utils.feq(a.getPosition(), b.getPosition()) ? a.getPosition() - b.getPosition() : a.getStart() - b.getStart());
+                final float diff = a.getPosition() - b.getPosition();
+                return java.lang.Float.compare(diff == 0 ? a.getStart() - b.getStart() : diff, 0f);
             }
         });
-        
-        rv.add(lines.remove(0));
+
         for (Ruling next_line : lines) {
-            Ruling last = rv.get(rv.size() - 1);
+            Ruling last = rv.isEmpty() ? null : rv.get(rv.size() - 1);
             // if current line colinear with next, and are "close enough": expand current line
-            if (Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
-                last.setStart(next_line.getStart() < last.getStart() ? next_line.getStart() : last.getStart());
-                last.setEnd(next_line.getEnd() < last.getEnd() ? last.getEnd() : next_line.getEnd());
+            if (last != null && Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
+                final float lastStart = last.getStart();
+                final float lastEnd = last.getEnd();
+
+                final boolean lastFlipped = lastStart            > lastEnd;
+                final boolean nextFlipped = next_line.getStart() > next_line.getEnd();
+
+                boolean differentDirections = nextFlipped != lastFlipped;
+                float nextS = differentDirections ? next_line.getEnd()   : next_line.getStart();
+                float nextE = differentDirections ? next_line.getStart() : next_line.getEnd();
+
+                final float newStart = lastFlipped ? Math.max(nextS, lastStart) : Math.min(nextS, lastStart);
+                final float newEnd   = lastFlipped ? Math.min(nextE, lastEnd)   : Math.max(nextE, lastEnd);
+                last.setStartEnd(newStart, newEnd);
+                assert !last.oblique();
             }
             else if (next_line.length() == 0) {
                 continue;
