@@ -133,10 +133,20 @@ public class Utils {
         // check if we need to use the custom quicksort algorithm as a
         // workaround to the transitivity issue of TextPositionComparator:
         // https://issues.apache.org/jira/browse/PDFBOX-1512
-        String[] versionComponents = System.getProperty("java.version").split(
+
+        String numberybits =  System.getProperty("java.version").split(
+                "-")[0]; // some Java version strings are 9-internal, which is dumb.
+        String[] versionComponents = numberybits.split(
                 "\\.");
-        int javaMajorVersion = Integer.parseInt(versionComponents[0]);
-        int javaMinorVersion = Integer.parseInt(versionComponents[1]);
+        int javaMajorVersion;
+        int javaMinorVersion;
+        if(versionComponents.length >= 2){
+            javaMajorVersion = Integer.parseInt(versionComponents[0]);
+            javaMinorVersion = Integer.parseInt(versionComponents[1]);
+        }else{
+            javaMajorVersion = 1;
+            javaMinorVersion = Integer.parseInt(versionComponents[0]);
+        }
         boolean is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
         String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
         return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
