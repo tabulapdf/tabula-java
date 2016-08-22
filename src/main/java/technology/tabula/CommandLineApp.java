@@ -3,6 +3,7 @@ package technology.tabula;
 import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,10 +71,6 @@ public class CommandLineApp {
                 System.exit(0);
             }
 
-            if (line.getArgs().length != 1) {
-                throw new ParseException("Need one filename\nTry --help for help");
-            }
-
             new CommandLineApp(System.out, line).extractTables(line);
         } catch(ParseException exp) {
             System.err.println("Error: " + exp.getMessage());
@@ -83,11 +80,37 @@ public class CommandLineApp {
     }
 
     public void extractTables(CommandLine line) throws ParseException {
+        if (line.hasOption('b')) {
+          File pdfDirectory = new File(line.getOptionValue('b'));
+          if (!pdfDirectory.isDirectory()) {
+            throw new ParseException("Directory does not exist or is not a directory");
+          }
+          extractDirectoryTables(line, pdfDirectory);
+          return;
+        }
+
+        if (line.getArgs().length != 1) {
+            throw new ParseException("Need one filename\nTry --help for help");
+        }
+
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
         }
         extractFileTables(line, pdfFile);
+    }
+
+    public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
+        File[] pdfs = pdfDirectory.listFiles(new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.endsWith(".pdf");
+          }
+        });
+
+        for (File pdfFile : pdfs) {
+          File outputFile = new File(getOutputFilename(pdfFile));
+          extractFileInto(pdfFile, outputFile);
+        }
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
@@ -97,16 +120,20 @@ public class CommandLineApp {
           return;
         }
 
+        File outputFile = new File(line.getOptionValue('o'));
+        extractFileInto(pdfFile, outputFile);
+    }
+
+    public void extractFileInto(File pdfFile, File outputFile) throws ParseException {
         BufferedWriter bufferedWriter = null;
         try {
-            File file = new File(line.getOptionValue('o'));
-            FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());
+            FileWriter fileWriter = new FileWriter(outputFile.getAbsoluteFile());
             bufferedWriter = new BufferedWriter(fileWriter);
 
-            file.createNewFile();
+            outputFile.createNewFile();
             extractFile(pdfFile, bufferedWriter);
         } catch (IOException e) {
-            throw new ParseException("Cannot create file " + line.getOptionValue('o'));
+            throw new ParseException("Cannot create file " + outputFile);
         } finally {
             if (bufferedWriter != null) {
                 try {
@@ -248,6 +275,11 @@ public class CommandLineApp {
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+        o.addOption(OptionBuilder.withLongOpt("batch")
+            .withDescription("Convert all .pdfs in the provided directory")
+            .hasArg()
+            .withArgName("DIRECTORY")
+            .create("b"));
         o.addOption(OptionBuilder.withLongOpt("outfile")
                                  .withDescription("Write output to <file> instead of STDOUT. Default: -")
                                  .hasArg()
@@ -367,6 +399,22 @@ public class CommandLineApp {
             break;
         }
         writer.write(out, tables);
+    }
+
+    private String getOutputFilename(File pdfFile) {
+        String extension = ".csv";
+        switch (outputFormat) {
+        case CSV:
+            extension = ".csv";
+            break;
+        case JSON:
+            extension = ".json";
+            break;
+        case TSV:
+            extension = ".tsv";
+            break;
+        }
+        return pdfFile.getPath().replaceFirst("(\\.pdf|)$", extension);
     }
 
     private enum OutputFormat {

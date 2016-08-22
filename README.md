@@ -18,7 +18,7 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 ```
 $ java -jar ./target/tabula-0.9.0-jar-with-dependencies.jar --help
 
-usage: tabula [-a <AREA>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
+usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
        [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
 
 Tabula helps you extract tables from PDFs
@@ -30,6 +30,8 @@ Tabula helps you extract tables from PDFs
                             --columns 10.1,20.2,30.3
  -d,--debug                 Print detected table areas instead of
                             processing.
+ -b,--batch <DIRECTORY>     Convert all .pdfs in the provided directory
+
  -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
  -g,--guess                 Guess the portion of the page to analyze per
                             page.
