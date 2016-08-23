@@ -3,6 +3,10 @@ package technology.tabula;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -33,6 +37,30 @@ public class TestCommandLineApp {
 				"150.56,58.9,654.7,536.12", "-f",
 				"CSV"
 		}));
+	}
+
+	@Test
+	public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
+		FileSystem fs = FileSystems.getDefault();
+		String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+		Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
+		tmpFolder.toFile().deleteOnExit();
+
+		Path copiedPDF = tmpFolder.resolve(fs.getPath("spreadsheet.pdf"));
+		Path sourcePDF = fs.getPath("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf");
+		Files.copy(sourcePDF, copiedPDF);
+		copiedPDF.toFile().deleteOnExit();
+
+		this.csvFromCommandLineArgs(new String[] {
+				"-b", tmpFolder.toString(),
+				"-p", "1", "-a",
+				"150.56,58.9,654.7,536.12", "-f",
+				"CSV"
+		});
+
+		Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
+		assertTrue(csvPath.toFile().exists());
+		assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
 	}
 
 	@Test
