@@ -81,6 +81,10 @@ public class CommandLineApp {
 
     public void extractTables(CommandLine line) throws ParseException {
         if (line.hasOption('b')) {
+          if (line.getArgs().length != 0) {
+              throw new ParseException("Filename specified with batch\nTry --help for help");
+          }
+
           File pdfDirectory = new File(line.getOptionValue('b'));
           if (!pdfDirectory.isDirectory()) {
             throw new ParseException("Directory does not exist or is not a directory");
@@ -276,7 +280,7 @@ public class CommandLineApp {
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
         o.addOption(OptionBuilder.withLongOpt("batch")
-            .withDescription("Convert all .pdfs in the provided directory")
+            .withDescription("Convert all .pdfs in the provided directory.")
             .hasArg()
             .withArgName("DIRECTORY")
             .create("b"));
