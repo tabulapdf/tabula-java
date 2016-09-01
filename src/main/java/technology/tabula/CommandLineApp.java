@@ -3,6 +3,7 @@ package technology.tabula;
 import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,23 @@ public class CommandLineApp {
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
     private Appendable defaultOutput;
+    private Rectangle pageArea;
+    private List<Integer> pages;
+    private OutputFormat outputFormat;
+    private String password;
+    private TableExtractor tableExtractor;
+
+    public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
+        this.defaultOutput = defaultOutput;
+        this.pageArea = CommandLineApp.whichArea(line);
+        this.pages = CommandLineApp.whichPages(line);
+        this.outputFormat = CommandLineApp.whichOutputFormat(line);
+        this.tableExtractor = CommandLineApp.createExtractor(line);
+
+        if (line.hasOption('s')) {
+          this.password = line.getOptionValue('s');
+        }
+    }
 
     public static void main(String[] args) {
         CommandLineParser parser = new GnuParser();
@@ -53,174 +71,182 @@ public class CommandLineApp {
                 System.exit(0);
             }
 
-            if (line.getArgs().length != 1) {
-                throw new ParseException("Need one filename\nTry --help for help");
-            }
-
-            new CommandLineApp(System.out).extractTables(line);
-
-        }
-        catch( ParseException exp ) {
+            new CommandLineApp(System.out, line).extractTables(line);
+        } catch(ParseException exp) {
             System.err.println("Error: " + exp.getMessage());
             System.exit(1);
         }
         System.exit(0);
     }
 
-    public CommandLineApp(Appendable defaultOutput) {
-		this.defaultOutput = defaultOutput;
-	}
-
     public void extractTables(CommandLine line) throws ParseException {
+        if (line.hasOption('b')) {
+          if (line.getArgs().length != 0) {
+              throw new ParseException("Filename specified with batch\nTry --help for help");
+          }
+
+          File pdfDirectory = new File(line.getOptionValue('b'));
+          if (!pdfDirectory.isDirectory()) {
+            throw new ParseException("Directory does not exist or is not a directory");
+          }
+          extractDirectoryTables(line, pdfDirectory);
+          return;
+        }
+
+        if (line.getArgs().length != 1) {
+            throw new ParseException("Need one filename\nTry --help for help");
+        }
+
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
         }
+        extractFileTables(line, pdfFile);
+    }
 
-        OutputFormat of = OutputFormat.CSV;
-        if (line.hasOption('f')) {
-            try {
-                of = OutputFormat.valueOf(line.getOptionValue('f'));
-            }
-            catch (IllegalArgumentException e) {
-                throw new ParseException(String.format(
-                        "format %s is illegal. Available formats: %s",
-                        line.getOptionValue('f'),
-                        Utils.join(",", OutputFormat.formatNames())));
-            }
+    public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
+        File[] pdfs = pdfDirectory.listFiles(new FilenameFilter() {
+          public boolean accept(File dir, String name) {
+            return name.endsWith(".pdf");
+          }
+        });
 
+        for (File pdfFile : pdfs) {
+          File outputFile = new File(getOutputFilename(pdfFile));
+          extractFileInto(pdfFile, outputFile);
         }
+    }
 
+    public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
         Appendable outFile = this.defaultOutput;
+        if (!line.hasOption('o')) {
+          extractFile(pdfFile, this.defaultOutput);
+          return;
+        }
+
+        File outputFile = new File(line.getOptionValue('o'));
+        extractFileInto(pdfFile, outputFile);
+    }
+
+    public void extractFileInto(File pdfFile, File outputFile) throws ParseException {
         BufferedWriter bufferedWriter = null;
-        if (line.hasOption('o')) {
-            File file = new File(line.getOptionValue('o'));
-
-            try {
-                file.createNewFile();
-                bufferedWriter = new BufferedWriter(new FileWriter(
-                        file.getAbsoluteFile()));
-                outFile = bufferedWriter;
-            } catch (IOException e) {
-                throw new ParseException("Cannot create file "
-                        + line.getOptionValue('o'));
-            }
-        }
-
-        Rectangle area = null;
-        if (line.hasOption('a')) {
-            List<Float> f = parseFloatList(line.getOptionValue('a'));
-            if (f.size() != 4) {
-                throw new ParseException("area parameters must be top,left,bottom,right");
-            }
-            area = new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
-        }
-
-        List<Float> verticalRulingPositions = null;
-        if (line.hasOption('c')) {
-            verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
-        }
-
-        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
-        List<Integer> pages = Utils.parsePagesOption(pagesOption);
-        ExtractionMethod method = whichExtractionMethod(line);
-        boolean useLineReturns = line.hasOption('u');
-
         try {
+            FileWriter fileWriter = new FileWriter(outputFile.getAbsoluteFile());
+            bufferedWriter = new BufferedWriter(fileWriter);
 
-            PDDocument pdfDocument = PDDocument.load(pdfFile);
+            outputFile.createNewFile();
+            extractFile(pdfFile, bufferedWriter);
+        } catch (IOException e) {
+            throw new ParseException("Cannot create file " + outputFile);
+        } finally {
+            if (bufferedWriter != null) {
+                try {
+                    bufferedWriter.close();
+                } catch (IOException e) {
+                    System.out.println("Error in closing the BufferedWriter" + e);
+                }
+            }
+        }
+    }
 
-            ObjectExtractor oe = line.hasOption('s') ?
-                    new ObjectExtractor(pdfDocument, line.getOptionValue('s')) :
-                    new ObjectExtractor(pdfDocument);
-            BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
-            SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
-
-            PageIterator pageIterator = pages == null ? oe.extract() : oe.extract(pages);
-            Page page;
+    private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
+        PDDocument pdfDocument = null;
+        try {
+            pdfDocument = PDDocument.load(pdfFile);
+            PageIterator pageIterator = getPageIterator(pdfDocument);
             List<Table> tables = new ArrayList<Table>();
 
             while (pageIterator.hasNext()) {
-                page = pageIterator.next();
+                Page page = pageIterator.next();
 
-                if (area != null) {
-                    page = page.getArea(area);
-
+                if (pageArea != null) {
+                    page = page.getArea(pageArea);
                 }
 
-                if (method == ExtractionMethod.DECIDE) {
-                    method = spreadsheetExtractor.isTabular(page) ? ExtractionMethod.SPREADSHEET : ExtractionMethod.BASIC;
-                }
-
-                switch(method) {
-                case BASIC:
-                    if (line.hasOption('g')) {
-                        // guess the page areas to extract using a detection algorithm
-                        // currently we only have a detector that uses spreadsheets to find table areas
-                        DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
-                        List<Rectangle> guesses = detector.detect(page);
-
-                        for (Rectangle guessRect : guesses) {
-                            Page guess = page.getArea(guessRect);
-                            tables.addAll(basicExtractor.extract(guess));
-                        }
-                    } else {
-                        tables.addAll(verticalRulingPositions == null ? basicExtractor.extract(page) : basicExtractor.extract(page, verticalRulingPositions));
-                    }
-
-                    break;
-                case SPREADSHEET:
-                    // TODO add useLineReturns
-                    tables.addAll(spreadsheetExtractor.extract(page));
-                default:
-                    break;
-                }
+                tables.addAll(tableExtractor.extractTables(page));
             }
-            writeTables(of, tables, outFile);
-
-
+            writeTables(tables, outFile);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         } finally {
-        	if (bufferedWriter != null) {
-        		try {
-        			bufferedWriter.close();
-				} catch (IOException e) {
-					System.out.println("Error in closing the BufferedWriter" + e);
-				}
-        	}
+          try {
+              if (pdfDocument != null) {
+                pdfDocument.close();
+              }
+          } catch (IOException e) {
+              System.out.println("Error in closing pdf document" + e);
+          }
         }
-
     }
 
-    private void writeTables(OutputFormat format, List<Table> tables, Appendable out) throws IOException {
-        Writer writer = null;
-        switch (format) {
-        case CSV:
-            writer = new CSVWriter();
-            break;
-        case JSON:
-            writer = new JSONWriter();
-            break;
-        case TSV:
-            writer = new TSVWriter();
-            break;
-        }
-        writer.write(out, tables);
+    private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
+        ObjectExtractor extractor = (this.password == null) ?
+                new ObjectExtractor(pdfDocument) :
+                new ObjectExtractor(pdfDocument, this.password);
+        PageIterator pageIterator = (pages == null) ?
+          extractor.extract() :
+          extractor.extract(pages);
+        return pageIterator;
     }
 
-    private ExtractionMethod whichExtractionMethod(CommandLine line) {
-        ExtractionMethod rv = ExtractionMethod.DECIDE;
+    // CommandLine parsing methods
+
+    private static OutputFormat whichOutputFormat(CommandLine line) throws ParseException {
+        if (!line.hasOption('f')) {
+            return OutputFormat.CSV;
+        }
+
+        try {
+            return OutputFormat.valueOf(line.getOptionValue('f'));
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(String.format(
+                    "format %s is illegal. Available formats: %s",
+                    line.getOptionValue('f'),
+                    Utils.join(",", OutputFormat.formatNames())));
+        }
+    }
+
+    private static Rectangle whichArea(CommandLine line) throws ParseException {
+        if (!line.hasOption('a')) {
+          return null;
+        }
+
+        List<Float> f = parseFloatList(line.getOptionValue('a'));
+        if (f.size() != 4) {
+            throw new ParseException("area parameters must be top,left,bottom,right");
+        }
+        return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+    }
+
+    private static List<Integer> whichPages(CommandLine line) throws ParseException {
+        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
+        return Utils.parsePagesOption(pagesOption);
+    }
+
+    private static ExtractionMethod whichExtractionMethod(CommandLine line) {
         if (line.hasOption('r')) {
-            rv = ExtractionMethod.SPREADSHEET;
+            return ExtractionMethod.SPREADSHEET;
         }
-        else if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g')) {
-            rv = ExtractionMethod.BASIC;
+
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g')) {
+            return ExtractionMethod.BASIC;
         }
-        return rv;
+        return ExtractionMethod.DECIDE;
     }
 
+    private static TableExtractor createExtractor(CommandLine line) throws ParseException {
+      TableExtractor extractor = new TableExtractor();
+      extractor.setGuess(line.hasOption('g'));
+      extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
+      extractor.setUseLineReturns(line.hasOption('u'));
 
+      if (line.hasOption('c')) {
+          extractor.setVerticalRulingPositions(parseFloatList(line.getOptionValue('c')));
+      }
+      return extractor;
+    }
+
+    // utilities, etc.
 
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");
@@ -253,6 +279,11 @@ public class CommandLineApp {
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+        o.addOption(OptionBuilder.withLongOpt("batch")
+            .withDescription("Convert all .pdfs in the provided directory.")
+            .hasArg()
+            .withArgName("DIRECTORY")
+            .create("b"));
         o.addOption(OptionBuilder.withLongOpt("outfile")
                                  .withDescription("Write output to <file> instead of STDOUT. Default: -")
                                  .hasArg()
@@ -287,6 +318,109 @@ public class CommandLineApp {
         return o;
     }
 
+    private static class TableExtractor {
+      private boolean guess = false;
+      private boolean useLineReturns = false;
+      private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
+      private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
+      private List<Float> verticalRulingPositions = null;
+      private ExtractionMethod method = ExtractionMethod.BASIC;
+
+      public TableExtractor() {
+      }
+
+      public void setVerticalRulingPositions(List<Float> positions) {
+        this.verticalRulingPositions = positions;
+      }
+
+      public void setGuess(boolean guess) {
+        this.guess = guess;
+      }
+
+      public void setUseLineReturns(boolean useLineReturns) {
+        this.useLineReturns = useLineReturns;
+      }
+
+      public void setMethod(ExtractionMethod method) {
+        this.method = method;
+      }
+
+      public List<Table> extractTables(Page page) {
+          ExtractionMethod effectiveMethod = this.method;
+          if (effectiveMethod == ExtractionMethod.DECIDE) {
+            effectiveMethod = spreadsheetExtractor.isTabular(page) ?
+              ExtractionMethod.SPREADSHEET :
+              ExtractionMethod.BASIC;
+          }
+          switch(effectiveMethod) {
+          case BASIC:
+              return extractTablesBasic(page);
+          case SPREADSHEET:
+              return extractTablesSpreadsheet(page);
+          default:
+            return new ArrayList<Table>();
+          }
+      }
+
+      public List<Table> extractTablesBasic(Page page) {
+        if (guess) {
+          // guess the page areas to extract using a detection algorithm
+          // currently we only have a detector that uses spreadsheets to find table areas
+          DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
+          List<Rectangle> guesses = detector.detect(page);
+          List<Table> tables = new ArrayList<Table>();
+
+          for (Rectangle guessRect : guesses) {
+              Page guess = page.getArea(guessRect);
+              tables.addAll(basicExtractor.extract(guess));
+          }
+          return tables;
+        }
+
+        if (verticalRulingPositions != null) {
+          return basicExtractor.extract(page, verticalRulingPositions);
+        }
+        return basicExtractor.extract(page);
+      }
+
+      public List<Table> extractTablesSpreadsheet(Page page) {
+          // TODO add useLineReturns
+          return (List<Table>)spreadsheetExtractor.extract(page);
+      }
+    }
+
+    private void writeTables(List<Table> tables, Appendable out) throws IOException {
+        Writer writer = null;
+        switch (outputFormat) {
+        case CSV:
+            writer = new CSVWriter();
+            break;
+        case JSON:
+            writer = new JSONWriter();
+            break;
+        case TSV:
+            writer = new TSVWriter();
+            break;
+        }
+        writer.write(out, tables);
+    }
+
+    private String getOutputFilename(File pdfFile) {
+        String extension = ".csv";
+        switch (outputFormat) {
+        case CSV:
+            extension = ".csv";
+            break;
+        case JSON:
+            extension = ".json";
+            break;
+        case TSV:
+            extension = ".tsv";
+            break;
+        }
+        return pdfFile.getPath().replaceFirst("(\\.pdf|)$", extension);
+    }
+
     private enum OutputFormat {
         CSV,
         TSV,
@@ -300,7 +434,6 @@ public class CommandLineApp {
             }
             return rv;
         }
-
     }
 
     private enum ExtractionMethod {
