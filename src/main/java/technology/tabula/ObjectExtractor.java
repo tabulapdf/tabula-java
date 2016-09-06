@@ -280,7 +280,7 @@ public class ObjectExtractor extends org.apache.pdfbox.pdfviewer.PageDrawer {
         //
         // float[] color_comps =
         // this.getGraphicsState().getNonStrokingColor().getJavaColor().getRGBColorComponents(null);
-        float[] color = this.getGraphicsState().getNonStrokingColor().getJavaColor().getComponents(null);
+        // float[] color = this.getGraphicsState().getNonStrokingColor().getJavaColor().getComponents(null);
         // TODO use color_comps as filter_by_color
         this.strokeOrFillPath(true);
     }
