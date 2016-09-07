@@ -113,7 +113,12 @@ public class CommandLineApp {
 
         for (File pdfFile : pdfs) {
           File outputFile = new File(getOutputFilename(pdfFile));
-          extractFileInto(pdfFile, outputFile);
+          try {
+            extractFileInto(pdfFile, outputFile);
+          } catch (ParseException e) {
+            System.err.println("Caught exception while processing file: " + pdfFile.toString());
+            throw e;
+          }
         }
     }
 
