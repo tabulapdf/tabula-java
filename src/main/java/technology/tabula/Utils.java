@@ -17,45 +17,45 @@ public class Utils {
     public static boolean within(double first, double second, double variance) {
         return second < first + variance && second > first - variance;
     }
-    
+
     public static boolean overlap(double y1, double height1, double y2, double height2, double variance) {
         return within( y1, y2, variance) || (y2 <= y1 && y2 >= y1 - height1) || (y1 <= y2 && y1 >= y2-height2);
     }
-    
+
     public static boolean overlap(double y1, double height1, double y2, double height2) {
         return overlap(y1, height1, y2, height2, 0.1f);
     }
-    
+
     private final static float EPSILON = 0.01f;
-    protected static boolean useQuickSort = useCustomQuickSort(); 
-    
+    protected static boolean useQuickSort = useCustomQuickSort();
+
     public static boolean feq(double f1, double f2) {
         return (Math.abs(f1 - f2) < EPSILON);
     }
-    
+
     public static float round(double d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Double.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
         return bd.floatValue();
     }
-    
+
     public static Rectangle bounds(Collection<? extends Shape> shapes) {
         if (shapes.isEmpty()) {
             throw new IllegalArgumentException("shapes can't be empty");
         }
-        
+
         Iterator<? extends Shape> iter = shapes.iterator();
         Rectangle rv = new Rectangle();
         rv.setRect(iter.next().getBounds2D());
 
-        do {
+        while (iter.hasNext()) {
             Rectangle2D.union(iter.next().getBounds2D(), rv, rv);
-        } while (iter.hasNext());
-        
+        }
+
         return rv;
-        
+
     }
-    
+
     // range iterator
     public static List<Integer> range(final int begin, final int end) {
         return new AbstractList<Integer>() {
@@ -70,7 +70,7 @@ public class Utils {
             }
         };
     }
-    
+
 
     /* from apache.commons-lang */
     public static boolean isNumeric(final CharSequence cs) {
@@ -85,7 +85,7 @@ public class Utils {
         }
         return true;
     }
-    
+
     public static String join(String glue, String...s) {
         int k = s.length;
         if ( k == 0 )
@@ -100,7 +100,7 @@ public class Utils {
         }
         return out.toString();
     }
-    
+
     public static <T> List<List<T>> transpose(List<List<T>> table) {
         List<List<T>> ret = new ArrayList<List<T>>();
         final int N = table.get(0).size();
@@ -116,7 +116,7 @@ public class Utils {
 
     /**
      * Wrap Collections.sort so we can fallback to a non-stable quicksort
-     * if we're running on JDK7+ 
+     * if we're running on JDK7+
      */
     public static <T extends Comparable<? super T>> void sort(List<T> list) {
         if (useQuickSort) {
@@ -126,10 +126,10 @@ public class Utils {
             Collections.sort(list);
         }
     }
-    
+
     private static boolean useCustomQuickSort() {
         // taken from PDFBOX:
-        
+
         // check if we need to use the custom quicksort algorithm as a
         // workaround to the transitivity issue of TextPositionComparator:
         // https://issues.apache.org/jira/browse/PDFBOX-1512
@@ -151,36 +151,36 @@ public class Utils {
         String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
         return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
     }
-    
-    
-    
+
+
+
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
         if (pagesSpec.equals("all")) {
             return null;
         }
-        
+
         List<Integer> rv = new ArrayList<Integer>();
-        
+
         String[] ranges = pagesSpec.split(",");
         for (int i = 0; i < ranges.length; i++) {
             String[] r = ranges[i].split("-");
             if (r.length == 0 || !Utils.isNumeric(r[0]) || r.length > 1 && !Utils.isNumeric(r[1])) {
                 throw new ParseException("Syntax error in page range specification");
             }
-            
+
             if (r.length < 2) {
                 rv.add(Integer.parseInt(r[0]));
             }
             else {
                 int t = Integer.parseInt(r[0]);
-                int f = Integer.parseInt(r[1]); 
+                int f = Integer.parseInt(r[1]);
                 if (t > f) {
                     throw new ParseException("Syntax error in page range specification");
                 }
-                rv.addAll(Utils.range(t, f+1));       
+                rv.addAll(Utils.range(t, f+1));
             }
         }
-        
+
         Collections.sort(rv);
         return rv;
     }
