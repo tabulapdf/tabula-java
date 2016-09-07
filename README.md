@@ -63,6 +63,7 @@ You can also integrate `tabula-java` with any JVM language. For Java examples, s
 
 JVM start-up time is a lot of the cost of the `tabula` command, so if you're trying to extract many tables from PDFs, you have a few options for speeding it up:
 
+ - the -b option, which allows you to convert all pdfs in a given directory
  - the [drip](https://github.com/ninjudd/drip) utility
  - the [Ruby](http://github.com/tabulapdf/tabula-extractor), [R](https://github.com/leeper/tabulizer), and [Node.js](https://github.com/ezodude/tabula-js) bindings
  - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
