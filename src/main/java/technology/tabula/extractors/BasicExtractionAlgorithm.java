@@ -78,7 +78,6 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 			});
             
             for (TextChunk tc: elements) {
-
                 if (tc.isSameChar(Line.WHITE_SPACE_CHARS)) {
                     continue;
                 }

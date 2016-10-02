@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>technology.tabula</groupId>
     <artifactId>tabula</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <name>Tabula</name>
     <description>Extract tables from PDF files</description>
     <url>http://github.com/tabulapdf/tabula-java</url>
@@ -36,7 +36,7 @@
         <connection>scm:git:git@github.com:tabulapdf/tabula-java.git</connection>
         <developerConnection>scm:git:git@github.com:tabulapdf/tabula-java.git</developerConnection>
         <url>git@github.com:tabulapdf/tabula-java.git</url>
-        <tag>tabula-0.9.0</tag>
+        <tag>tabula-0.9.1</tag>
     </scm>
 
     <repositories>
@@ -58,9 +58,9 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-	</repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
     <reporting>
@@ -222,13 +222,13 @@
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.20</version>
+        <version>1.7.21</version>
     </dependency>
 
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
-        <version>1.7.20</version>
+        <version>1.7.21</version>
     </dependency>
 
     <dependency>
@@ -239,14 +239,14 @@
 
     <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk15</artifactId>
-        <version>1.46</version>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>1.55</version>
     </dependency>
 
     <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcmail-jdk15</artifactId>
-        <version>1.46</version>
+        <artifactId>bcmail-jdk15on</artifactId>
+        <version>1.55</version>
     </dependency>
 
     <dependency>
@@ -265,13 +265,13 @@
     <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-csv</artifactId>
-        <version>1.2</version>
+        <version>1.4</version>
     </dependency>
 
     <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
-        <version>2.6.2</version>
+        <version>2.7</version>
     </dependency>
 </dependencies>
 

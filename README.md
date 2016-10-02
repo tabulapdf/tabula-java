@@ -16,9 +16,9 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar ./target/tabula-0.9.0-jar-with-dependencies.jar --help
+$ java -jar ./target/tabula-0.9.1-jar-with-dependencies.jar --help
 
-usage: tabula [-a <AREA>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
+usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
        [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
 
 Tabula helps you extract tables from PDFs
@@ -30,6 +30,8 @@ Tabula helps you extract tables from PDFs
                             --columns 10.1,20.2,30.3
  -d,--debug                 Print detected table areas instead of
                             processing.
+ -b,--batch <DIRECTORY>     Convert all .pdfs in the provided directory
+
  -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
  -g,--guess                 Guess the portion of the page to analyze per
                             page.
@@ -55,9 +57,16 @@ Tabula helps you extract tables from PDFs
 
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-0.9.0-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-0.9.1-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
+
+JVM start-up time is a lot of the cost of the `tabula` command, so if you're trying to extract many tables from PDFs, you have a few options for speeding it up:
+
+ - the [drip](https://github.com/ninjudd/drip) utility
+ - the [Ruby](http://github.com/tabulapdf/tabula-extractor), [Python](https://github.com/chezou/tabula-py), [R](https://github.com/leeper/tabulizer), and [Node.js](https://github.com/ezodude/tabula-js) bindings
+ - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
+ - waiting for us to implement an API/server-style system (it's on the roadmap)
 
 ## Building from Source
 
@@ -66,3 +75,29 @@ Clone this repo and run:
 ```
 mvn clean compile assembly:single
 ```
+
+## Contributing
+
+Interested in helping out? We'd love to have your help!
+
+You can help by:
+
+- [Reporting a bug](https://github.com/tabulapdf/tabula-java/issues).
+- Adding or editing documentation.
+- Contributing code via a Pull Request.
+- Spreading the word about `tabula-java` to people who might be able to benefit from using it.
+
+### Backers
+
+You can also support our continued work on `tabula-java` with a one-time or monthly donation [on OpenCollective](https://opencollective.com/tabulapdf#support). Organizations who use `tabula-java` can also [sponsor the project](https://opencollective.com/tabulapdf#support) for acknolwedgement on [our official site](http://tabula.technology/) and this README.
+
+Special thanks to the following users and organizations for generously supporting Tabula with donations and grants:
+
+<a href="https://opencollective.com/tabulapdf/backer/0/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/0/avatar"></a>
+<a href="https://opencollective.com/tabulapdf/backer/1/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/1/avatar"></a>
+<a href="https://opencollective.com/tabulapdf/backer/2/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/2/avatar"></a>
+<a href="https://opencollective.com/tabulapdf/backer/3/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/3/avatar"></a>
+<a href="https://opencollective.com/tabulapdf/backer/4/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/4/avatar"></a>
+<a href="https://opencollective.com/tabulapdf/backer/5/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/5/avatar"></a>
+
+<a title="The John S. and James L. Knight Foundation" href="http://www.knightfoundation.org/" target="_blank"><img alt="The John S. and James L. Knight Foundation" src="http://www.knightfoundation.org/media/uploads/media_images/knight-logo-300.jpg"></a>

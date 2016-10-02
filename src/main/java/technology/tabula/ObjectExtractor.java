@@ -61,7 +61,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     public ObjectExtractor(PDDocument pdf_document, String password, boolean extractRulingLines, boolean debugClippingPaths)
             throws IOException {
-    	
+
     	super();
 
         this.clippingPaths = new ArrayList<Shape>();
@@ -181,7 +181,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
 
     public void strokeOrFillPath(boolean isFill) {
         GeneralPath path = this.getLinePath();
-       
+
 
         if (!this.extractRulingLines) {
             this.getLinePath().reset();
@@ -282,7 +282,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         //
         // float[] color_comps =
         // this.getGraphicsState().getNonStrokingColor().getJavaColor().getRGBColorComponents(null);
-        float[] color = this.getGraphicsState().getNonStrokingColor().getComponents();
+        // float[] color = this.getGraphicsState().getNonStrokingColor().getJavaColor().getComponents(null);
         // TODO use color_comps as filter_by_color
         this.strokeOrFillPath(true);
     }
@@ -336,7 +336,7 @@ public class ObjectExtractor extends org.apache.pdfbox.contentstream.PDFGraphics
         if (this.pageTransform != null) {
             return this.pageTransform;
         }
-       
+
 
         PDRectangle cb = page.getCropBox();
         int rotation = Math.abs(page.getRotation());

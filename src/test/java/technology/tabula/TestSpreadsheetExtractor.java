@@ -21,6 +21,7 @@ import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.UtilsForTesting;
 import technology.tabula.writers.JSONWriter;
+import java.text.Normalizer;
 
 public class TestSpreadsheetExtractor {
 
@@ -336,7 +337,7 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
         
         String result = sb.toString();
-        String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and \rnanotechnology policy (SGER)\",Interagency,\"North Carolina State \rUniversity\"\r\n\"Social and ethical research and education in agrifood \rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed \rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience, \rapplications and societal implications (NUE)\",NSF,\"Michigan Technological \rUniversity\"\r\n\"Ethics and belief inside the development of \rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal \rimplications components\",\"NSF, DOE, \rDOD, and NIH\",\"All nanotechnology centers \rand networks\"\r\n";
+        String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
         
         assertEquals(expected, result);
     }
@@ -520,30 +521,61 @@ public class TestSpreadsheetExtractor {
                 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = (List<Table>) sea.extract(page);
-        assertEquals(1, tables.size());
+        // assertEquals(1, tables.size());
         Table table = tables.get(0);
         
-        assertEquals("مرحبا",                        table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-        assertEquals("اسمي سلطان",                   table.getRows().get(0).get(1).getText()); 
-        assertEquals("من اين انت؟",                  table.getRows().get(1).get(0).getText());
-        assertEquals("1234",                         table.getRows().get(2).get(0).getText());
-        assertEquals("هل انت شباك؟",                 table.getRows().get(3).get(0).getText());
-        assertEquals("اسمي ymereJ في النجليزية",     table.getRows().get(3).get(1).getText()); // conjoined lam-alif gets missed
-        assertEquals("انا من ولية كارولينا الشمال",  table.getRows().get(1).get(1).getText()); // conjoined lam-alif gets missed
 
-        // there are two remaining problems that are not yet addressed
-        // - lam-alif ligature comes out just as a lam (https://en.wikipedia.org/wiki/Arabic_alphabet#Ligatures)
-        //      this problem also exists in Evince
-        // - mixed-directionality text comes out wrong, but that's a pathological case that other things 
-        //      do incorrectly too.
+        assertEquals("اسمي سلطان",                   table.getRows().get(1).get(1).getText()); 
+        assertEquals("من اين انت؟",                  table.getRows().get(2).get(1).getText());
+        assertEquals("1234",                         table.getRows().get(3).get(0).getText());
+        assertEquals("هل انت شباك؟",                 table.getRows().get(4).get(0).getText());
+        assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(2).get(0).getText()); // conjoined lam-alif gets missed
+        assertEquals("اسمي Jeremy في الانجليزية",    table.getRows().get(4).get(1).getText()); // conjoined lam-alif gets missed
+        assertEquals("عندي 47 قطط",                  table.getRows().get(3).get(1).getText()); // the real right answer is 47.
+        assertEquals("Jeremy is جرمي in Arabic",     table.getRows().get(5).get(0).getText()); // the real right answer is 47.
+        assertEquals("مرحبًا",                       table.getRows().get(1).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+
+        // there is one remaining problems that are not yet addressed
+        // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
         // this should get fixed, but this is a good first stab at the problem.
 
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-        // assertEquals("اسمي Jeremy في الانجليزية",    table.getRows().get(3).get(1).getText()); // conjoined lam-alif gets missed
-        // assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(1).get(1).getText()); // conjoined lam-alif gets missed
-        // assertEquals("عندي 47 قطط",                  table.getRows().get(2).get(1).getText());
+
+    }
+
+
+    @Test
+    public void testRealLifeRTL() throws IOException {
+        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/mednine.pdf", 
+                1);
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        // assertEquals(1, tables.size());
+        Table table = tables.get(0);
+        
+        assertEquals("الانتخابات التشريعية  2014",     table.getRows().get(0).get(0).getText()); // the doubled spaces might be a bug in my implementation.
+        assertEquals("ورقة كشف نتائج دائرة مدنين",     table.getRows().get(1).get(0).getText());
+        assertEquals("426",                            table.getRows().get(4).get(0).getText());
+        assertEquals("63",                             table.getRows().get(4).get(1).getText());
+        assertEquals("43",                             table.getRows().get(4).get(2).getText());
+        assertEquals("56",                             table.getRows().get(4).get(3).getText());
+        assertEquals("58",                             table.getRows().get(4).get(4).getText());
+        assertEquals("49",                             table.getRows().get(4).get(5).getText());
+        assertEquals("55",                             table.getRows().get(4).get(6).getText());
+        assertEquals("33",                             table.getRows().get(4).get(7).getText());
+        assertEquals("32",                             table.getRows().get(4).get(8).getText());
+        assertEquals("37",                             table.getRows().get(4).get(9).getText());
+        assertEquals("قائمة من أجل تحقيق سلطة الشعب",  table.getRows().get(4).get(10).getText());
+
+        // there is one remaining problems that are not yet addressed
+        // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
+        // this should get fixed, but this is a good first stab at the problem.
+
+        // these (commented-out) tests reflect the theoretical correct answer,
+        // which is not currently possible because of the two problems listed above
+        // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
 
     }
 
