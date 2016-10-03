@@ -180,9 +180,7 @@ public class CommandLineApp {
     }
 
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
-        ObjectExtractor extractor = (this.password == null) ?
-                new ObjectExtractor(pdfDocument) :
-                new ObjectExtractor(pdfDocument, this.password);
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument) ;
         PageIterator pageIterator = (pages == null) ?
           extractor.extract() :
           extractor.extract(pages);

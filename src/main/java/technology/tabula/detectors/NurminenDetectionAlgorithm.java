@@ -1,11 +1,13 @@
 package technology.tabula.detectors;
 
+import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.util.PDFOperator;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import technology.tabula.*;
 import technology.tabula.Rectangle;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
@@ -16,7 +18,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by matt on 2015-12-17.
@@ -90,7 +91,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         BufferedImage image;
         PDPage pdfPage = page.getPDPage();
         try {
-            image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
+            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (IOException e) {
             return new ArrayList<Rectangle>();
         }
@@ -100,7 +101,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // now check the page for vertical lines, but remove the text first to make things less confusing
         try {
             this.removeText(pdfPage);
-            image = pdfPage.convertToImage(BufferedImage.TYPE_BYTE_GRAY, 144);
+            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
             return new ArrayList<Rectangle>();
         }
@@ -804,25 +805,28 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         return verticalRulings;
     }
+    
 
     // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
     private void removeText(PDPage page) throws IOException {
-        PDFStreamParser parser = new PDFStreamParser(page.getContents());
+        
+        PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
-
-        List tokens = parser.getTokens();
-        List newTokens = new ArrayList();
-
-        for (int i=0; i<tokens.size(); i++) {
-            Object token = tokens.get(i);
-            if (token instanceof PDFOperator) {
-                PDFOperator op = (PDFOperator)token;
-                if (op.getOperation().equals("TJ") || op.getOperation().equals("Tj")) {
-                    newTokens.remove(newTokens.size() - 1);
+        List<Object> tokens = parser.getTokens();
+        List<Object> newTokens = new ArrayList<Object>();
+        for (Object token : tokens)
+        {
+            if( token instanceof Operator)
+            {
+                Operator op = (Operator)token;
+                if( op.getName().equals( "TJ") || op.getName().equals( "Tj" ))
+                {
+                    //remove the one argument to this operator
+                    newTokens.remove( newTokens.size() -1 );
                     continue;
                 }
             }
-            newTokens.add(token);
+            newTokens.add( token );
         }
 
         PDDocument document = new PDDocument();
@@ -831,7 +835,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDStream newContents = new PDStream(document);
         ContentStreamWriter writer = new ContentStreamWriter(newContents.createOutputStream());
         writer.writeTokens(newTokens);
-        newContents.addCompression();
         page.setContents(newContents);
 
         try {

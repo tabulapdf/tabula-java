@@ -4,10 +4,16 @@ import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 /**
  *
@@ -270,4 +276,17 @@ public class Utils {
             ltp.getKey().setLine(p[0], p[1]);
         }
     }
+    
+    public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
+    	// Yeah, this sucks. But PDFBox 2 wants PDFRenderers to have
+    	// a reference to a PDDocument (unnecessarily, IMHO)
+    	
+    	PDDocument document = new PDDocument();
+    	document.addPage(page);
+    	
+    	PDFRenderer renderer = new PDFRenderer(document);
+    	
+    	return renderer.renderImageWithDPI(0, dpi, imageType);
+    }
+    
 }
