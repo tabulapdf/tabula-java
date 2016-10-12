@@ -66,7 +66,7 @@ JVM start-up time is a lot of the cost of the `tabula` command, so if you're try
  - the [drip](https://github.com/ninjudd/drip) utility
  - the [Ruby](http://github.com/tabulapdf/tabula-extractor), [Python](https://github.com/chezou/tabula-py), [R](https://github.com/leeper/tabulizer), and [Node.js](https://github.com/ezodude/tabula-js) bindings
  - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
- - waiting for us to implement an API/server-style system (it's on the roadmap)
+ - waiting for us to implement an API/server-style system (it's on the [roadmap](https://github.com/tabulapdf/tabula-api))
 
 ## Building from Source
 
