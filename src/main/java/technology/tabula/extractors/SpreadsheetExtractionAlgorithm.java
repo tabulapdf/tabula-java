@@ -238,7 +238,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         cells = new ArrayList<Rectangle>(new HashSet<Rectangle>(cells));
         
-        Collections.sort(cells);
+        Utils.sort(cells);
         
         for (Rectangle cell: cells) {
             for(Point2D pt: cell.getPoints()) {

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -254,9 +253,9 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
-        Collections.sort(cells);
+        Utils.sort(cells);
         List<Cell> expected = Arrays.asList(EXPECTED_CELLS);
-        Collections.sort(expected);
+        Utils.sort(expected);
         assertTrue(cells.equals(expected));
     }
     
@@ -286,9 +285,9 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Rectangle> cells = Arrays.asList(CELLS);
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
-        Collections.sort(expected);
+        Utils.sort(expected);
         List<Rectangle> foundRectangles = se.findSpreadsheetsFromCells(cells);
-        Collections.sort(foundRectangles);
+        Utils.sort(foundRectangles);
         assertTrue(foundRectangles.equals(expected));
     }
     

@@ -1,7 +1,6 @@
 package technology.tabula;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -92,7 +91,7 @@ public class ProjectionProfile {
             }
             foundNarrower = false;
         }
-        Collections.sort(verticalSeparators);
+        Utils.sort(verticalSeparators);
         float[] rv = new float[verticalSeparators.size()];
         for (int i = 0; i < rv.length; i++) {
             rv[i] = (float) toDouble(verticalSeparators.get(i));
@@ -125,7 +124,7 @@ public class ProjectionProfile {
             }
             foundShorter = false;
         }
-        Collections.sort(horizontalSeparators);
+        Utils.sort(horizontalSeparators);
         float[] rv = new float[horizontalSeparators.size()];
         for (int i = 0; i < rv.length; i++) {
             rv[i] = (float) toDouble(horizontalSeparators.get(i));

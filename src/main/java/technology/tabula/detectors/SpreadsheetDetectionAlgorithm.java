@@ -6,9 +6,9 @@ import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.Utils;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,7 +28,7 @@ public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
         List<Rectangle> tables = sea.findSpreadsheetsFromCells(cells);
 
         // we want tables to be returned from top to bottom on the page
-        Collections.sort(tables);
+        Utils.sort(tables);
 
         return tables;
     }

@@ -13,6 +13,7 @@ import technology.tabula.Ruling;
 import technology.tabula.Table;
 import technology.tabula.TextChunk;
 import technology.tabula.TextElement;
+import technology.tabula.Utils;
 
 public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     
@@ -155,7 +156,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             rv.add((float) r.getRight());
         }
         
-        Collections.sort(rv);
+        Utils.sort(rv);
         
         return rv;
         
