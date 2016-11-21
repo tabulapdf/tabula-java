@@ -118,7 +118,12 @@ public class TextElement extends Rectangle implements HasText {
             return textChunks;
         }
         
-        textChunks.add(new TextChunk(textElements.remove(0)));
+        // it's a problem that this `remove` is side-effecty
+        // other things depend on `textElements` and it can sometimes lead to the first textElement in textElement
+        // not appearing in the final output because it's been removed here.
+        // https://github.com/tabulapdf/tabula-java/issues/78
+        List<TextElement> copyOfTextElements = new ArrayList<TextElement>(textElements);
+        textChunks.add(new TextChunk(copyOfTextElements.remove(0)));
         TextChunk firstTC = textChunks.get(0); 
         
         float previousAveCharWidth = (float) firstTC.getWidth();
@@ -133,7 +138,7 @@ public class TextElement extends Rectangle implements HasText {
         TextChunk currentChunk;
         boolean sameLine, acrossVerticalRuling;
         
-        for (TextElement chr : textElements) {
+        for (TextElement chr : copyOfTextElements) {
             currentChunk = textChunks.get(textChunks.size() - 1);
             prevChar = currentChunk.textElements.get(currentChunk.textElements.size() - 1);
             
