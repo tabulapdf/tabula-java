@@ -93,6 +93,24 @@ public class TestTextElement {
 	}
 	
 	@Test
+	public void mergeElementsShouldBeIdempotent() {
+		/*
+	   * a bug in TextElement.merge_words would delete the first TextElement in the array
+	   * it was called with. Discussion here: https://github.com/tabulapdf/tabula-java/issues/78
+	   */
+
+		List<TextElement> elements = new ArrayList<TextElement>();
+		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
+		elements.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
+		elements.add(new TextElement(0f, 35f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
+		elements.add(new TextElement(0f, 45f, 10f, 20f, PDType1Font.HELVETICA, 1f, "D", 1f, 6f));
+		
+		List<TextChunk> words = TextElement.mergeWords(elements);
+		List<TextChunk> words2 = TextElement.mergeWords(elements);
+		Assert.assertEquals(words, words2);
+	}
+
+	@Test
 	public void mergeElementsWithSkippingRules() {
 		
 		List<TextElement> elements = new ArrayList<TextElement>();
