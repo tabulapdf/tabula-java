@@ -26,82 +26,82 @@ import technology.tabula.UtilsForTesting;
 public class TestBasicExtractor {
 
     private static final String[][] EXPECTED_CORRECT_COLUMNS = {
-            { "", "", "Involvement of pupils in ", "" },
-            { "", "Preperation and ", "Production of ", "Presentation an" },
-            { "", "planing ", "materials ", "evaluation " },
-            { "Knowledge and awareness of different cultures ", "0,2885 ",
-                    "0,3974 ", "0,3904 " },
-            { "Foreign language competence ", "0,3057 ", "0,4184 ", "0,3899 " },
-            { "Social skills and abilities ", "0,3416 ", "0,3369 ", "0,4303 " },
-            { "Acquaintance of special knowledge ", "0,2569 ", "0,2909 ",
-                    "0,3557 " },
-            { "Self competence ", "0,3791 ", "0,3320 ", "0,4617 " } };
+            {"","","Involvement of pupils in","" },
+            {"","Preperation and","Production of","Presentation an" },
+            {"","planing","materials","evaluation" },
+            {"Knowledge and awareness of different cultures","0,2885",
+                   "0,3974","0,3904" },
+            {"Foreign language competence","0,3057","0,4184","0,3899" },
+            {"Social skills and abilities","0,3416","0,3369","0,4303" },
+            {"Acquaintance of special knowledge","0,2569","0,2909",
+                   "0,3557" },
+            {"Self competence","0,3791","0,3320","0,4617" } };
 
     private static final String[][] EXPECTED_COLUMN_RECOGNITION = {
-            { "ABDALA de MATARAZZO, Norma Amanda ",
-                    "Frente Cívico por Santiago ", "Santiago del Estero ",
-                    "AFIRMATIVO" },
-            { "ALBRIEU, Oscar Edmundo Nicolas ",
-                    "Frente para la Victoria - PJ ", "Rio Negro ", "AFIRMATIVO" },
-            { "ALONSO, María Luz ", "Frente para la Victoria - PJ ",
-                    "La Pampa ", "AFIRMATIVO" },
-            { "ARENA, Celia Isabel ", "Frente para la Victoria - PJ ",
-                    "Santa Fe ", "AFIRMATIVO" },
-            { "ARREGUI, Andrés Roberto ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "AVOSCAN, Herman Horacio ", "Frente para la Victoria - PJ ",
-                    "Rio Negro ", "AFIRMATIVO" },
-            { "BALCEDO, María Ester ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "BARRANDEGUY, Raúl Enrique ", "Frente para la Victoria - PJ ",
-                    "Entre Ríos ", "AFIRMATIVO" },
-            { "BASTERRA, Luis Eugenio ", "Frente para la Victoria - PJ ",
-                    "Formosa ", "AFIRMATIVO" },
-            { "BEDANO, Nora Esther ", "Frente para la Victoria - PJ ",
-                    "Córdoba ", "AFIRMATIVO" },
-            { "BERNAL, María Eugenia ", "Frente para la Victoria - PJ ",
-                    "Jujuy ", "AFIRMATIVO" },
-            { "BERTONE, Rosana Andrea ", "Frente para la Victoria - PJ ",
-                    "Tierra del Fuego ", "AFIRMATIVO" },
-            { "BIANCHI, María del Carmen ", "Frente para la Victoria - PJ ",
-                    "Cdad. Aut. Bs. As. ", "AFIRMATIVO" },
-            { "BIDEGAIN, Gloria Mercedes ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "BRAWER, Mara ", "Frente para la Victoria - PJ ",
-                    "Cdad. Aut. Bs. As. ", "AFIRMATIVO" },
-            { "BRILLO, José Ricardo ", "Movimiento Popular Neuquino ",
-                    "Neuquén ", "AFIRMATIVO" },
-            { "BROMBERG, Isaac Benjamín ", "Frente para la Victoria - PJ ",
-                    "Tucumán ", "AFIRMATIVO" },
-            { "BRUE, Daniel Agustín ", "Frente Cívico por Santiago ",
-                    "Santiago del Estero ", "AFIRMATIVO" },
-            { "CALCAGNO, Eric ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "CARLOTTO, Remo Gerardo ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "CARMONA, Guillermo Ramón ", "Frente para la Victoria - PJ ",
-                    "Mendoza ", "AFIRMATIVO" },
-            { "CATALAN MAGNI, Julio César ", "Frente para la Victoria - PJ ",
-                    "Tierra del Fuego ", "AFIRMATIVO" },
-            { "CEJAS, Jorge Alberto ", "Frente para la Victoria - PJ ",
-                    "Rio Negro ", "AFIRMATIVO" },
-            { "CHIENO, María Elena ", "Frente para la Victoria - PJ ",
-                    "Corrientes ", "AFIRMATIVO" },
-            { "CIAMPINI, José Alberto ", "Frente para la Victoria - PJ ",
-                    "Neuquén ", "AFIRMATIVO" },
-            { "CIGOGNA, Luis Francisco Jorge ",
-                    "Frente para la Victoria - PJ ", "Buenos Aires ",
-                    "AFIRMATIVO" },
-            { "CLERI, Marcos ", "Frente para la Victoria - PJ ", "Santa Fe ",
-                    "AFIRMATIVO" },
-            { "COMELLI, Alicia Marcela ", "Movimiento Popular Neuquino ",
-                    "Neuquén ", "AFIRMATIVO" },
-            { "CONTI, Diana Beatriz ", "Frente para la Victoria - PJ ",
-                    "Buenos Aires ", "AFIRMATIVO" },
-            { "CORDOBA, Stella Maris ", "Frente para la Victoria - PJ ",
-                    "Tucumán ", "AFIRMATIVO" },
-            { "CURRILEN, Oscar Rubén ", "Frente para la Victoria - PJ ",
-                    "Chubut ", "AFIRMATIVO" } };
+            { "ABDALA de MATARAZZO, Norma Amanda",
+                   "Frente Cívico por Santiago","Santiago del Estero",
+                   "AFIRMATIVO" },
+            {"ALBRIEU, Oscar Edmundo Nicolas",
+                   "Frente para la Victoria - PJ","Rio Negro","AFIRMATIVO" },
+            {"ALONSO, María Luz","Frente para la Victoria - PJ",
+                   "La Pampa","AFIRMATIVO" },
+            {"ARENA, Celia Isabel","Frente para la Victoria - PJ",
+                   "Santa Fe","AFIRMATIVO" },
+            {"ARREGUI, Andrés Roberto","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"AVOSCAN, Herman Horacio","Frente para la Victoria - PJ",
+                   "Rio Negro","AFIRMATIVO" },
+            {"BALCEDO, María Ester","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"BARRANDEGUY, Raúl Enrique","Frente para la Victoria - PJ",
+                   "Entre Ríos","AFIRMATIVO" },
+            {"BASTERRA, Luis Eugenio","Frente para la Victoria - PJ",
+                   "Formosa","AFIRMATIVO" },
+            {"BEDANO, Nora Esther","Frente para la Victoria - PJ",
+                   "Córdoba","AFIRMATIVO" },
+            {"BERNAL, María Eugenia","Frente para la Victoria - PJ",
+                   "Jujuy","AFIRMATIVO" },
+            {"BERTONE, Rosana Andrea","Frente para la Victoria - PJ",
+                   "Tierra del Fuego","AFIRMATIVO" },
+            {"BIANCHI, María del Carmen","Frente para la Victoria - PJ",
+                   "Cdad. Aut. Bs. As.","AFIRMATIVO" },
+            {"BIDEGAIN, Gloria Mercedes","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"BRAWER, Mara","Frente para la Victoria - PJ",
+                   "Cdad. Aut. Bs. As.","AFIRMATIVO" },
+            {"BRILLO, José Ricardo","Movimiento Popular Neuquino",
+                   "Neuquén","AFIRMATIVO" },
+            {"BROMBERG, Isaac Benjamín","Frente para la Victoria - PJ",
+                   "Tucumán","AFIRMATIVO" },
+            {"BRUE, Daniel Agustín","Frente Cívico por Santiago",
+                   "Santiago del Estero","AFIRMATIVO" },
+            {"CALCAGNO, Eric","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"CARLOTTO, Remo Gerardo","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"CARMONA, Guillermo Ramón","Frente para la Victoria - PJ",
+                   "Mendoza","AFIRMATIVO" },
+            {"CATALAN MAGNI, Julio César","Frente para la Victoria - PJ",
+                   "Tierra del Fuego","AFIRMATIVO" },
+            {"CEJAS, Jorge Alberto","Frente para la Victoria - PJ",
+                   "Rio Negro","AFIRMATIVO" },
+            {"CHIENO, María Elena","Frente para la Victoria - PJ",
+                   "Corrientes","AFIRMATIVO" },
+            {"CIAMPINI, José Alberto","Frente para la Victoria - PJ",
+                   "Neuquén","AFIRMATIVO" },
+            {"CIGOGNA, Luis Francisco Jorge",
+                   "Frente para la Victoria - PJ","Buenos Aires",
+                   "AFIRMATIVO" },
+            {"CLERI, Marcos","Frente para la Victoria - PJ","Santa Fe",
+                   "AFIRMATIVO" },
+            {"COMELLI, Alicia Marcela","Movimiento Popular Neuquino",
+                   "Neuquén","AFIRMATIVO" },
+            {"CONTI, Diana Beatriz","Frente para la Victoria - PJ",
+                   "Buenos Aires","AFIRMATIVO" },
+            {"CORDOBA, Stella Maris","Frente para la Victoria - PJ",
+                   "Tucumán","AFIRMATIVO" },
+            {"CURRILEN, Oscar Rubén","Frente para la Victoria - PJ",
+                   "Chubut","AFIRMATIVO" } };
     
     private static final String[][] EXPECTED_COLUMN_EXTRACTION2 = {
         {"","Austria","77","1","78"},
@@ -140,21 +140,21 @@ public class TestBasicExtractor {
     };
     
     private static final String[][] EXPECTED_TABLE_EXTRACTION = {
-        {"AANONSEN, DEBORAH, A ","","","STATEN ISLAND, NY ","MEALS ","$85.00"},
-        {"TOTAL ","","","","","$85.00"},
-        {"AARON, CAREN, T ","","","RICHMOND, VA ","EDUCATIONAL ITEMS ","$78.80"},
-        {"AARON, CAREN, T ","","","RICHMOND, VA ","MEALS ","$392.45"},
-        {"TOTAL ","","","","","$471.25"},
-        {"AARON, JOHN ","","","CLARKSVILLE, TN ","MEALS ","$20.39"},
-        {"TOTAL ","","","","","$20.39"},
-        {"AARON, JOSHUA, N ","","","WEST GROVE, PA ","MEALS ","$310.33"},
-        {"AARON , JOSHUA , N ","REGIONAL PULMONARY & SLEEPMEDICINE ","","WEST GROVE, PA ","SPEAKING FEES ","$4,700.00"},
-        {"TOTAL ","","","","","$5,010.33"},
-        {"AARON, MAUREEN, M ","","","MARTINSVILLE, VA ","MEALS ","$193.67"},
-        {"TOTAL ","","","","","$193.67"},
-        {"AARON, MICHAEL, L ","","","WEST ISLIP, NY ","MEALS ","$19.50"},
-        {"TOTAL ","","","","","$19.50"},
-        {"AARON, MICHAEL, R ","","","BROOKLYN, NY ","MEALS ","$65.92"}
+        {"AANONSEN, DEBORAH, A","","","STATEN ISLAND, NY","MEALS","$85.00"},
+        {"TOTAL","","","","","$85.00"},
+        {"AARON, CAREN, T","","","RICHMOND, VA","EDUCATIONAL ITEMS","$78.80"},
+        {"AARON, CAREN, T","","","RICHMOND, VA","MEALS","$392.45"},
+        {"TOTAL","","","","","$471.25"},
+        {"AARON, JOHN","","","CLARKSVILLE, TN","MEALS","$20.39"},
+        {"TOTAL","","","","","$20.39"},
+        {"AARON, JOSHUA, N","","","WEST GROVE, PA","MEALS","$310.33"},
+        {"AARON , JOSHUA , N","REGIONAL PULMONARY & SLEEPMEDICINE","","WEST GROVE, PA","SPEAKING FEES","$4,700.00"},
+        {"TOTAL","","","","","$5,010.33"},
+        {"AARON, MAUREEN, M","","","MARTINSVILLE, VA","MEALS","$193.67"},
+        {"TOTAL","","","","","$193.67"},
+        {"AARON, MICHAEL, L","","","WEST ISLIP, NY","MEALS","$19.50"},
+        {"TOTAL","","","","","$19.50"},
+        {"AARON, MICHAEL, R","","","BROOKLYN, NY","MEALS","$65.92"}
         };
 
 
@@ -179,7 +179,7 @@ public class TestBasicExtractor {
                         269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-        UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_RECOGNITION);
+        assertArrayEquals(EXPECTED_COLUMN_RECOGNITION, UtilsForTesting.tableToArrayOfRows(table));
     }
     
     @Test
@@ -208,7 +208,7 @@ public class TestBasicExtractor {
                 115.0f, 70.0f, 233.0f, 510.0f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
-        UtilsForTesting.assertTableEquals(table, EXPECTED_CORRECT_COLUMNS);
+        assertArrayEquals(EXPECTED_CORRECT_COLUMNS, UtilsForTesting.tableToArrayOfRows(table));
     }
     
     @Test
@@ -216,7 +216,7 @@ public class TestBasicExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-017.pdf", 3);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
         Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
-        UtilsForTesting.assertTableEquals(table, EXPECTED_COLUMN_EXTRACTION2);
+        assertArrayEquals(EXPECTED_COLUMN_EXTRACTION2, UtilsForTesting.tableToArrayOfRows(table));
     }
     
     @Test
@@ -226,8 +226,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
 
-        UtilsForTesting.assertTableEquals(table, EXPECTED_TABLE_EXTRACTION);
-
+        assertArrayEquals(EXPECTED_TABLE_EXTRACTION, UtilsForTesting.tableToArrayOfRows(table));
     }
     
     @Test
