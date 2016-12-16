@@ -53,6 +53,7 @@ public class Page extends Rectangle {
     
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
+        if (t.isEmpty()) return this;
         Page rv = new Page(
                 (float) area.getTop(),
                 (float) area.getLeft(),
