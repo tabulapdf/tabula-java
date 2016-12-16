@@ -336,7 +336,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     @Override
     public String toString() {
-        return "spreadsheet";
+        return "lattice";
     }
     
     private enum Direction {
