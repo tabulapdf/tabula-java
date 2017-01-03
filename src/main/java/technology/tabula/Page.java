@@ -53,6 +53,21 @@ public class Page extends Rectangle {
     
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
+        float min_char_width  = 7;
+        float min_char_height = 7;
+
+        if(t.size() > 0){
+            min_char_width = Collections.min(t, new Comparator<TextElement>() {
+                                    @Override
+                                    public int compare(TextElement te1, TextElement te2) {
+                                        return java.lang.Float.compare(te1.width, te2.width);
+                                 }}).width;
+            min_char_height = Collections.min(t, new Comparator<TextElement>() {
+                                        @Override
+                                        public int compare(TextElement te1, TextElement te2) {
+                                            return java.lang.Float.compare(te1.height, te2.height);
+                                  }}).height;
+        }
         Page rv = new Page(
                 (float) area.getTop(),
                 (float) area.getLeft(),
@@ -63,41 +78,30 @@ public class Page extends Rectangle {
                 pdPage,
                 t,
                 Ruling.cropRulingsToArea(getRulings(), area),
-
-                Collections.min(t, new Comparator<TextElement>() {
-                    @Override
-                    public int compare(TextElement te1, TextElement te2) {
-                        return java.lang.Float.compare(te1.width, te2.width);
-                    }}).width,
-                
-                Collections.min(t, new Comparator<TextElement>() {
-                        @Override
-                        public int compare(TextElement te1, TextElement te2) {
-                            return java.lang.Float.compare(te1.height, te2.height);
-                }}).height,
-                
+                min_char_width,
+                min_char_height,                
                 spatial_index);
         
         rv.addRuling(new Ruling(
                 new Point2D.Double(rv.getLeft(), 
-                		rv.getTop()), 
+                    rv.getTop()), 
                 new Point2D.Double(rv.getRight(), 
-                		rv.getTop())));
+                    rv.getTop())));
         rv.addRuling(new Ruling(
                 new Point2D.Double(rv.getRight(), 
-                		rv.getTop()), 
+                    rv.getTop()), 
                 new Point2D.Double(rv.getRight(), 
-                		rv.getBottom())));
+                    rv.getBottom())));
         rv.addRuling(new Ruling(
                 new Point2D.Double(rv.getRight(), 
-                		rv.getBottom()), 
+                    rv.getBottom()), 
                 new Point2D.Double(rv.getLeft(), 
-                		rv.getBottom())));
+                    rv.getBottom())));
         rv.addRuling(new Ruling(
                 new Point2D.Double(rv.getLeft(), 
-                		rv.getBottom()), 
+                    rv.getBottom()), 
                 new Point2D.Double(rv.getLeft(), 
-                		rv.getTop())));
+                    rv.getTop())));
  
         return rv;
     }
@@ -221,7 +225,7 @@ public class Page extends Rectangle {
     }
 
     public PDPage getPDPage() {
-    	return pdPage;
+      return pdPage;
     }
 
     public RectangleSpatialIndex<TextElement> getSpatialIndex() {
