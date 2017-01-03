@@ -146,6 +146,12 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     public boolean isTabular(Page page) {
         
+        // if there's no text at all on the page, it's not a table 
+        // (we won't be able to do anything with it though)
+        if(page.getText().isEmpty()){
+            return false; 
+        }
+
         // get minimal region of page that contains every character (in effect,
         // removes white "margins")
         Page minimalRegion = page.getArea(Utils.bounds(page.getText()));
