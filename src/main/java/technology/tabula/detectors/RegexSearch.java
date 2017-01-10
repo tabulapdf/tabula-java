@@ -133,7 +133,6 @@ public class RegexSearch {
 						lowerCount = 0;
 						state = 2;
 					}
-
 					if (lowerCount == lowerBound.length()) {
 						lastElement = currElement;
 						lowerExists = true;
@@ -142,7 +141,6 @@ public class RegexSearch {
 
 						continue;
 					}
-
 					break;
 				}
 				// lower string matched, output coordinates and exit?
@@ -185,7 +183,6 @@ public class RegexSearch {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.err.println("Error: " + e.getMessage());
-			System.exit(1);
 		}
 		return regexList;
 	}
