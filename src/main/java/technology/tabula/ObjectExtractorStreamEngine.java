@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -19,6 +20,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
+import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 import org.slf4j.Logger;
@@ -38,6 +40,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	private int clipWindingRule = -1;
 	private GeneralPath currentPath = new GeneralPath();
 	public List<Shape> clippingPaths;
+    private int pageRotation;
+    private PDRectangle pageSize;	
 
 	protected ObjectExtractorStreamEngine(PDPage page) {
 		super(page);
@@ -50,6 +54,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		this.spatialIndex = new RectangleSpatialIndex<TextElement>();
 		this.minCharWidth = Float.MAX_VALUE;
 		this.minCharHeight = Float.MAX_VALUE;
+        this.pageRotation = page.getRotation();
+        this.pageSize = page.getCropBox();
 
 		// calculate page transform
 		PDRectangle cb = this.getPage().getCropBox();
@@ -72,19 +78,31 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	@Override
 	protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode, Vector displacement)
 			throws IOException {
+		
+        PDGraphicsState state = getGraphicsState();
+        float fontSize = state.getTextState().getFontSize();		
+		
 		Rectangle2D bbox = new Rectangle2D.Float(0, 0, font.getWidth(code) / 1000, 1);
 		AffineTransform at = textRenderingMatrix.createAffineTransform();
-		//bbox = at.createTransformedShape(bbox).getBounds();
-		bbox = this.getPageTransform().createTransformedShape(at.createTransformedShape(bbox)).getBounds();
+		//bbox = at.createTransformedShape(bbox).getBounds2D();
+		bbox = this.getPageTransform().createTransformedShape(at.createTransformedShape(bbox)).getBounds2D();
 		
+		BoundingBox fontBbox = font.getBoundingBox();
+		float glyphHeight = fontBbox.getHeight() / 2;
+		float height = glyphHeight / 1000;
+		float h = height * textRenderingMatrix.getScalingFactorY();
+		
+		
+        float pageHeight = this.pageSize.getHeight();
+        float yDirAdj = pageHeight - textRenderingMatrix.getTranslateY();
 		
         TextElement te = new TextElement(
-                Utils.round(bbox.getY(), 2),
+                Utils.round(yDirAdj - h, 2),
                 Utils.round(bbox.getX(), 2),
                 Utils.round(bbox.getWidth(), 2),
-                Utils.round(bbox.getHeight(), 2),
+                Utils.round(h,2),
                 font,
-                font.getWidth(code),
+                fontSize,
                 unicode,
                 this.widthOfSpace(font, textRenderingMatrix));
 
