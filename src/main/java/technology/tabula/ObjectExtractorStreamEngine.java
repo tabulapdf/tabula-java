@@ -40,8 +40,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	private int clipWindingRule = -1;
 	private GeneralPath currentPath = new GeneralPath();
 	public List<Shape> clippingPaths;
-    private int pageRotation;
-    private PDRectangle pageSize;	
+	private int pageRotation;
+	private PDRectangle pageSize;	
 
 	protected ObjectExtractorStreamEngine(PDPage page) {
 		super(page);
@@ -54,8 +54,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		this.spatialIndex = new RectangleSpatialIndex<TextElement>();
 		this.minCharWidth = Float.MAX_VALUE;
 		this.minCharHeight = Float.MAX_VALUE;
-        this.pageRotation = page.getRotation();
-        this.pageSize = page.getCropBox();
+		this.pageRotation = page.getRotation();
+		this.pageSize = page.getCropBox();
 
 		// calculate page transform
 		PDRectangle cb = this.getPage().getCropBox();
@@ -82,9 +82,9 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         PDGraphicsState state = getGraphicsState();
         float fontSize = state.getTextState().getFontSize();		
 		
-		Rectangle2D bbox = new Rectangle2D.Float(0, 0, font.getWidth(code) / 1000, 1);
-		AffineTransform at = textRenderingMatrix.createAffineTransform();
-		//bbox = at.createTransformedShape(bbox).getBounds2D();
+        Rectangle2D bbox = new Rectangle2D.Float(0, 0, font.getWidth(code) / 1000, 1);
+        AffineTransform at = textRenderingMatrix.createAffineTransform();
+        //bbox = at.createTransformedShape(bbox).getBounds2D();
 		bbox = this.getPageTransform().createTransformedShape(at.createTransformedShape(bbox)).getBounds2D();
 		
 		BoundingBox fontBbox = font.getBoundingBox();
@@ -93,8 +93,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		float h = height * textRenderingMatrix.getScalingFactorY();
 		
 		
-        float pageHeight = this.pageSize.getHeight();
-        float yDirAdj = pageHeight - textRenderingMatrix.getTranslateY();
+		float pageHeight = this.pageSize.getHeight();
+		float yDirAdj = pageHeight - textRenderingMatrix.getTranslateY();
 		
         TextElement te = new TextElement(
                 Utils.round(yDirAdj - h, 2),
