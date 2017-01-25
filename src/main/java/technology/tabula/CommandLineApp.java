@@ -32,7 +32,7 @@ import technology.tabula.writers.Writer;
 
 public class CommandLineApp {
 
-    private static String VERSION = "0.9.1";
+    private static String VERSION = "0.9.2";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2016 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
