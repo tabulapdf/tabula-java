@@ -1,23 +1,38 @@
 package technology.tabula.detectors;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.pdfbox.contentstream.operator.Operator;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import technology.tabula.*;
-import technology.tabula.Rectangle;
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.io.IOException;
-import java.util.*;
+import technology.tabula.Line;
+import technology.tabula.Page;
+import technology.tabula.Rectangle;
+import technology.tabula.Ruling;
+import technology.tabula.TextChunk;
+import technology.tabula.TextElement;
+import technology.tabula.Utils;
+import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 /**
  * Created by matt on 2015-12-17.
@@ -93,6 +108,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         try {
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (IOException e) {
+        	e.printStackTrace();
             return new ArrayList<Rectangle>();
         }
 
@@ -103,6 +119,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             this.removeText(pdfPage);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
+        	e.printStackTrace();
             return new ArrayList<Rectangle>();
         }
 
@@ -832,13 +849,12 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDDocument document = new PDDocument();
         document.addPage(page);
 
-        PDStream newContents = new PDStream(document);
-        ContentStreamWriter writer = new ContentStreamWriter(newContents.createOutputStream());
-        writer.writeTokens(newTokens);
-        page.setContents(newContents);
-
-        try {
-            document.close();
-        } catch (Exception e) {}
+        PDStream newContents = new PDStream( document );
+        OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
+        ContentStreamWriter writer = new ContentStreamWriter( out );
+        writer.writeTokens( newTokens );
+        out.close();
+        page.setContents( newContents );
+        
     }
 }
