@@ -286,6 +286,8 @@ public class Utils {
     	
     	PDFRenderer renderer = new PDFRenderer(document);
     	
+    	document.close();
+    	
     	return renderer.renderImageWithDPI(0, dpi, imageType);
     }
     
