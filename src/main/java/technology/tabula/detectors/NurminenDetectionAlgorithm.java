@@ -115,13 +115,23 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
 
         // now check the page for vertical lines, but remove the text first to make things less confusing
+        PDDocument removeTextDocument = null;
         try {
-            this.removeText(pdfPage);
+            removeTextDocument = this.removeText(pdfPage);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
         	e.printStackTrace();
             return new ArrayList<Rectangle>();
-        }
+        } finally {
+			if (removeTextDocument != null) {
+				try {
+					removeTextDocument.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 
         List<Ruling> verticalRulings = this.getVerticalRulings(image);
 
@@ -825,7 +835,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     
 
     // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
-    private void removeText(PDPage page) throws IOException {
+    private PDDocument removeText(PDPage page) throws IOException {
         
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
@@ -855,6 +865,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         writer.writeTokens( newTokens );
         out.close();
         page.setContents( newContents );
+        
+        return document;
         
     }
 }
