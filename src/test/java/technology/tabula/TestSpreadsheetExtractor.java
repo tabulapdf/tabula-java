@@ -320,6 +320,22 @@ public class TestSpreadsheetExtractor {
     }
     
     @Test
+    public void testSpanningCellsToCsv() throws IOException {
+        Page page = UtilsForTesting
+                .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        List<? extends Table> tables = se.extract(page);
+        assertEquals(2, tables.size());
+                
+
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, (List<Table>) tables);
+        assertEquals(expectedCsv, sb.toString());
+
+    }    
+    
+    @Test
     public void testIncompleteGrid() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
