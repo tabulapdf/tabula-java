@@ -29,7 +29,8 @@ public class RegexSearch {
 
 	int state = 0;
 
-	public List<Rectangle> detect(Page page, String upperBound, String lowerBound) throws ParseException {
+	public List<Rectangle> detect(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight)
+			throws ParseException {
 		List<Rectangle> regexList = new ArrayList<Rectangle>();
 		currChar = 0;
 		upperExists = false;
@@ -39,7 +40,8 @@ public class RegexSearch {
 		firstElement = null;
 		lastElement = null;
 		state = 0;
-
+		String upperBound = upperLeft;
+		String lowerBound = lowerLeft;
 		// have page, can check text elements
 		textElements = page.getText();
 		int size = textElements.size();
