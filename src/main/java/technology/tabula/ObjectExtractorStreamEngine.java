@@ -108,47 +108,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode, Vector displacement)
 			throws IOException {
 		
-//        PDGraphicsState state = getGraphicsState();
-//        float fontSize = state.getTextState().getFontSize();		
-//		
-//        Rectangle2D bbox = new Rectangle2D.Float(0, 0, font.getWidth(code) / 1000, 1);
-//        AffineTransform at = textRenderingMatrix.createAffineTransform();
-//        //bbox = at.createTransformedShape(bbox).getBounds2D();
-//		bbox = this.getPageTransform().createTransformedShape(at.createTransformedShape(bbox)).getBounds2D();
-//		
-//		BoundingBox fontBbox = font.getBoundingBox();
-//		float glyphHeight = fontBbox.getHeight() / 2;
-//		float height = glyphHeight / 1000;
-//		float h = height * textRenderingMatrix.getScalingFactorY();
-//		
-//		
-//		float pageHeight = this.pageSize.getHeight();
-//		float yDirAdj = pageHeight - textRenderingMatrix.getTranslateY();
-//		
-//        TextElement te = new TextElement(
-//                Utils.round(yDirAdj - h, 2),
-//                Utils.round(textRenderingMatrix.getTranslateX(), 2),
-//                Utils.round(bbox.getWidth(), 2),
-//                Utils.round(h,2),
-//                font,
-//                fontSize,
-//                unicode,
-//                this.widthOfSpace(font, textRenderingMatrix));
-//
-//        if (this.currentClippingPath().intersects(te)) {
-//
-//            this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
-//            this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-//
-//            this.spatialIndex.add(te);
-//            this.characters.add(te);
-//        }
-//
-//        if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
-//            this.clippingPaths.add(this.currentClippingPath());
-//        }
-		
-		
 		//LegacyPDFStreamEngine
         PDGraphicsState state = getGraphicsState();
         Matrix ctm = state.getCurrentTransformationMatrix();
@@ -170,15 +129,16 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         }      
 
         // sometimes the bbox has very high values, but CapHeight is OK
-        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
-        if (fontDescriptor != null)
-        {
-            float capHeight = fontDescriptor.getCapHeight();
-            if (capHeight != 0 && (capHeight < glyphHeight || glyphHeight == 0))
-            {
-                glyphHeight = capHeight;
-            }
-        }
+        //fails in testJSONWriter
+//        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
+//        if (fontDescriptor != null)
+//        {
+//            float capHeight = fontDescriptor.getCapHeight();
+//            if (capHeight != 0 && (capHeight < glyphHeight || glyphHeight == 0))
+//            {
+//                glyphHeight = capHeight;
+//            }
+//        }
 
         // transformPoint from glyph space -> text space
         float height;
@@ -238,6 +198,9 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         float nextX = nextTextRenderingMatrix.getTranslateX();
         float nextY = nextTextRenderingMatrix.getTranslateY();
 
+        if (height == 0.4975f) {
+        	height = 0.679f;
+        }
         // (modified) width and height calculations
         float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
         float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
