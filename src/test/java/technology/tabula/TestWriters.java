@@ -1,11 +1,14 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
@@ -80,9 +83,24 @@ public class TestWriters {
         List<Table> tables = this.getTables();
         StringBuilder sb = new StringBuilder();
         (new JSONWriter()).write(sb, tables);
+        
         String s = sb.toString();
         assertEquals(expectedJson, s);
+        
+        Gson gson = new Gson();
+        JsonArray json = gson.fromJson(s, JsonArray.class);
+        assertEquals(2, json.size());
     }
     
+    @Test
+    public void testCSVSerializeTwoTables() throws IOException {
+    	String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/twotables.json");
+        List<Table> tables = this.getTables();
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, tables);
+        
+        String s = sb.toString();
+        System.out.println(s);
+    }    
 
 }
