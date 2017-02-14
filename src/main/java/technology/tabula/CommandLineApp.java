@@ -224,9 +224,11 @@ public class CommandLineApp {
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        if (line.hasOption('r') || line.hasOption('l')) { // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
+        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
+        if (line.hasOption('r') || line.hasOption('l')) {
             return ExtractionMethod.SPREADSHEET;
         }
+
         // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
         if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
