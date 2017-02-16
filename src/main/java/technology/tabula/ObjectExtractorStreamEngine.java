@@ -84,8 +84,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		if (Math.abs(rotation) == 90 || Math.abs(rotation) == 270) {
 			this.pageTransform = AffineTransform.getRotateInstance(rotation * (Math.PI / 180.0), 0, 0);
 			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
-			this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
-			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
+//			this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
+//			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
 		}
 		else {
 			this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));

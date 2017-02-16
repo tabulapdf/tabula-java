@@ -78,6 +78,19 @@ public class TestWriters {
     }
     
     @Test
+    public void testCSVSerializeInfinity() throws IOException {
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/schools.csv");
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Table table = sea.extract(page).get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        String s = sb.toString();
+        assertEquals(expectedCsv, s);
+    }    
+    
+    @Test
     public void testJSONSerializeTwoTables() throws IOException {
     	String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/twotables.json");
         List<Table> tables = this.getTables();
@@ -94,13 +107,13 @@ public class TestWriters {
     
     @Test
     public void testCSVSerializeTwoTables() throws IOException {
-    	String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/twotables.json");
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/twotables.csv");
         List<Table> tables = this.getTables();
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables);
         
         String s = sb.toString();
-        System.out.println(s);
+        assertEquals(expectedCsv, s);
     }    
 
 }
