@@ -31,7 +31,7 @@ public class OcrConverter {
 			instance.createDocuments(image_filepath, input_filepath.substring(0, input_filepath.length() - 4) + "_OCR",
 					list);
 			System.out.println("OCR Done");
-			return input_filepath.substring(0, input_filepath.length() - 4) + "_OCR.pdf";
+			return "Success";
 		} catch (TesseractException e) {
 			System.err.println(e.getMessage());
 		} catch (IOException e) {
