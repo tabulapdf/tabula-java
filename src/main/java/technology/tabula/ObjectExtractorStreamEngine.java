@@ -4,6 +4,7 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -24,7 +25,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDCIDFont;
 import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDFontDescriptor;
 import org.apache.pdfbox.pdmodel.font.PDSimpleFont;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
@@ -446,15 +446,14 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         float[] first = new float[6];
         pi = path.getPathIterator(this.getPageTransform());
         pi.currentSegment(first);
+        pi.next();
         // last move
         Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
         Point2D.Float last_move = start_pos;
         Point2D.Float end_pos = null;
         Line2D.Float line;
         PointComparator pc = new PointComparator();
-
         while (!pi.isDone()) {
-            pi.next();
             currentSegment = pi.currentSegment(c);
             switch (currentSegment) {
             case PathIterator.SEG_LINETO:
@@ -498,6 +497,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                 break;
             }
             start_pos = end_pos;
+            pi.next();
         }
         path.reset();
     }
