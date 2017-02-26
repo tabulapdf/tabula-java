@@ -446,7 +446,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         float[] first = new float[6];
         pi = path.getPathIterator(this.getPageTransform());
         pi.currentSegment(first);
-        pi.next();
         // last move
         Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
         Point2D.Float last_move = start_pos;
@@ -454,7 +453,14 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         Line2D.Float line;
         PointComparator pc = new PointComparator();
         while (!pi.isDone()) {
-            currentSegment = pi.currentSegment(c);
+        	pi.next();
+        	//This can be the last segment, when pi.isDone, but we need to process it 
+        	//otherwise us-017.pdf fails the last value. 
+        	try {
+            	currentSegment = pi.currentSegment(c);
+        	} catch(IndexOutOfBoundsException ex) {
+        		continue;
+        	}
             switch (currentSegment) {
             case PathIterator.SEG_LINETO:
                 end_pos = new Point2D.Float(c[0], c[1]);
@@ -497,7 +503,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                 break;
             }
             start_pos = end_pos;
-            pi.next();
         }
         path.reset();
     }
