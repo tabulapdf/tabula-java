@@ -198,9 +198,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         float nextX = nextTextRenderingMatrix.getTranslateX();
         float nextY = nextTextRenderingMatrix.getTranslateY();
 
-        if (height == 0.4975f) {
-        	height = 0.679f;
-        }
         // (modified) width and height calculations
         float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
         float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
