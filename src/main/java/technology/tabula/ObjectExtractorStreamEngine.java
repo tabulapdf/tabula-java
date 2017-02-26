@@ -123,10 +123,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             bbox.setLowerLeftY(- (bbox.getLowerLeftY() + 65536));
         }
         // 1/2 the bbox is used as the height todo: why?
-        float glyphHeight = bbox.getHeight() / 2;
-        if ("•".equals(unicode)) {
-        	glyphHeight = bbox.getUpperRightY();
-        }      
+        float glyphHeight = bbox.getHeight() / 2;      
 
         // sometimes the bbox has very high values, but CapHeight is OK
         //fails in testJSONWriter
