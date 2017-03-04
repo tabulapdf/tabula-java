@@ -376,9 +376,26 @@ public class TestSpreadsheetExtractor {
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
         assertEquals(1, tables.size());
         Table table = tables.get(0);
-        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
-        assertEquals("154.17", table.getRows().get(3).get(1).getText());
         
+        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
+        assertEquals("One Withholding\rAllowance", table.getRows().get(0).get(1).getText());
+        assertEquals("Weekly", table.getRows().get(1).get(0).getText());
+        assertEquals("$71.15", table.getRows().get(1).get(1).getText());
+        assertEquals("Biweekly", table.getRows().get(2).get(0).getText());
+        assertEquals("142.31", table.getRows().get(2).get(1).getText());
+        assertEquals("Semimonthly", table.getRows().get(3).get(0).getText());
+        assertEquals("154.17", table.getRows().get(3).get(1).getText());
+        assertEquals("Monthly", table.getRows().get(4).get(0).getText());
+        assertEquals("308.33", table.getRows().get(4).get(1).getText());
+        assertEquals("Quarterly", table.getRows().get(5).get(0).getText());
+        assertEquals("925.00", table.getRows().get(5).get(1).getText());
+        assertEquals("Semiannually", table.getRows().get(6).get(0).getText());
+        assertEquals("1,850.00", table.getRows().get(6).get(1).getText());
+        assertEquals("Annually", table.getRows().get(7).get(0).getText());
+        assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
+        assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
+        assertEquals("14.23", table.getRows().get(8).get(1).getText());
+         
     }
     
     @Test
