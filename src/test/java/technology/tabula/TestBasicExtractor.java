@@ -371,4 +371,18 @@ public class TestBasicExtractor {
         assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
     }
 
+
+    @Test
+    public void testTableWithMultilineHeader() throws IOException {
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/us-020.csv");
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/us-020.pdf", 2,
+        		103.0f, 35.0f, 641.0f, 560.0f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Table table = bea.extract(page).get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        assertEquals(expectedCsv, sb.toString());
+    }
+    
 }
