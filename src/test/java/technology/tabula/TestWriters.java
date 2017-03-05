@@ -114,6 +114,19 @@ public class TestWriters {
         
         String s = sb.toString();
         assertEquals(expectedCsv, s);
+    }
+    
+    @Test
+    public void testCSVMultilineRow() throws IOException {
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/frx_2012_disclosure.csv");
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 53.0f, 49.0f, 735.0f, 550.0f);
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Table table = sea.extract(page).get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        String s = sb.toString();
+        assertEquals(expectedCsv, s);
     }    
 
 }
