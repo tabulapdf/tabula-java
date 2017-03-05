@@ -302,6 +302,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 if (o2.contains(o1)) {
                     return 0;
                 }
+                
+                if (o1.contains(o2)) {
+                    return 0;
+                }
 
                 // otherwise see if these tables are "mostly" the same
                 float overlap = o1.overlapRatio(o2);
