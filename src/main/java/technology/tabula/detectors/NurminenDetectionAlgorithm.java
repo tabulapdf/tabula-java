@@ -108,7 +108,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         try {
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (IOException e) {
-        	e.printStackTrace();
             return new ArrayList<Rectangle>();
         }
 
@@ -120,7 +119,6 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             removeTextDocument = this.removeText(pdfPage);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
-        	e.printStackTrace();
             return new ArrayList<Rectangle>();
         } finally {
 			if (removeTextDocument != null) {
