@@ -4,7 +4,6 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -14,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
@@ -40,9 +37,8 @@ import org.slf4j.LoggerFactory;
 
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
-	private static final Log LOG = LogFactory.getLog(ObjectExtractorStreamEngine.class);
 	private static final String NBSP = "\u00A0";
-	
+
 	protected float minCharWidth;
 	protected float minCharHeight;
 	protected List<TextElement> characters;
@@ -57,7 +53,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	public List<Shape> clippingPaths;
 	private int pageRotation;
 	private PDRectangle pageSize;
-	
+
 	private Matrix translateMatrix;
 	private GlyphList glyphList;
 
@@ -84,260 +80,84 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		if (Math.abs(rotation) == 90 || Math.abs(rotation) == 270) {
 			this.pageTransform = AffineTransform.getRotateInstance(rotation * (Math.PI / 180.0), 0, 0);
 			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
-//			this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
-//			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
-		}
-		else {
+		} else {
 			this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
 			this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
 		}
-		
-        // load additional glyph list for Unicode mapping
-        String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
-        InputStream input = GlyphList.class.getClassLoader().getResourceAsStream(path);
-        this.glyphList = null;
-        try {
+
+		// load additional glyph list for Unicode mapping
+		String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
+		InputStream input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+		this.glyphList = null;
+		try {
 			this.glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	@Override
 	protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode, Vector displacement)
 			throws IOException {
-		
-		//LegacyPDFStreamEngine
-        PDGraphicsState state = getGraphicsState();
-        Matrix ctm = state.getCurrentTransformationMatrix();
-        float fontSize = state.getTextState().getFontSize();
-        float horizontalScaling = state.getTextState().getHorizontalScaling() / 100f;
-        Matrix textMatrix = getTextMatrix();
 
-        BoundingBox bbox = font.getBoundingBox();
-        if (bbox.getLowerLeftY() < Short.MIN_VALUE)
-        {
-            // PDFBOX-2158 and PDFBOX-3130
-            // files by Salmat eSolutions / ClibPDF Library
-            bbox.setLowerLeftY(- (bbox.getLowerLeftY() + 65536));
-        }
-        // 1/2 the bbox is used as the height todo: why?
-        float glyphHeight = bbox.getHeight() / 2;      
+		TextPosition textPosition = getTextPosition(textRenderingMatrix, font, code, unicode, displacement);
 
-        // sometimes the bbox has very high values, but CapHeight is OK
-        //fails in testJSONWriter
-//        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
-//        if (fontDescriptor != null)
-//        {
-//            float capHeight = fontDescriptor.getCapHeight();
-//            if (capHeight != 0 && (capHeight < glyphHeight || glyphHeight == 0))
-//            {
-//                glyphHeight = capHeight;
-//            }
-//        }
+		if (textPosition != null) {
 
-        // transformPoint from glyph space -> text space
-        float height;
-        if (font instanceof PDType3Font)
-        {
-            height = font.getFontMatrix().transformPoint(0, glyphHeight).y;
-        }
-        else
-        {
-            height = glyphHeight / 1000;
-        }
+			String c = textPosition.getUnicode();
 
-        float displacementX = displacement.getX();
-        // the sorting algorithm is based on the width of the character. As the displacement
-        // for vertical characters doesn't provide any suitable value for it, we have to 
-        // calculate our own
-        if (font.isVertical())
-        {
-            displacementX = font.getWidth(code) / 1000;
-            // there may be an additional scaling factor for true type fonts
-            TrueTypeFont ttf = null;
-            if (font instanceof PDTrueTypeFont)
-            {
-                ttf = ((PDTrueTypeFont)font).getTrueTypeFont();
-            }
-            else if (font instanceof PDType0Font)
-            {
-                PDCIDFont cidFont = ((PDType0Font)font).getDescendantFont();
-                if (cidFont instanceof PDCIDFontType2)
-                {
-                    ttf = ((PDCIDFontType2)cidFont).getTrueTypeFont();
-                }
-            }
-            if (ttf != null && ttf.getUnitsPerEm() != 1000)
-            {
-                displacementX *= 1000f / ttf.getUnitsPerEm();
-            }
-        }
+			// if c not printable, return
+			if (!isPrintable(c)) {
+				return;
+			}
 
-        //
-        // legacy calculations which were previously in PDFStreamEngine
-        //
-        //  DO NOT USE THIS CODE UNLESS YOU ARE WORKING WITH PDFTextStripper.
-        //  THIS CODE IS DELIBERATELY INCORRECT
-        //
+			Float h = textPosition.getHeightDir();
 
-        // (modified) combined displacement, this is calculated *without* taking the character
-        // spacing and word spacing into account, due to legacy code in TextStripper
-        float tx = displacementX * fontSize * horizontalScaling;
-        float ty = displacement.getY() * fontSize;
+			if (c.equals(NBSP)) { // replace non-breaking space for space
+				c = " ";
+			}
 
-        // (modified) combined displacement matrix
-        Matrix td = Matrix.getTranslateInstance(tx, ty);
+			float wos = textPosition.getWidthOfSpace();
 
-        // (modified) text rendering matrix
-        Matrix nextTextRenderingMatrix = td.multiply(textMatrix).multiply(ctm); // text space -> device space
-        float nextX = nextTextRenderingMatrix.getTranslateX();
-        float nextY = nextTextRenderingMatrix.getTranslateY();
+			TextElement te = new TextElement(Utils.round(textPosition.getYDirAdj() - h, 2),
+					Utils.round(textPosition.getXDirAdj(), 2), Utils.round(textPosition.getWidthDirAdj(), 2),
+					Utils.round(textPosition.getHeightDir(), 2), textPosition.getFont(), textPosition.getFontSize(), c,
+					// workaround a possible bug in PDFBox:
+					// https://issues.apache.org/jira/browse/PDFBOX-1755
+					wos, textPosition.getDir());
 
-        // (modified) width and height calculations
-        float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
-        float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
+			if (this.currentClippingPath().intersects(te)) {
 
-        //
-        // start of the original method
-        //
+				this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
+				this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
 
-        // Note on variable names. There are three different units being used in this code.
-        // Character sizes are given in glyph units, text locations are initially given in text
-        // units, and we want to save the data in display units. The variable names should end with
-        // Text or Disp to represent if the values are in text or disp units (no glyph units are
-        // saved).
+				this.spatialIndex.add(te);
+				this.characters.add(te);
+			}
 
-        float glyphSpaceToTextSpaceFactor = 1 / 1000f;
-        if (font instanceof PDType3Font)
-        {
-            glyphSpaceToTextSpaceFactor = font.getFontMatrix().getScaleX();
-        }
+			if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
+				this.clippingPaths.add(this.currentClippingPath());
+			}
+		}
 
-        float spaceWidthText = 0;
-        try
-        {
-            // to avoid crash as described in PDFBOX-614, see what the space displacement should be
-            spaceWidthText = font.getSpaceWidth() * glyphSpaceToTextSpaceFactor;
-        }
-        catch (Throwable exception)
-        {
-            LOG.warn(exception, exception);
-        }
-
-        if (spaceWidthText == 0)
-        {
-            spaceWidthText = font.getAverageFontWidth() * glyphSpaceToTextSpaceFactor;
-            // the average space width appears to be higher than necessary so make it smaller
-            spaceWidthText *= .80f;
-        }
-        if (spaceWidthText == 0)
-        {
-            spaceWidthText = 1.0f; // if could not find font, use a generic value
-        }
-
-        // the space width has to be transformed into display units
-        float spaceWidthDisplay = spaceWidthText * textRenderingMatrix.getScalingFactorX();
-
-        // use our additional glyph list for Unicode mapping
-        unicode = font.toUnicode(code, glyphList);
-
-        // when there is no Unicode mapping available, Acrobat simply coerces the character code
-        // into Unicode, so we do the same. Subclasses of PDFStreamEngine don't necessarily want
-        // this, which is why we leave it until this point in PDFTextStreamEngine.
-        if (unicode == null)
-        {
-            if (font instanceof PDSimpleFont)
-            {
-                char c = (char) code;
-                unicode = new String(new char[] { c });
-            }
-            else
-            {
-                // Acrobat doesn't seem to coerce composite font's character codes, instead it
-                // skips them. See the "allah2.pdf" TestTextStripper file.
-                return;
-            }
-        }
-
-        // adjust for cropbox if needed
-        Matrix translatedTextRenderingMatrix;
-        if (translateMatrix == null)
-        {
-            translatedTextRenderingMatrix = textRenderingMatrix;
-        }
-        else
-        {
-            translatedTextRenderingMatrix = Matrix.concatenate(translateMatrix, textRenderingMatrix);
-            nextX -= pageSize.getLowerLeftX();
-            nextY -= pageSize.getLowerLeftY();
-		
-        }
-		//this.log.warn("showGlyph called with string: {} {} {}", unicode, bbox.getBounds(), getPage().getCropBox().getWidth());
-        
-        TextPosition textPosition = new TextPosition(pageRotation, pageSize.getWidth(),
-                pageSize.getHeight(), translatedTextRenderingMatrix, nextX, nextY,
-                Math.abs(dyDisplay), dxDisplay,
-                Math.abs(spaceWidthDisplay), unicode, new int[] { code } , font, fontSize,
-                (int)(fontSize * textMatrix.getScalingFactorX()));
-        
-        String c = unicode;
-
-        // if c not printable, return
-        if (!isPrintable(c)) {
-            return;
-        }       
- 
-        Float h = textPosition.getHeightDir();
-
-        if (c.equals(NBSP)) { // replace non-breaking space for space
-            c = " ";
-        }
-
-        float wos = textPosition.getWidthOfSpace();        
-        
-        TextElement te = new TextElement(
-                Utils.round(textPosition.getYDirAdj() - h, 2),
-                Utils.round(textPosition.getXDirAdj(), 2),
-                Utils.round(textPosition.getWidthDirAdj(), 2),
-                Utils.round(textPosition.getHeightDir(), 2),
-                textPosition.getFont(),
-                textPosition.getFontSize(),
-                c,
-                // workaround a possible bug in PDFBox:
-                // https://issues.apache.org/jira/browse/PDFBOX-1755
-                wos,
-                textPosition.getDir());
-
-       if (this.currentClippingPath().intersects(te)) {
-
-            this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
-            this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-
-            this.spatialIndex.add(te);
-            this.characters.add(te);
-        }
-
-        if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
-            this.clippingPaths.add(this.currentClippingPath());
-        }        
 	}
 
 	@Override
 	public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
-        currentPath.moveTo((float) p0.getX(), (float) p0.getY());
-        currentPath.lineTo((float) p1.getX(), (float) p1.getY());
-        currentPath.lineTo((float) p2.getX(), (float) p2.getY());
-        currentPath.lineTo((float) p3.getX(), (float) p3.getY());
+		currentPath.moveTo((float) p0.getX(), (float) p0.getY());
+		currentPath.lineTo((float) p1.getX(), (float) p1.getY());
+		currentPath.lineTo((float) p2.getX(), (float) p2.getY());
+		currentPath.lineTo((float) p3.getX(), (float) p3.getY());
 
-        currentPath.closePath();
+		currentPath.closePath();
 	}
 
 	@Override
 	public void clip(int windingRule) throws IOException {
-		 // the clipping path will not be updated until the succeeding painting operator is called
-        clipWindingRule = windingRule;
+		// the clipping path will not be updated until the succeeding painting
+		// operator is called
+		clipWindingRule = windingRule;
 	}
 
 	@Override
@@ -358,13 +178,12 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
 	@Override
 	public void endPath() throws IOException {
-        if (clipWindingRule != -1)
-        {
-            currentPath.setWindingRule(clipWindingRule);
-            getGraphicsState().intersectClippingPath(currentPath);
-            clipWindingRule = -1;
-        }
-        currentPath.reset();
+		if (clipWindingRule != -1) {
+			currentPath.setWindingRule(clipWindingRule);
+			getGraphicsState().intersectClippingPath(currentPath);
+			clipWindingRule = -1;
+		}
+		currentPath.reset();
 	}
 
 	@Override
@@ -402,105 +221,99 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	public void strokePath() throws IOException {
 		strokeOrFillPath(false);
 	}
-	
+
 	private void strokeOrFillPath(boolean isFill) {
-        GeneralPath path = this.currentPath;
+		GeneralPath path = this.currentPath;
 
+		if (!this.extractRulingLines) {
+			this.currentPath.reset();
+			return;
+		}
 
-        if (!this.extractRulingLines) {
-            this.currentPath.reset();
-            return;
-        }
+		PathIterator pi = path.getPathIterator(this.getPageTransform());
+		float[] c = new float[6];
+		int currentSegment;
 
-        PathIterator pi = path.getPathIterator(this.getPageTransform());
-        float[] c = new float[6];
-        int currentSegment;
+		// skip paths whose first operation is not a MOVETO
+		// or contains operations other than LINETO, MOVETO or CLOSE
+		if ((pi.currentSegment(c) != PathIterator.SEG_MOVETO)) {
+			path.reset();
+			return;
+		}
+		pi.next();
+		while (!pi.isDone()) {
+			currentSegment = pi.currentSegment(c);
+			if (currentSegment != PathIterator.SEG_LINETO && currentSegment != PathIterator.SEG_CLOSE
+					&& currentSegment != PathIterator.SEG_MOVETO) {
+				path.reset();
+				return;
+			}
+			pi.next();
+		}
 
-        // skip paths whose first operation is not a MOVETO
-        // or contains operations other than LINETO, MOVETO or CLOSE
-        if ((pi.currentSegment(c) != PathIterator.SEG_MOVETO)) {
-            path.reset();
-            return;
-        }
-        pi.next();
-        while (!pi.isDone()) {
-            currentSegment = pi.currentSegment(c);
-            if (currentSegment != PathIterator.SEG_LINETO
-                    && currentSegment != PathIterator.SEG_CLOSE
-                    && currentSegment != PathIterator.SEG_MOVETO) {
-                path.reset();
-                return;
-            }
-            pi.next();
-        }
+		// TODO: how to implement color filter?
 
-        // TODO: how to implement color filter?
+		// skip the first path operation and save it as the starting position
+		float[] first = new float[6];
+		pi = path.getPathIterator(this.getPageTransform());
+		pi.currentSegment(first);
+		// last move
+		Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
+		Point2D.Float last_move = start_pos;
+		Point2D.Float end_pos = null;
+		Line2D.Float line;
+		PointComparator pc = new PointComparator();
+		while (!pi.isDone()) {
+			pi.next();
+			// This can be the last segment, when pi.isDone, but we need to
+			// process it
+			// otherwise us-017.pdf fails the last value.
+			try {
+				currentSegment = pi.currentSegment(c);
+			} catch (IndexOutOfBoundsException ex) {
+				continue;
+			}
+			switch (currentSegment) {
+			case PathIterator.SEG_LINETO:
+				end_pos = new Point2D.Float(c[0], c[1]);
 
-        // skip the first path operation and save it as the starting position
-        float[] first = new float[6];
-        pi = path.getPathIterator(this.getPageTransform());
-        pi.currentSegment(first);
-        // last move
-        Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
-        Point2D.Float last_move = start_pos;
-        Point2D.Float end_pos = null;
-        Line2D.Float line;
-        PointComparator pc = new PointComparator();
-        while (!pi.isDone()) {
-        	pi.next();
-        	//This can be the last segment, when pi.isDone, but we need to process it 
-        	//otherwise us-017.pdf fails the last value. 
-        	try {
-            	currentSegment = pi.currentSegment(c);
-        	} catch(IndexOutOfBoundsException ex) {
-        		continue;
-        	}
-            switch (currentSegment) {
-            case PathIterator.SEG_LINETO:
-                end_pos = new Point2D.Float(c[0], c[1]);
+				line = pc.compare(start_pos, end_pos) == -1 ? new Line2D.Float(start_pos, end_pos)
+						: new Line2D.Float(end_pos, start_pos);
 
-                line = pc.compare(start_pos, end_pos) == -1 ? new Line2D.Float(
-                        start_pos, end_pos) : new Line2D.Float(end_pos,
-                        start_pos);
+				if (line.intersects(this.currentClippingPath())) {
+					Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
 
-                if (line.intersects(this.currentClippingPath())) {
-                    Ruling r = new Ruling(line.getP1(), line.getP2())
-                            .intersect(this.currentClippingPath());
+					if (r.length() > 0.01) {
+						this.rulings.add(r);
+					}
+				}
+				break;
+			case PathIterator.SEG_MOVETO:
+				last_move = new Point2D.Float(c[0], c[1]);
+				end_pos = last_move;
+				break;
+			case PathIterator.SEG_CLOSE:
+				// according to PathIterator docs:
+				// "the preceding subpath should be closed by appending a line
+				// segment
+				// back to the point corresponding to the most recent
+				// SEG_MOVETO."
+				line = pc.compare(end_pos, last_move) == -1 ? new Line2D.Float(end_pos, last_move)
+						: new Line2D.Float(last_move, end_pos);
 
-                    if (r.length() > 0.01) {
-                        this.rulings.add(r);
-                    }
-                }
-                break;
-            case PathIterator.SEG_MOVETO:
-                last_move = new Point2D.Float(c[0], c[1]);
-                end_pos = last_move;
-                break;
-            case PathIterator.SEG_CLOSE:
-                // according to PathIterator docs:
-                // "the preceding subpath should be closed by appending a line
-                // segment
-                // back to the point corresponding to the most recent
-                // SEG_MOVETO."
-                line = pc.compare(end_pos, last_move) == -1 ? new Line2D.Float(
-                        end_pos, last_move) : new Line2D.Float(last_move,
-                        end_pos);
+				if (line.intersects(this.currentClippingPath())) {
+					Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
 
-                if (line.intersects(this.currentClippingPath())) {
-                    Ruling r = new Ruling(line.getP1(), line.getP2())
-                            .intersect(this.currentClippingPath());
-
-                    if (r.length() > 0.01) {
-                        this.rulings.add(r);
-                    }
-                }
-                break;
-            }
-            start_pos = end_pos;
-        }
-        path.reset();
-    }
-
+					if (r.length() > 0.01) {
+						this.rulings.add(r);
+					}
+				}
+				break;
+			}
+			start_pos = end_pos;
+		}
+		path.reset();
+	}
 
 	public AffineTransform getPageTransform() {
 		return this.pageTransform;
@@ -525,43 +338,159 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		}
 		return printable;
 	}
-	
-	private float widthOfSpace(PDFont font, Matrix textRenderingMatrix) {
-        float glyphSpaceToTextSpaceFactor = 1 / 1000f;
-        if (font instanceof PDType3Font)
-        {
-            glyphSpaceToTextSpaceFactor = font.getFontMatrix().getScaleX();
-        }
 
-        float spaceWidthText = 0;
-        try
-        {
-            // to avoid crash as described in PDFBOX-614, see what the space displacement should be
-            spaceWidthText = font.getSpaceWidth() * glyphSpaceToTextSpaceFactor;
-        }
-        catch (Throwable exception)
-        {
-            log.warn(exception.toString());
-        }
+	private TextPosition getTextPosition(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+			Vector displacement) throws IOException {
 
-        if (spaceWidthText == 0)
-        {
-            spaceWidthText = font.getAverageFontWidth() * glyphSpaceToTextSpaceFactor;
-            // the average space width appears to be higher than necessary so make it smaller
-            spaceWidthText *= .80f;
-        }
-        if (spaceWidthText == 0)
-        {
-            spaceWidthText = 1.0f; // if could not find font, use a generic value
-        }
+		// LegacyPDFStreamEngine
+		PDGraphicsState state = getGraphicsState();
+		Matrix ctm = state.getCurrentTransformationMatrix();
+		float fontSize = state.getTextState().getFontSize();
+		float horizontalScaling = state.getTextState().getHorizontalScaling() / 100f;
+		Matrix textMatrix = getTextMatrix();
 
-        // the space width has to be transformed into display units
-        float spaceWidthDisplay = spaceWidthText * textRenderingMatrix.getScalingFactorX();
-        
-        return spaceWidthDisplay;
+		BoundingBox bbox = font.getBoundingBox();
+		if (bbox.getLowerLeftY() < Short.MIN_VALUE) {
+			// PDFBOX-2158 and PDFBOX-3130
+			// files by Salmat eSolutions / ClibPDF Library
+			bbox.setLowerLeftY(-(bbox.getLowerLeftY() + 65536));
+		}
+		// 1/2 the bbox is used as the height todo: why?
+		float glyphHeight = bbox.getHeight() / 2;
 
+		// transformPoint from glyph space -> text space
+		float height;
+		if (font instanceof PDType3Font) {
+			height = font.getFontMatrix().transformPoint(0, glyphHeight).y;
+		} else {
+			height = glyphHeight / 1000;
+		}
+
+		float displacementX = displacement.getX();
+		// the sorting algorithm is based on the width of the character. As the
+		// displacement
+		// for vertical characters doesn't provide any suitable value for it, we
+		// have to
+		// calculate our own
+		if (font.isVertical()) {
+			displacementX = font.getWidth(code) / 1000;
+			// there may be an additional scaling factor for true type fonts
+			TrueTypeFont ttf = null;
+			if (font instanceof PDTrueTypeFont) {
+				ttf = ((PDTrueTypeFont) font).getTrueTypeFont();
+			} else if (font instanceof PDType0Font) {
+				PDCIDFont cidFont = ((PDType0Font) font).getDescendantFont();
+				if (cidFont instanceof PDCIDFontType2) {
+					ttf = ((PDCIDFontType2) cidFont).getTrueTypeFont();
+				}
+			}
+			if (ttf != null && ttf.getUnitsPerEm() != 1000) {
+				displacementX *= 1000f / ttf.getUnitsPerEm();
+			}
+		}
+
+		// (modified) combined displacement, this is calculated *without* taking
+		// the character
+		// spacing and word spacing into account, due to legacy code in
+		// TextStripper
+		float tx = displacementX * fontSize * horizontalScaling;
+		float ty = displacement.getY() * fontSize;
+
+		// (modified) combined displacement matrix
+		Matrix td = Matrix.getTranslateInstance(tx, ty);
+
+		// (modified) text rendering matrix
+		Matrix nextTextRenderingMatrix = td.multiply(textMatrix).multiply(ctm); // text
+																				// space
+																				// ->
+																				// device
+																				// space
+		float nextX = nextTextRenderingMatrix.getTranslateX();
+		float nextY = nextTextRenderingMatrix.getTranslateY();
+
+		// (modified) width and height calculations
+		float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
+		float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
+
+		//
+		// start of the original method
+		//
+
+		// Note on variable names. There are three different units being used in
+		// this code.
+		// Character sizes are given in glyph units, text locations are
+		// initially given in text
+		// units, and we want to save the data in display units. The variable
+		// names should end with
+		// Text or Disp to represent if the values are in text or disp units (no
+		// glyph units are
+		// saved).
+
+		float glyphSpaceToTextSpaceFactor = 1 / 1000f;
+		if (font instanceof PDType3Font) {
+			glyphSpaceToTextSpaceFactor = font.getFontMatrix().getScaleX();
+		}
+
+		float spaceWidthText = 0;
+		try {
+			// to avoid crash as described in PDFBOX-614, see what the space
+			// displacement should be
+			spaceWidthText = font.getSpaceWidth() * glyphSpaceToTextSpaceFactor;
+		} catch (Throwable exception) {
+			this.log.warn("Error getting spaceWidthText", exception);
+		}
+
+		if (spaceWidthText == 0) {
+			spaceWidthText = font.getAverageFontWidth() * glyphSpaceToTextSpaceFactor;
+			// the average space width appears to be higher than necessary so
+			// make it smaller
+			spaceWidthText *= .80f;
+		}
+		if (spaceWidthText == 0) {
+			spaceWidthText = 1.0f; // if could not find font, use a generic
+									// value
+		}
+
+		// the space width has to be transformed into display units
+		float spaceWidthDisplay = spaceWidthText * textRenderingMatrix.getScalingFactorX();
+
+		// use our additional glyph list for Unicode mapping
+		unicode = font.toUnicode(code, glyphList);
+
+		// when there is no Unicode mapping available, Acrobat simply coerces
+		// the character code
+		// into Unicode, so we do the same. Subclasses of PDFStreamEngine don't
+		// necessarily want
+		// this, which is why we leave it until this point in
+		// PDFTextStreamEngine.
+		if (unicode == null) {
+			if (font instanceof PDSimpleFont) {
+				char c = (char) code;
+				unicode = new String(new char[] { c });
+			} else {
+				// Acrobat doesn't seem to coerce composite font's character
+				// codes, instead it
+				// skips them. See the "allah2.pdf" TestTextStripper file.
+				return null;
+			}
+		}
+
+		// adjust for cropbox if needed
+		Matrix translatedTextRenderingMatrix;
+		if (translateMatrix == null) {
+			translatedTextRenderingMatrix = textRenderingMatrix;
+		} else {
+			translatedTextRenderingMatrix = Matrix.concatenate(translateMatrix, textRenderingMatrix);
+			nextX -= pageSize.getLowerLeftX();
+			nextY -= pageSize.getLowerLeftY();
+
+		}
+
+		return new TextPosition(pageRotation, pageSize.getWidth(), pageSize.getHeight(), translatedTextRenderingMatrix,
+				nextX, nextY, Math.abs(dyDisplay), dxDisplay, Math.abs(spaceWidthDisplay), unicode, new int[] { code },
+				font, fontSize, (int) (fontSize * textMatrix.getScalingFactorX()));
 	}
-	
+
 	public boolean isDebugClippingPaths() {
 		return debugClippingPaths;
 	}
@@ -569,24 +498,24 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 	public void setDebugClippingPaths(boolean debugClippingPaths) {
 		this.debugClippingPaths = debugClippingPaths;
 	}
-	
-    class PointComparator implements Comparator<Point2D> {
-        @Override
-        public int compare(Point2D o1, Point2D o2) {
-            float o1X = Utils.round(o1.getX(), 2);
-            float o1Y = Utils.round(o1.getY(), 2);
-            float o2X = Utils.round(o2.getX(), 2);
-            float o2Y = Utils.round(o2.getY(), 2);
 
-            if (o1Y > o2Y)
-                return 1;
-            if (o1Y < o2Y)
-                return -1;
-            if (o1X > o2X)
-                return 1;
-            if (o1X < o2X)
-                return -1;
-            return 0;
-        }
-    }
+	class PointComparator implements Comparator<Point2D> {
+		@Override
+		public int compare(Point2D o1, Point2D o2) {
+			float o1X = Utils.round(o1.getX(), 2);
+			float o1Y = Utils.round(o1.getY(), 2);
+			float o2X = Utils.round(o2.getX(), 2);
+			float o2Y = Utils.round(o2.getY(), 2);
+
+			if (o1Y > o2Y)
+				return 1;
+			if (o1Y < o2Y)
+				return -1;
+			if (o1X > o2X)
+				return 1;
+			if (o1X < o2X)
+				return -1;
+			return 0;
+		}
+	}
 }
