@@ -16,7 +16,7 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar ./target/tabula-0.9.1-jar-with-dependencies.jar --help
+$ java -jar ./target/tabula-0.9.2-jar-with-dependencies.jar --help
 
 usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f <FORMAT>] [-g] [-h] [-i]
        [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s <PASSWORD>] [-u] [-v]
