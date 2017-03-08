@@ -92,8 +92,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 		try {
 			this.glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			this.log.error("Error loading glyph list", e);
 		}
 	}
 
