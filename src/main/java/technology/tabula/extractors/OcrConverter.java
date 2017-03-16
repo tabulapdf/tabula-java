@@ -4,6 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageWriterSpi;
+
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageWriterSpi;
+
 // Tess4j imports
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
@@ -13,6 +18,7 @@ import net.sourceforge.tess4j.util.PdfUtilities;
 
 public class OcrConverter {
 	public String extract(String input_filepath) {
+		IIORegistry.getDefaultInstance().registerServiceProvider(new TIFFImageWriterSpi(), ImageWriterSpi.class);
 		ArrayList<ITesseract.RenderedFormat> list = new ArrayList<ITesseract.RenderedFormat>();
 		list.add(ITesseract.RenderedFormat.PDF);
 
