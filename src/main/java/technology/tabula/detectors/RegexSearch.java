@@ -237,7 +237,7 @@ public class RegexSearch {
 						{ // invalid char detected
 							upperLeftCount = 0;
 							upperState = 0;
-							i = backup+1;
+							i = backup;
 						}
 						
 						if (upperLeftCount == upperLeft.length()) 
@@ -265,7 +265,7 @@ public class RegexSearch {
 						{ // invalid char detected
 							upperRightCount = 0;
 							upperState = 0;
-							i = backup+1;
+							i = backup;
 						}
 						
 						if (upperRightCount == upperRight.length()) 
@@ -342,7 +342,7 @@ public class RegexSearch {
 						{ // invalid char detected
 							lowerLeftCount = 0;
 							lowerState = 0;
-							i = backup+1;
+							i = backup;
 						}
 						
 						if (lowerLeftCount == lowerLeft.length()) 
@@ -370,7 +370,7 @@ public class RegexSearch {
 						{ // invalid char detected
 							lowerRightCount = 0;
 							lowerState = 0;
-							i = backup+1;
+							i = backup;
 						}
 						
 						if (lowerRightCount == lowerRight.length()) 
