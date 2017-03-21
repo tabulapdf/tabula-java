@@ -131,8 +131,11 @@ public class RegexSearch {
 	//					right string to the left of left string?
 	//						need first char of left strings, last char of right strings <-- if left and right reversed???
 	//					recover loop value if string detect fails
+	//					two strings on same line with same first char may fail to correctly reset
 	// todo:
 	//					implement empty field handling
+	//					
+	//					check for both strings at once in first state, then set flag
 	public List<Rectangle> detect(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight) throws ParseException {
 		
 		// if both top strings are null, return null
@@ -177,6 +180,19 @@ public class RegexSearch {
 		// have page, can check text elements
 		List<TextElement> textElements = page.getText();
 		int size = textElements.size();
+		
+		String printString = "";
+		
+		// print out string of all characters
+		for (int i = 0; i < size; i++) {
+			
+			currElement = textElements.get(i);
+			currChar = currElement.getText().charAt(0);
+			
+			printString += currChar;
+		}
+		
+		System.out.println(printString);
 
 		// should scan through text elements so that we can use coords
 		for (int i = 0; i < size; i++) {
@@ -191,6 +207,7 @@ public class RegexSearch {
 				{
 					case 0: // search for first char of either top string
 					{
+
 						if (currChar == upperLeft.charAt(0) && !(upperLeftExists)) // valid first upper left
 						{
 							if (upperLeft.length() == 1) // single character case
@@ -207,7 +224,7 @@ public class RegexSearch {
 								upperState = 1;
 							}
 						}
-						
+												
 						else if(currChar == upperRight.charAt(0) && !(upperRightExists)) // valid first upper right
 						{
 							if (upperRight.length() == 1) // single character case
@@ -236,8 +253,18 @@ public class RegexSearch {
 						else 
 						{ // invalid char detected
 							upperLeftCount = 0;
-							upperState = 0;
-							i = backup;
+							
+							if(upperLeft.charAt(0) == upperRight.charAt(0))
+							{
+								upperRightCount = 1;
+								upperState = 2;
+								i = backup; // go back to first character
+							}
+							else
+							{								
+								upperState = 0;
+								i = backup; // go to second character
+							}
 						}
 						
 						if (upperLeftCount == upperLeft.length()) 
@@ -275,7 +302,7 @@ public class RegexSearch {
 							firstElement = null;
 							
 							if(upperLeftExists)
-								upperState = 3;
+								upperState = 3; // replace
 							else
 								upperState = 0;
 						}
@@ -286,6 +313,7 @@ public class RegexSearch {
 					case 3: // found both upper strings, probably not needed because of if statement
 					{
 						// zzz
+						break;
 					}
 				}
 			}
@@ -341,8 +369,18 @@ public class RegexSearch {
 						else 
 						{ // invalid char detected
 							lowerLeftCount = 0;
-							lowerState = 0;
-							i = backup;
+							
+							if(lowerLeft.charAt(0) == lowerRight.charAt(0))
+							{
+								lowerRightCount = 1;
+								lowerState = 2;
+								i = backup; // go back to first character
+							}
+							else
+							{								
+								lowerState = 0;
+								i = backup; // go to second character
+							}
 						}
 						
 						if (lowerLeftCount == lowerLeft.length()) 
@@ -387,10 +425,11 @@ public class RegexSearch {
 						
 						break;
 					}
-					
-					case 3: // found both lower strings, probably not needed because of if statement
+										
+					case 3:
 					{
-						// zzz
+						//zzz
+						break;
 					}
 				}
 			}			
@@ -401,6 +440,7 @@ public class RegexSearch {
 			return new ArrayList<Rectangle>(); // empty arraylist
 		}
 		
+		// may want to check if parameters match left/right schema first
 		float leftBound = Math.min(upperLeftElement.x, lowerLeftElement.x);
 		float topBound = Math.min(upperLeftElement.y, upperRightElement.y);
 		float width = Math.max((upperRightElement.x + upperRightElement.width - leftBound), (lowerRightElement.x + lowerRightElement.width - leftBound));
