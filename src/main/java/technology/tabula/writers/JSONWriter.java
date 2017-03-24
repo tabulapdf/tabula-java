@@ -15,6 +15,7 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 
 public class JSONWriter implements Writer {
  
@@ -52,6 +53,11 @@ public class JSONWriter implements Writer {
     
     public void write(Appendable out, List<Table> tables) throws IOException {
     	
-    	out.append(gson.toJson(tables.toArray(), Table[].class));
+    	JsonArray array = new JsonArray();
+    	for (Table table : tables) {
+    		array.add(gson.toJsonTree(table, Table.class));
+		}
+    	out.append(gson.toJson(array));
+
     }
 }

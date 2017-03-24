@@ -264,7 +264,14 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         
         for (int i = 0; i < this.getTextElements().size(); i++) {
             TextElement textElement = this.getTextElements().get(i);
-            currentChar = textElement.getText().charAt(0); 
+            String text = textElement.getText();
+            if (text.length() > 1) {
+            	currentChar = text.trim().charAt(0);
+            } else {
+                currentChar = text.charAt(0); 
+            }
+            
+            
             if (lastChar != null && currentChar.equals(c) && lastChar.equals(currentChar)) {
                 subSequenceLength++;
             }

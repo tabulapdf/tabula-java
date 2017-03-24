@@ -1,25 +1,26 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 
-import technology.tabula.Cell;
-import technology.tabula.Page;
-import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
-import technology.tabula.UtilsForTesting;
 import technology.tabula.writers.JSONWriter;
 
 public class TestSpreadsheetExtractor {
@@ -208,6 +209,22 @@ public class TestSpreadsheetExtractor {
     }
     
     @Test
+    public void testSpanningCellsToCsv() throws IOException {
+        Page page = UtilsForTesting
+                .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
+        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        List<? extends Table> tables = se.extract(page);
+        assertEquals(2, tables.size());
+                
+
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, (List<Table>) tables);
+        assertEquals(expectedCsv, sb.toString());
+
+    }    
+    
+    @Test
     public void testIncompleteGrid() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
@@ -360,9 +377,26 @@ public class TestSpreadsheetExtractor {
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
         assertEquals(1, tables.size());
         Table table = tables.get(0);
-        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
-        assertEquals("154.17", table.getRows().get(3).get(1).getText());
         
+        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
+        assertEquals("One Withholding\rAllowance", table.getRows().get(0).get(1).getText());
+        assertEquals("Weekly", table.getRows().get(1).get(0).getText());
+        assertEquals("$71.15", table.getRows().get(1).get(1).getText());
+        assertEquals("Biweekly", table.getRows().get(2).get(0).getText());
+        assertEquals("142.31", table.getRows().get(2).get(1).getText());
+        assertEquals("Semimonthly", table.getRows().get(3).get(0).getText());
+        assertEquals("154.17", table.getRows().get(3).get(1).getText());
+        assertEquals("Monthly", table.getRows().get(4).get(0).getText());
+        assertEquals("308.33", table.getRows().get(4).get(1).getText());
+        assertEquals("Quarterly", table.getRows().get(5).get(0).getText());
+        assertEquals("925.00", table.getRows().get(5).get(1).getText());
+        assertEquals("Semiannually", table.getRows().get(6).get(0).getText());
+        assertEquals("1,850.00", table.getRows().get(6).get(1).getText());
+        assertEquals("Annually", table.getRows().get(7).get(0).getText());
+        assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
+        assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
+        assertEquals("14.23", table.getRows().get(8).get(1).getText());
+         
     }
     
     @Test
@@ -466,5 +500,17 @@ public class TestSpreadsheetExtractor {
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
 
     }
+    
+    @Test
+    public void testExtractColumnsCorrectly3() throws IOException {
+
+    	Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 
+                106.01f, 48.09f, 227.31f, 551.89f);
+    	SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Table table = sea.extract(page).get(0);
+
+        assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE",  table.getRows().get(8).get(1).getText());
+        
+    }    
 
 }
