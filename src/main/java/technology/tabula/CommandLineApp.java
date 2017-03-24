@@ -32,7 +32,7 @@ import technology.tabula.writers.Writer;
 
 public class CommandLineApp {
 
-    private static String VERSION = "0.9.1";
+    private static String VERSION = "0.9.2";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2016 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
@@ -222,11 +222,13 @@ public class CommandLineApp {
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        if (line.hasOption('r')) {
+        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
+        if (line.hasOption('r') || line.hasOption('l')) {
             return ExtractionMethod.SPREADSHEET;
         }
 
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g')) {
+        // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
@@ -272,8 +274,10 @@ public class CommandLineApp {
         o.addOption("h", "help", false, "Print this help text.");
         o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing");
-        o.addOption("r", "spreadsheet", false, "Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
-        o.addOption("n", "no-spreadsheet", false, "Force PDF not to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("r", "spreadsheet", false, "[Deprecated in favor of -l/--lattice] Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
+        o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");

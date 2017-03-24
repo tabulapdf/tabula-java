@@ -17,9 +17,13 @@ public class TableSerializer implements JsonSerializer<Table> {
     @Override
     public JsonElement serialize(Table table, Type type,
             JsonSerializationContext context) {
-        
+
         JsonObject object = new JsonObject();
-        object.addProperty("extraction_method", table.getExtractionAlgorithm().toString());
+        if( table.getExtractionAlgorithm() == null){
+            object.addProperty("extraction_method", "");
+        }else{
+            object.addProperty("extraction_method", (table.getExtractionAlgorithm()).toString());
+        }
         object.addProperty("top", table.getTop());
         object.addProperty("left", table.getLeft());
         object.addProperty("width", table.getWidth());

@@ -99,7 +99,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     
     @Override
     public String toString() {
-        return "basic";
+        return "stream";
     }
     
     

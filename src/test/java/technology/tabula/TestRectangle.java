@@ -79,17 +79,17 @@ public class TestRectangle {
 		Rectangle third = new Rectangle(172.92999267578125f, 96.36000061035156f, 4.0f, 4.309999942779541f); //A
 		Rectangle fourth = new Rectangle(175.72000122070312f, 100.31999969482422f, 1.6699999570846558f, 1.5199999809265137f); //,
 		Rectangle fifth = new Rectangle(172.92999267578125f, 103.68000030517578f, 4.329999923706055f, 4.309999942779541f); //N
-		Rectangle six = new Rectangle(169.2100067138672f, 161.16000366210938f, 4.329999923706055f, 4.309999942779541f); //R
+		Rectangle sixth = new Rectangle(169.2100067138672f, 161.16000366210938f, 4.329999923706055f, 4.309999942779541f); //R
 		
 		List<Rectangle> expectedList = new ArrayList<Rectangle>();
 		expectedList.add(first);
-		expectedList.add(six);
+		expectedList.add(sixth);
 		expectedList.add(second);
 		expectedList.add(third);
 		expectedList.add(fourth);
 		expectedList.add(fifth);
 		List<Rectangle> toSortList = new ArrayList<Rectangle>();
-		toSortList.add(six);
+		toSortList.add(sixth);
 		toSortList.add(second);
 		toSortList.add(third);
 		toSortList.add(fifth);

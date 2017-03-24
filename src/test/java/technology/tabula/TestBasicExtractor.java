@@ -157,6 +157,10 @@ public class TestBasicExtractor {
         {"AARON, MICHAEL, R","","","BROOKLYN, NY","MEALS","$65.92"}
         };
 
+    private static final String[][] EXPECTED_EMPTY_TABLE = {
+        {""}
+    };
+
 
     @Test
     public void testRemoveSequentialSpaces() throws IOException {
@@ -355,6 +359,16 @@ public class TestBasicExtractor {
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         assertEquals(expectedCsv, sb.toString());
+    }
+
+
+    @Test
+    public void testEmptyRegion() throws IOException {
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/indictb1h_14.pdf", 1,
+                        0.0f, 0.0f, 80.82f, 100.9f); // an empty area
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Table table = bea.extract(page).get(0);
+        assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
     }
 
 }
