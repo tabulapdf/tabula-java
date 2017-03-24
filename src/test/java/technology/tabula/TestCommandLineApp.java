@@ -90,6 +90,19 @@ public class TestCommandLineApp {
 				"JSON"
 		}));
 	}
+	
+	@Test
+	public void testExtractCSVWithArea() throws ParseException, IOException {
+
+		String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
+
+		assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[] {
+				"src/test/resources/technology/tabula/spanning_cells.pdf",
+				"-p", "1", "-a",
+				"150.56,58.9,654.7,536.12", "-f",
+				"CSV"
+		}));
+	}	
 
 	@Test
 	public void testGuessOption() throws ParseException, IOException {

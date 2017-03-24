@@ -1,0 +1,25 @@
+Improved operation scenario,,,,,
+Volume servers in:,2007,2008,2009,2010,2011
+Server closets,"1,505","1,580","1,643","1,673","1,689"
+Server rooms,"1,512","1,586","1,646","1,677","1,693"
+Localized data centers,"1,512","1,586","1,646","1,677","1,693"
+Mid-tier data centers,"1,512","1,586","1,646","1,677","1,693"
+Enterprise-class data centers,"1,512","1,586","1,646","1,677","1,693"
+Best practice scenario,,,,,
+Volume servers in:,2007,2008,2009,2010,2011
+Server closets,"1,456","1,439","1,386","1,296","1,326"
+Server rooms,"1,465","1,472","1,427","1,334","1,371"
+Localized data centers,"1,465","1,471","1,426","1,334","1,371"
+Mid-tier data centers,"1,465","1,471","1,426","1,334","1,371"
+Enterprise-class data centers,"1,465","1,471","1,426","1,334","1,371"
+State-of-the-art scenario,,,,,
+Volume servers in:,2007,2008,2009,2010,2011
+Server closets,"1,485","1,471","1,424","1,315","1,349"
+Server rooms,"1,495","1,573","1,586","1,424","1,485"
+Localized data centers,"1,495","1,572","1,585","1,424","1,485"
+Mid-tier data centers,"1,495","1,572","1,585","1,424","1,485"
+Enterprise-class data centers,"1,495","1,572","1,585","1,424","1,485"
+All alternative scenarios,,,,,
+Server class,2007,2008,2009,2010,2011
+Mid-range,"4,921","5,467","6,152","6,649","7,185"
+High-end,"76,295","81,624","86,849","92,662","98,864"

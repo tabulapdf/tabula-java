@@ -140,21 +140,23 @@ public class TestBasicExtractor {
     };
     
     private static final String[][] EXPECTED_TABLE_EXTRACTION = {
-        {"AANONSEN, DEBORAH, A","","","STATEN ISLAND, NY","MEALS","$85.00"},
-        {"TOTAL","","","","","$85.00"},
-        {"AARON, CAREN, T","","","RICHMOND, VA","EDUCATIONAL ITEMS","$78.80"},
-        {"AARON, CAREN, T","","","RICHMOND, VA","MEALS","$392.45"},
-        {"TOTAL","","","","","$471.25"},
-        {"AARON, JOHN","","","CLARKSVILLE, TN","MEALS","$20.39"},
-        {"TOTAL","","","","","$20.39"},
-        {"AARON, JOSHUA, N","","","WEST GROVE, PA","MEALS","$310.33"},
-        {"AARON , JOSHUA , N","REGIONAL PULMONARY & SLEEPMEDICINE","","WEST GROVE, PA","SPEAKING FEES","$4,700.00"},
-        {"TOTAL","","","","","$5,010.33"},
-        {"AARON, MAUREEN, M","","","MARTINSVILLE, VA","MEALS","$193.67"},
-        {"TOTAL","","","","","$193.67"},
-        {"AARON, MICHAEL, L","","","WEST ISLIP, NY","MEALS","$19.50"},
-        {"TOTAL","","","","","$19.50"},
-        {"AARON, MICHAEL, R","","","BROOKLYN, NY","MEALS","$65.92"}
+        {"AANONSEN, DEBORAH, A","","STATEN ISLAND, NY","MEALS","$85.00"},
+        {"TOTAL","","","","$85.00"},
+        {"AARON, CAREN, T","","RICHMOND, VA","EDUCATIONAL ITEMS","$78.80"},
+        {"AARON, CAREN, T","","RICHMOND, VA","MEALS","$392.45"},
+        {"TOTAL","","","","$471.25"},
+        {"AARON, JOHN","","CLARKSVILLE, TN","MEALS","$20.39"},
+        {"TOTAL","","","","$20.39"},
+        {"AARON, JOSHUA, N","","WEST GROVE, PA","MEALS","$310.33"},
+        {"","REGIONAL PULMONARY & SLEEP","","",""},
+        {"AARON, JOSHUA, N","","WEST GROVE, PA","SPEAKING FEES","$4,700.00"},
+        {"","MEDICINE","","",""},
+        {"TOTAL","","","","$5,010.33"},
+        {"AARON, MAUREEN, M","","MARTINSVILLE, VA","MEALS","$193.67"},
+        {"TOTAL","","","","$193.67"},
+        {"AARON, MICHAEL, L","","WEST ISLIP, NY","MEALS","$19.50"},
+        {"TOTAL","","","","$19.50"},
+        {"AARON, MICHAEL, R","","BROOKLYN, NY","MEALS","$65.92"}
         };
 
     private static final String[][] EXPECTED_EMPTY_TABLE = {
@@ -225,7 +227,7 @@ public class TestBasicExtractor {
     
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 
+    	Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf",
                 106.01f, 48.09f, 227.31f, 551.89f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
@@ -371,4 +373,18 @@ public class TestBasicExtractor {
         assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
     }
 
+
+    @Test
+    public void testTableWithMultilineHeader() throws IOException {
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/us-020.csv");
+        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/us-020.pdf", 2,
+        		103.0f, 35.0f, 641.0f, 560.0f);
+        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Table table = bea.extract(page).get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        assertEquals(expectedCsv, sb.toString());
+    }
+    
 }
