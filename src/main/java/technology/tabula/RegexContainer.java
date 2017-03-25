@@ -1,76 +1,81 @@
+/*
+ * Todo:
+ * 		Better type functionality
+ * 		Multi-role strings, return what is needed based on type
+ * 		Single string version
+ * 
+ * 		Try allocating array for globals
+ */
+
 package technology.tabula;
 
 public class RegexContainer {
 	
-	private int containerType;
+	private int containerType;	
+	private String identifiers[];
 	
-	private String upperLeft;
-	private String upperRight;
-	private String lowerLeft;
-	private String lowerRight;
-	
-	private String top;
-	private String bot;
-	
-	public RegexContainer(String ul, String ur, String ll, String lr) {
-		
-		// four string
-		if(ul != null && ur != null
-				&& ll != null && lr != null) {
+	public RegexContainer(String list[]) {
+		switch(list.length){
+			case 1: { // single expression
+				if(list[0] != null) {
+					this.identifiers = new String[1];
+					
+					this.identifiers[0] = list[0];
+					
+					this.containerType = 1;
+				}
+				else {
+					this.containerType = 0;
+				}
+				break;
+			}
 			
-			containerType = 4;
+			case 2: { // two expressions
+				if(list[0] != null && list[1] != null) {
+					this.identifiers = new String[2];			
+					
+					this.identifiers[0] = list[0];
+					this.identifiers[1] = list[1];
+					
+					this.containerType = 2;
+				}		
+				else {
+					this.containerType = 0;
+				}
+				break;
+			}
 			
-			upperLeft = ul;
-			upperRight = ur;
-			lowerLeft = ll;
-			lowerRight = lr;
-		}
-		
-		// two string
-		else if((ul != null || ur != null)
-				&& (ll != null || lr != null)) {			
+			case 4: { // four expressions
+				// is this check needed?
+				if(list[0] != null && list[1] != null
+						&& list[2] != null && list[3] != null) {
+					this.identifiers = new String[4];
+					
+					this.identifiers[0] = list[0];
+					this.identifiers[1] = list[1];
+					this.identifiers[2] = list[2];
+					this.identifiers[3] = list[3];
+					
+					this.containerType = 4;
+				}		
+				else {			
+					this.containerType = 0;
+				}
+				break;
+			}	
 			
-			containerType = 2;
-			
-			if(ul != null)	top = ul;
-			else top = ur;
-			
-			if(ll != null)	bot = ll;
-			else bot = lr;
-		}
-		
-		else
-			
-			containerType = 0;
-		
-    }
-	
-	public String getUpperLeft(){
-		return upperLeft;		
+			default: {
+				this.containerType = 0;
+				break;
+			}
+		}		
 	}
-	
-	public String getUpperRight(){
-		return upperRight;		
-	}
-	
-	public String getLowerLeft(){
-		return lowerLeft;		
-	}
-	
-	public String getLowerRight(){
-		return lowerRight;		
-	}
-	
-	public String getTop(){
-		return top;
-	}
-	
-	public String getBot(){
-		return bot;
+
+	public String[] getIdentifiers(){
+		return this.identifiers;
 	}
 	
 	public int getType(){
-		return containerType;
+		return this.containerType;
 	}
-
 }
