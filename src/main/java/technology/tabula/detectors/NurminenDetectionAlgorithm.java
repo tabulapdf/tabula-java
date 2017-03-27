@@ -36,7 +36,7 @@ import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 /**
  * Created by matt on 2015-12-17.
- *
+ * <p>
  * Attempt at an implementation of the table finding algorithm described by
  * Anssi Nurminen's master's thesis:
  * http://dspace.cc.tut.fi/dpub/bitstream/handle/123456789/21520/Nurminen.pdf?sequence=3
@@ -121,15 +121,15 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         } catch (Exception e) {
             return new ArrayList<Rectangle>();
         } finally {
-			if (removeTextDocument != null) {
-				try {
-					removeTextDocument.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+            if (removeTextDocument != null) {
+                try {
+                    removeTextDocument.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
 
         List<Ruling> verticalRulings = this.getVerticalRulings(image);
 
@@ -145,7 +145,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
             // normalize the rulings to make sure snapping didn't create any wacky non-horizontal/vertical rulings
             for (List<Ruling> rulings : Arrays.asList(horizontalRulings, verticalRulings)) {
-                for (Iterator<Ruling> iterator = rulings.iterator(); iterator.hasNext();) {
+                for (Iterator<Ruling> iterator = rulings.iterator(); iterator.hasNext(); ) {
                     Ruling ruling = iterator.next();
 
                     ruling.normalize();
@@ -176,8 +176,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 if (verticalRuling.intersects(tableArea) &&
                         !(tableArea.contains(verticalRuling.getP1()) && tableArea.contains(verticalRuling.getP2()))) {
 
-                    tableArea.setTop((float)Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
-                    tableArea.setBottom((float)Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
+                    tableArea.setTop((float) Math.floor(Math.min(tableArea.getTop(), verticalRuling.getY1())));
+                    tableArea.setBottom((float) Math.ceil(Math.max(tableArea.getBottom(), verticalRuling.getY2())));
                     break;
                 }
             }
@@ -186,18 +186,18 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // the tabula Page coordinate space is half the size of the PDFBox image coordinate space
         // so halve the table area size before proceeding and add a bit of padding to make sure we capture everything
         for (Rectangle area : tableAreas) {
-            area.x = (float)Math.floor(area.x/2) - TABLE_PADDING_AMOUNT;
-            area.y = (float)Math.floor(area.y/2) - TABLE_PADDING_AMOUNT;
-            area.width = (float)Math.ceil(area.width/2) + TABLE_PADDING_AMOUNT;
-            area.height = (float)Math.ceil(area.height/2) + TABLE_PADDING_AMOUNT;
+            area.x = (float) Math.floor(area.x / 2) - TABLE_PADDING_AMOUNT;
+            area.y = (float) Math.floor(area.y / 2) - TABLE_PADDING_AMOUNT;
+            area.width = (float) Math.ceil(area.width / 2) + TABLE_PADDING_AMOUNT;
+            area.height = (float) Math.ceil(area.height / 2) + TABLE_PADDING_AMOUNT;
         }
 
         // we're going to want halved horizontal lines later too
         for (Line2D.Float ruling : horizontalRulings) {
-            ruling.x1 = ruling.x1/2;
-            ruling.y1 = ruling.y1/2;
-            ruling.x2 = ruling.x2/2;
-            ruling.y2 = ruling.y2/2;
+            ruling.x1 = ruling.x1 / 2;
+            ruling.y1 = ruling.y1 / 2;
+            ruling.x2 = ruling.x2 / 2;
+            ruling.y2 = ruling.y2 / 2;
         }
 
         // now look at text rows to help us find more tables and flesh out existing ones
@@ -208,14 +208,14 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         for (Line textRow : lines) {
             for (Rectangle tableArea : tableAreas) {
                 if (!tableArea.contains(textRow) && textRow.intersects(tableArea)) {
-                    tableArea.setLeft((float)Math.floor(Math.min(textRow.getLeft(), tableArea.getLeft())));
-                    tableArea.setRight((float)Math.ceil(Math.max(textRow.getRight(), tableArea.getRight())));
+                    tableArea.setLeft((float) Math.floor(Math.min(textRow.getLeft(), tableArea.getLeft())));
+                    tableArea.setRight((float) Math.ceil(Math.max(textRow.getRight(), tableArea.getRight())));
                 }
             }
         }
 
         // get rid of tables that DO NOT intersect any text areas - these are likely graphs or some sort of graphic
-        for (Iterator<Rectangle> iterator = tableAreas.iterator(); iterator.hasNext();) {
+        for (Iterator<Rectangle> iterator = tableAreas.iterator(); iterator.hasNext(); ) {
             Rectangle table = iterator.next();
 
             boolean intersectsText = false;
@@ -245,7 +245,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             foundTable = false;
 
             // get rid of any text lines contained within existing tables, this allows us to find more tables
-            for (Iterator<Line> iterator = lines.iterator(); iterator.hasNext();) {
+            for (Iterator<Line> iterator = lines.iterator(); iterator.hasNext(); ) {
                 Line textRow = iterator.next();
                 for (Rectangle table : tableAreas) {
                     if (table.contains(textRow)) {
@@ -267,7 +267,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             // we found something relevant so let's look for rows that fit our criteria
             if (relevantEdgeInfo.edgeType != -1) {
                 List<TextEdge> relevantEdges = null;
-                switch(relevantEdgeInfo.edgeType) {
+                switch (relevantEdgeInfo.edgeType) {
                     case TextEdge.LEFT:
                         relevantEdges = leftTextEdges;
                         break;
@@ -300,7 +300,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 if (o2.contains(o1)) {
                     return 0;
                 }
-                
+
                 if (o1.contains(o2)) {
                     return 0;
                 }
@@ -418,12 +418,12 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 continue;
             }
 
-            float distanceFromTable = (float)ruling.getY1() - table.getBottom();
+            float distanceFromTable = (float) ruling.getY1() - table.getBottom();
             if (distanceFromTable <= rowHeightThreshold) {
                 // use this ruling to help define the table
-                table.setBottom((float)Math.max(table.getBottom(), ruling.getY1()));
-                table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
-                table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
+                table.setBottom((float) Math.max(table.getBottom(), ruling.getY1()));
+                table.setLeft((float) Math.min(table.getLeft(), ruling.getX1()));
+                table.setRight((float) Math.max(table.getRight(), ruling.getX2()));
             } else {
                 // no use checking any further
                 break;
@@ -434,28 +434,28 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // larger to fit up to three-ish rows of text (at least but we don't want to grab too much)
         rowHeightThreshold = avgRowHeight * 3.8f;
 
-        for (int i=horizontalRulings.size() - 1; i>=0; i--) {
+        for (int i = horizontalRulings.size() - 1; i >= 0; i--) {
             Line2D.Float ruling = horizontalRulings.get(i);
 
             if (ruling.getY1() > table.getTop()) {
                 continue;
             }
 
-            float distanceFromTable = table.getTop() - (float)ruling.getY1();
+            float distanceFromTable = table.getTop() - (float) ruling.getY1();
             if (distanceFromTable <= rowHeightThreshold) {
-                table.setTop((float)Math.min(table.getTop(), ruling.getY1()));
-                table.setLeft((float)Math.min(table.getLeft(), ruling.getX1()));
-                table.setRight((float)Math.max(table.getRight(), ruling.getX2()));
+                table.setTop((float) Math.min(table.getTop(), ruling.getY1()));
+                table.setLeft((float) Math.min(table.getLeft(), ruling.getX1()));
+                table.setRight((float) Math.max(table.getRight(), ruling.getX2()));
             } else {
                 break;
             }
         }
 
         // add a bit of padding since the halved horizontal lines are a little fuzzy anyways
-        table.setTop((float)Math.floor(table.getTop()) - TABLE_PADDING_AMOUNT);
-        table.setBottom((float)Math.ceil(table.getBottom()) + TABLE_PADDING_AMOUNT);
-        table.setLeft((float)Math.floor(table.getLeft()) - TABLE_PADDING_AMOUNT);
-        table.setRight((float)Math.ceil(table.getRight()) + TABLE_PADDING_AMOUNT);
+        table.setTop((float) Math.floor(table.getTop()) - TABLE_PADDING_AMOUNT);
+        table.setBottom((float) Math.ceil(table.getBottom()) + TABLE_PADDING_AMOUNT);
+        table.setLeft((float) Math.floor(table.getLeft()) - TABLE_PADDING_AMOUNT);
+        table.setRight((float) Math.ceil(table.getRight()) + TABLE_PADDING_AMOUNT);
 
         return table;
     }
@@ -484,7 +484,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         // we'll only take a minimum of two edges to look for tables
         int relevantEdgeType = -1;
         int relevantEdgeCount = 0;
-        for (int i=edgeCountsPerLine.length - 1; i>2; i--) {
+        for (int i = edgeCountsPerLine.length - 1; i > 2; i--) {
             if (edgeCountsPerLine[i][TextEdge.LEFT] > 2 &&
                     edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.RIGHT] &&
                     edgeCountsPerLine[i][TextEdge.LEFT] >= edgeCountsPerLine[i][TextEdge.MID]) {
@@ -527,9 +527,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         for (Line textRow : lines) {
             for (TextChunk text : textRow.getTextElements()) {
-                Integer left = new Integer((int)Math.floor(text.getLeft()));
-                Integer right = new Integer((int)Math.floor(text.getRight()));
-                Integer mid = new Integer(left + ((right - left)/2));
+                Integer left = new Integer((int) Math.floor(text.getLeft()));
+                Integer right = new Integer((int) Math.floor(text.getRight()));
+                Integer mid = new Integer(left + ((right - left) / 2));
 
                 // first put this chunk into any edge buckets it belongs to
                 List<TextChunk> leftEdge = currLeftEdges.get(left);
@@ -554,7 +554,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 rightEdge.add(text);
 
                 // now see if this text chunk blows up any other edges
-                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currLeftEdges.entrySet().iterator(); iterator.hasNext();) {
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currLeftEdges.entrySet().iterator(); iterator.hasNext(); ) {
                     Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
                     Integer key = entry.getKey();
                     if (key > left && key < right) {
@@ -572,7 +572,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     }
                 }
 
-                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currMidEdges.entrySet().iterator(); iterator.hasNext();) {
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currMidEdges.entrySet().iterator(); iterator.hasNext(); ) {
                     Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
                     Integer key = entry.getKey();
                     if (key > left && key < right && Math.abs(key - mid) > 2) {
@@ -590,7 +590,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     }
                 }
 
-                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currRightEdges.entrySet().iterator(); iterator.hasNext();) {
+                for (Iterator<Map.Entry<Integer, List<TextChunk>>> iterator = currRightEdges.entrySet().iterator(); iterator.hasNext(); ) {
                     Map.Entry<Integer, List<TextChunk>> entry = iterator.next();
                     Integer key = entry.getKey();
                     if (key > left && key < right) {
@@ -664,8 +664,8 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                     Point2D[] groupCellCorners = groupCell.getPoints();
                     Point2D[] candidateCorners = cell.getPoints();
 
-                    for (int i=0; i<candidateCorners.length; i++) {
-                        for (int j=0; j<groupCellCorners.length; j++) {
+                    for (int i = 0; i < candidateCorners.length; i++) {
+                        for (int j = 0; j < groupCellCorners.length; j++) {
                             if (candidateCorners[i].distance(groupCellCorners[j]) < CELL_CORNER_DISTANCE_MAXIMUM) {
                                 cellGroup.add(cell);
                                 addedToGroup = true;
@@ -719,13 +719,13 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         int width = r.getWidth();
         int height = r.getHeight();
 
-        for (int x=0; x<width; x++) {
+        for (int x = 0; x < width; x++) {
 
-            int[] lastPixel = r.getPixel(x, 0, (int[])null);
+            int[] lastPixel = r.getPixel(x, 0, (int[]) null);
 
-            for (int y=1; y<height-1; y++) {
+            for (int y = 1; y < height - 1; y++) {
 
-                int[] currPixel = r.getPixel(x, y, (int[])null);
+                int[] currPixel = r.getPixel(x, y, (int[]) null);
 
                 int diff = Math.abs(currPixel[0] - lastPixel[0]);
                 if (diff > GRAYSCALE_INTENSITY_THRESHOLD) {
@@ -782,13 +782,13 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         int width = r.getWidth();
         int height = r.getHeight();
 
-        for (int y=0; y<height; y++) {
+        for (int y = 0; y < height; y++) {
 
-            int[] lastPixel = r.getPixel(0, y, (int[])null);
+            int[] lastPixel = r.getPixel(0, y, (int[]) null);
 
-            for (int x=1; x<width-1; x++) {
+            for (int x = 1; x < width - 1; x++) {
 
-                int[] currPixel = r.getPixel(x, y, (int[])null);
+                int[] currPixel = r.getPixel(x, y, (int[]) null);
 
                 int diff = Math.abs(currPixel[0] - lastPixel[0]);
                 if (diff > GRAYSCALE_INTENSITY_THRESHOLD) {
@@ -834,41 +834,38 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         return verticalRulings;
     }
-    
+
 
     // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
     private PDDocument removeText(PDPage page) throws IOException {
-        
+
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
         List<Object> tokens = parser.getTokens();
         List<Object> newTokens = new ArrayList<Object>();
-        for (Object token : tokens)
-        {
-            if( token instanceof Operator)
-            {
-                Operator op = (Operator)token;
-                if( op.getName().equals( "TJ") || op.getName().equals( "Tj" ))
-                {
+        for (Object token : tokens) {
+            if (token instanceof Operator) {
+                Operator op = (Operator) token;
+                if (op.getName().equals("TJ") || op.getName().equals("Tj")) {
                     //remove the one argument to this operator
-                    newTokens.remove( newTokens.size() -1 );
+                    newTokens.remove(newTokens.size() - 1);
                     continue;
                 }
             }
-            newTokens.add( token );
+            newTokens.add(token);
         }
 
         PDDocument document = new PDDocument();
         document.addPage(page);
 
-        PDStream newContents = new PDStream( document );
+        PDStream newContents = new PDStream(document);
         OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
-        ContentStreamWriter writer = new ContentStreamWriter( out );
-        writer.writeTokens( newTokens );
+        ContentStreamWriter writer = new ContentStreamWriter(out);
+        writer.writeTokens(newTokens);
         out.close();
-        page.setContents( newContents );
-        
+        page.setContents(newContents);
+
         return document;
-        
+
     }
 }

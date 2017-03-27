@@ -18,7 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 
 public class JSONWriter implements Writer {
- 
+
     class TableSerializerExclusionStrategy implements ExclusionStrategy {
 
         @Override
@@ -32,32 +32,32 @@ public class JSONWriter implements Writer {
         }
     }
 
-    
+
     final Gson gson;
-    
+
     public JSONWriter() {
         gson = new GsonBuilder()
-           .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
-           .registerTypeAdapter(Table.class, new TableSerializer())
-           .registerTypeAdapter(RectangularTextContainer.class, new TextChunkSerializer())
-           .registerTypeAdapter(Cell.class, new TextChunkSerializer())
-           .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
-           .create();
+                .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
+                .registerTypeAdapter(Table.class, new TableSerializer())
+                .registerTypeAdapter(RectangularTextContainer.class, new TextChunkSerializer())
+                .registerTypeAdapter(Cell.class, new TextChunkSerializer())
+                .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
+                .create();
     }
-    
+
     @Override
     public void write(Appendable out, Table table) throws IOException {
-    	
-    	out.append(gson.toJson(table, Table.class));
+
+        out.append(gson.toJson(table, Table.class));
     }
-    
+
     public void write(Appendable out, List<Table> tables) throws IOException {
-    	
-    	JsonArray array = new JsonArray();
-    	for (Table table : tables) {
-    		array.add(gson.toJsonTree(table, Table.class));
-		}
-    	out.append(gson.toJson(array));
+
+        JsonArray array = new JsonArray();
+        for (Table table : tables) {
+            array.add(gson.toJsonTree(table, Table.class));
+        }
+        out.append(gson.toJson(array));
 
     }
 }
