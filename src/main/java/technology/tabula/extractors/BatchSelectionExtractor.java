@@ -41,7 +41,7 @@ public class BatchSelectionExtractor {
 			//			Confirm process type is valid
 			//----------------------------------------------------------
 			if(!processType.equals("both") 
-			  && !processType.equals("coordinates")
+			  && !processType.equals("coords")
 			  && !processType.equals("regex")) {
 					// invalid process type
 					return 0;
