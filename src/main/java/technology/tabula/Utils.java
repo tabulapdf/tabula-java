@@ -4,13 +4,18 @@ import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 /**
- *
  * @author manuel
  */
 public class Utils {
@@ -19,7 +24,7 @@ public class Utils {
     }
 
     public static boolean overlap(double y1, double height1, double y2, double height2, double variance) {
-        return within( y1, y2, variance) || (y2 <= y1 && y2 >= y1 - height1) || (y1 <= y2 && y1 >= y2-height2);
+        return within(y1, y2, variance) || (y2 <= y1 && y2 >= y1 - height1) || (y1 <= y2 && y1 >= y2 - height2);
     }
 
     public static boolean overlap(double y1, double height1, double y2, double height2) {
@@ -86,17 +91,15 @@ public class Utils {
         return true;
     }
 
-    public static String join(String glue, String...s) {
+    public static String join(String glue, String... s) {
         int k = s.length;
-        if ( k == 0 )
-        {
-          return null;
+        if (k == 0) {
+            return null;
         }
         StringBuilder out = new StringBuilder();
-        out.append( s[0] );
-        for ( int x=1; x < k; ++x )
-        {
-          out.append(glue).append(s[x]);
+        out.append(s[0]);
+        for (int x = 1; x < k; ++x) {
+            out.append(glue).append(s[x]);
         }
         return out.toString();
     }
@@ -121,8 +124,7 @@ public class Utils {
     public static <T extends Comparable<? super T>> void sort(List<T> list) {
         if (useQuickSort) {
             QuickSort.sort(list);
-        }
-        else {
+        } else {
             Collections.sort(list);
         }
     }
@@ -134,16 +136,16 @@ public class Utils {
         // workaround to the transitivity issue of TextPositionComparator:
         // https://issues.apache.org/jira/browse/PDFBOX-1512
 
-        String numberybits =  System.getProperty("java.version").split(
+        String numberybits = System.getProperty("java.version").split(
                 "-")[0]; // some Java version strings are 9-internal, which is dumb.
         String[] versionComponents = numberybits.split(
                 "\\.");
         int javaMajorVersion;
         int javaMinorVersion;
-        if(versionComponents.length >= 2){
+        if (versionComponents.length >= 2) {
             javaMajorVersion = Integer.parseInt(versionComponents[0]);
             javaMinorVersion = Integer.parseInt(versionComponents[1]);
-        }else{
+        } else {
             javaMajorVersion = 1;
             javaMinorVersion = Integer.parseInt(versionComponents[0]);
         }
@@ -151,7 +153,6 @@ public class Utils {
         String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
         return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
     }
-
 
 
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
@@ -170,14 +171,13 @@ public class Utils {
 
             if (r.length < 2) {
                 rv.add(Integer.parseInt(r[0]));
-            }
-            else {
+            } else {
                 int t = Integer.parseInt(r[0]);
                 int f = Integer.parseInt(r[1]);
                 if (t > f) {
                     throw new ParseException("Syntax error in page range specification");
                 }
-                rv.addAll(Utils.range(t, f+1));
+                rv.addAll(Utils.range(t, f + 1));
             }
         }
 
@@ -190,10 +190,10 @@ public class Utils {
         // collect points and keep a Line -> p1,p2 map
         Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<Line2D.Float, Point2D[]>();
         List<Point2D> points = new ArrayList<Point2D>();
-        for (Line2D.Float r: rulings) {
+        for (Line2D.Float r : rulings) {
             Point2D p1 = r.getP1();
             Point2D p2 = r.getP2();
-            linesToPoints.put(r, new Point2D[] { p1, p2 });
+            linesToPoints.put(r, new Point2D[]{p1, p2});
             points.add(p1);
             points.add(p2);
         }
@@ -207,25 +207,24 @@ public class Utils {
         });
 
         List<List<Point2D>> groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
+        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{points.get(0)})));
 
-        for (Point2D p: points.subList(1, points.size() - 1)) {
+        for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getX() - last.get(0).getX()) < xThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
-            }
-            else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
+            } else {
+                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{p})));
             }
         }
 
-        for(List<Point2D> group: groupedPoints) {
+        for (List<Point2D> group : groupedPoints) {
             float avgLoc = 0;
-            for(Point2D p: group) {
+            for (Point2D p : group) {
                 avgLoc += p.getX();
             }
             avgLoc /= group.size();
-            for(Point2D p: group) {
+            for (Point2D p : group) {
                 p.setLocation(avgLoc, p.getY());
             }
         }
@@ -240,34 +239,48 @@ public class Utils {
         });
 
         groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { points.get(0) })));
+        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{points.get(0)})));
 
-        for (Point2D p: points.subList(1, points.size() - 1)) {
+        for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getY() - last.get(0).getY()) < yThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
-            }
-            else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[] { p })));
+            } else {
+                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{p})));
             }
         }
 
-        for(List<Point2D> group: groupedPoints) {
+        for (List<Point2D> group : groupedPoints) {
             float avgLoc = 0;
-            for(Point2D p: group) {
+            for (Point2D p : group) {
                 avgLoc += p.getY();
             }
             avgLoc /= group.size();
-            for(Point2D p: group) {
+            for (Point2D p : group) {
                 p.setLocation(p.getX(), avgLoc);
             }
         }
         // ---
 
         // finally, modify lines
-        for(Map.Entry<Line2D.Float, Point2D[]> ltp: linesToPoints.entrySet()) {
+        for (Map.Entry<Line2D.Float, Point2D[]> ltp : linesToPoints.entrySet()) {
             Point2D[] p = ltp.getValue();
             ltp.getKey().setLine(p[0], p[1]);
         }
     }
+
+    public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
+        // Yeah, this sucks. But PDFBox 2 wants PDFRenderers to have
+        // a reference to a PDDocument (unnecessarily, IMHO)
+
+        PDDocument document = new PDDocument();
+        document.addPage(page);
+
+        PDFRenderer renderer = new PDFRenderer(document);
+
+        document.close();
+
+        return renderer.renderImageWithDPI(0, dpi, imageType);
+    }
+
 }
