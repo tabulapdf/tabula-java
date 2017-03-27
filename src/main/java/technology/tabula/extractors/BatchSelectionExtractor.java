@@ -88,14 +88,38 @@ public class BatchSelectionExtractor {
         	FileReader fr = new FileReader(jsonPath);
 			BufferedReader br = new BufferedReader(fr);
 			
+			List<RegexContainer> regexList = new ArrayList<RegexContainer>(); // shouldnt allocate if not used
+			ArrayList<String> pageList = new ArrayList<String>(); //// shouldnt allocate if not used
+			List<Rectangle> coordList = new ArrayList<Rectangle>(); // shouldnt allocate if not used
 			String currentString;
-			List<RegexContainer> regexList = new ArrayList<RegexContainer>();
 			
-			while((currentString = br.readLine()) != null) {
-				//System.out.println(currentString);
+			if(processType.equals("regex")){
+								
+				while((currentString = br.readLine()) != null) {
+					//System.out.println(currentString);
+					
+					regexList.add(new RegexContainer(currentString.split("[\\s,]+")));
+				}
+			}
+
+			else if(processType.equals("coordinates")){	
+								
+				while((currentString = br.readLine()) != null) {
+					//System.out.println(currentString);
+					
+					String array[] = currentString.split("[\\s,]+");
+
+					pageList.add(array[0]);
+					float leftBound = Float.valueOf(array[1]);
+					float topBound = Float.valueOf(array[2]);
+					float width = Float.valueOf(array[3]);
+					float height = Float.valueOf(array[4]);
+					
+					coordList.add(new Rectangle(leftBound, topBound, width, height));
+				}
+			}
+			
 				
-				regexList.add(new RegexContainer(currentString.split("[\\s,]+")));
-			}	
 			
 			br.close();
 			fr.close();
@@ -136,134 +160,144 @@ public class BatchSelectionExtractor {
 				    while (pageIterator.hasNext()) {
 				    	Page page = pageIterator.next();
 				    	
-				    	for(int i = 0; i < regexList.size(); i++)
-				    	{
-				    		RegexContainer container = regexList.get(i);				    		
-				    		String[] identifiers = container.getIdentifiers();
-				    		
-					    	// get list of rectangles which match string inputs
-					    	RegexSearch regexSearch = new RegexSearch(); 
-					    	
-					    	//List<Rectangle> guesses = regexSearch.detect(page, upperBound, lowerBound);
-
-					    	List<Rectangle> guesses = null;
-					    	
-					    	// one string version?
-					    	
-					    	if(container.getType() == 2){ // two string					    		
-					    		guesses = regexSearch.detect(
-						    			page,
-						    			identifiers[0],
-						    			identifiers[1]
-						    			);
-					    	}
-					    		
-					    	else if(container.getType() == 4){ // four string
-					    		
-					    		guesses = regexSearch.detect(
-						    			page,
-						    			identifiers[0],
-						    			identifiers[1],
-						    			identifiers[2],
-						    			identifiers[3]
-						    			);
-					    	}
-					    	
-					    	else continue; // procede to next regex container					    	
-					    	
-					    	if(guesses.isEmpty())
+				    	if(processType.equals("regex")){
+					    	for(int i = 0; i < regexList.size(); i++)
 					    	{
-					    		continue; // go to next page, do not attempt to extract data
-					    	}
-					    	
-					    	// get auto detected list of rectangles
-					    	NurminenDetectionAlgorithm nurmDetect = new NurminenDetectionAlgorithm(); 
-					    	List<Rectangle> auto = nurmDetect.detect(page);
-					    	
-					    	// try spreadsheet if auto doesnt work?
-					    	SpreadsheetDetectionAlgorithm spreadDetect = new SpreadsheetDetectionAlgorithm();
-					    	List<Rectangle> spread = spreadDetect.detect(page);
-			
-					    	// print test
-					    	System.out.println(guesses.toString());				    	
-					    	System.out.println(auto.toString());
-					    	//System.out.println(spread.toString());
-					    	
-					    	// compare rectangle lists, create worklist by removing elements from both lists and using auto detect
-					    	List<Rectangle> worklist = new ArrayList<Rectangle>();
-					    	
-					    	float bestOverlap = 0;
-					    	Rectangle bestGuess = null;
-					    	
-					    	// check if list is null or just take exception?
-					    	// try over lap of 1(2) and 2(1)? XX <-- same ratio
-					    	for(int j = 0; j < guesses.size(); j++)
-					    	{
-					    		Rectangle eval = guesses.get(j);
-					    		bestGuess = eval;
+					    		RegexContainer container = regexList.get(i);				    		
+					    		String[] identifiers = container.getIdentifiers();
 					    		
-					    		if(!auto.isEmpty()) {
-						    		for(int k = 0; k < auto.size(); k++) {
-						    			Rectangle eval1 = auto.get(k);
-						    			
-						    			// look for rectangle overlap or similarity?
-						    			float overlap = eval.overlapRatio(eval1);
-						    			float vertOverlap = eval.verticalOverlapRatio(eval1);
-						    			
-						    			System.out.println("Auto - Page #" + page.getPageNumber() + " overlap = " + overlap);
-						    			System.out.println("Auto - Page #" + page.getPageNumber() + " vertOverlap = " + vertOverlap);
-						    			
-						    			if(overlap > bestOverlap)
-						    			{
-						    				bestOverlap = overlap;
-						    				bestGuess = eval1;
-						    			}
+						    	// get list of rectangles which match string inputs
+						    	RegexSearch regexSearch = new RegexSearch(); 
+						    	
+						    	//List<Rectangle> guesses = regexSearch.detect(page, upperBound, lowerBound);
+	
+						    	List<Rectangle> guesses = null;
+						    	
+						    	// one string version?
+						    	
+						    	if(container.getType() == 2){ // two string					    		
+						    		guesses = regexSearch.detect(
+							    			page,
+							    			identifiers[0],
+							    			identifiers[1]
+							    			);
+						    	}
+						    		
+						    	else if(container.getType() == 4){ // four string
+						    		
+						    		guesses = regexSearch.detect(
+							    			page,
+							    			identifiers[0],
+							    			identifiers[1],
+							    			identifiers[2],
+							    			identifiers[3]
+							    			);
+						    	}
+						    	
+						    	else continue; // procede to next regex container					    	
+						    	
+						    	if(guesses.isEmpty())
+						    	{
+						    		continue; // go to next page, do not attempt to extract data
+						    	}
+						    	
+						    	// get auto detected list of rectangles
+						    	NurminenDetectionAlgorithm nurmDetect = new NurminenDetectionAlgorithm(); 
+						    	List<Rectangle> auto = nurmDetect.detect(page);
+						    	
+						    	// try spreadsheet if auto doesnt work?
+						    	SpreadsheetDetectionAlgorithm spreadDetect = new SpreadsheetDetectionAlgorithm();
+						    	List<Rectangle> spread = spreadDetect.detect(page);
+				
+						    	// print test
+						    	System.out.println(guesses.toString());				    	
+						    	System.out.println(auto.toString());
+						    	//System.out.println(spread.toString());
+						    	
+						    	// compare rectangle lists, create worklist by removing elements from both lists and using auto detect
+						    	List<Rectangle> worklist = new ArrayList<Rectangle>();
+						    	
+						    	float bestOverlap = 0;
+						    	Rectangle bestGuess = null;
+						    	
+						    	// check if list is null or just take exception?
+						    	// try over lap of 1(2) and 2(1)? XX <-- same ratio
+						    	for(int j = 0; j < guesses.size(); j++)
+						    	{
+						    		Rectangle eval = guesses.get(j);
+						    		bestGuess = eval;
+						    		
+						    		if(!auto.isEmpty()) {
+							    		for(int k = 0; k < auto.size(); k++) {
+							    			Rectangle eval1 = auto.get(k);
+							    			
+							    			// look for rectangle overlap or similarity?
+							    			float overlap = eval.overlapRatio(eval1);
+							    			float vertOverlap = eval.verticalOverlapRatio(eval1);
+							    			
+							    			System.out.println("Auto - Page #" + page.getPageNumber() + " overlap = " + overlap);
+							    			System.out.println("Auto - Page #" + page.getPageNumber() + " vertOverlap = " + vertOverlap);
+							    			
+							    			if(overlap > bestOverlap)
+							    			{
+							    				bestOverlap = overlap;
+							    				bestGuess = eval1;
+							    			}
+							    		}
 						    		}
-					    		}
-					    		
-					    		// try spreadsheet?
-					    		if(!spread.isEmpty()) {
-						    		for(int k = 0; k < spread.size(); k++) {
-						    			Rectangle eval2 = spread.get(k);
-						    			
-						    			// look for rectangle overlap or similarity?
-						    			float overlap = eval.overlapRatio(eval2);
-						    			float vertOverlap = eval.verticalOverlapRatio(eval2);
-						    			
-						    			System.out.println("Spread - Page #" + page.getPageNumber() + " overlap1 = " + overlap);
-						    			System.out.println("Spread - Page #" + page.getPageNumber() + " vertOverlap = " + vertOverlap);
-						    			
-						    			if(overlap > bestOverlap)
-						    			{
-						    				bestOverlap = overlap;
-						    				bestGuess = eval2;
-						    			}
+						    		
+						    		// try spreadsheet?
+						    		if(!spread.isEmpty()) {
+							    		for(int k = 0; k < spread.size(); k++) {
+							    			Rectangle eval2 = spread.get(k);
+							    			
+							    			// look for rectangle overlap or similarity?
+							    			float overlap = eval.overlapRatio(eval2);
+							    			float vertOverlap = eval.verticalOverlapRatio(eval2);
+							    			
+							    			System.out.println("Spread - Page #" + page.getPageNumber() + " overlap1 = " + overlap);
+							    			System.out.println("Spread - Page #" + page.getPageNumber() + " vertOverlap = " + vertOverlap);
+							    			
+							    			if(overlap > bestOverlap)
+							    			{
+							    				bestOverlap = overlap;
+							    				bestGuess = eval2;
+							    			}
+							    		}
 						    		}
-					    		}
-					    							    		
-					    		if(!bestGuess.isEmpty())
-					    		{
-					    			worklist.add(bestGuess);
-					    		}
-					    	}
-					    	
-					    	// *** NOTE: two identifiers on the same line give exception
-					    	/*
-					    	for (Rectangle guessRect : guesses) {
-					    		Page guess = page.getArea(guessRect);
-					    		// may want to add a break after each table is appended
-					    		tables.addAll(basicExtractor.extract(guess));
-					    	}
-					    	*/
-					    	// NOTE:
-					    	//		dont add the same table twice
-					    	for (Rectangle guessRect : worklist) {
-					    		Page guess = page.getArea(guessRect);
-					    		// may want to add a break after each table is appended
-					    		tables.addAll(basicExtractor.extract(guess));
+						    							    		
+						    		if(!bestGuess.isEmpty())
+						    		{
+						    			worklist.add(bestGuess);
+						    		}
+						    	}
+						    	
+						    	// *** NOTE: two identifiers on the same line give exception
+						    	/*
+						    	for (Rectangle guessRect : guesses) {
+						    		Page guess = page.getArea(guessRect);
+						    		// may want to add a break after each table is appended
+						    		tables.addAll(basicExtractor.extract(guess));
+						    	}
+						    	*/
+						    	// NOTE:
+						    	//		dont add the same table twice
+						    	for (Rectangle guessRect : worklist) {
+						    		Page guess = page.getArea(guessRect);
+						    		// may want to add a break after each table is appended
+						    		tables.addAll(basicExtractor.extract(guess));
+						    	}
 					    	}
 				    	}
-		        	}
+				    	else if(processType.equals("coordinates")){
+				    		for(int i = 0; i < coordList.size(); i++){
+				    			if( page.getPageNumber() == Integer.parseInt(pageList.get(i)) ){
+				    				Page guess = page.getArea(coordList.get(i));
+				    				tables.addAll(basicExtractor.extract(guess));
+				    			}
+				    		}
+				    	}
+			        }
 				    
 				    // write data to new file 
 				    // currently overwrites existing files and creates a file even if no tables extracted
@@ -313,7 +347,7 @@ public class BatchSelectionExtractor {
 			String inputPath = args[0];
 			String outputPath = args[1];
 			String jsonPath = args[2]; // unused
-			String processType = args[3]; // unused			
+			String processType = args[3]; // unused
 			
 			/*
 			List<RegexContainer> regexList = new ArrayList<RegexContainer>();
