@@ -102,7 +102,7 @@ public class BatchSelectionExtractor {
 				}
 			}
 
-			else if(processType.equals("coordinates")){	
+			else if(processType.equals("coords")){	
 								
 				while((currentString = br.readLine()) != null) {
 					//System.out.println(currentString);
@@ -289,7 +289,7 @@ public class BatchSelectionExtractor {
 						    	}
 					    	}
 				    	}
-				    	else if(processType.equals("coordinates")){
+				    	else if(processType.equals("coords")){
 				    		for(int i = 0; i < coordList.size(); i++){
 				    			if( page.getPageNumber() == Integer.parseInt(pageList.get(i)) ){
 				    				Page guess = page.getArea(coordList.get(i));

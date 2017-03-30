@@ -450,7 +450,7 @@ public class RegexSearch {
 		regexList.add(foundRectangle);
 		
 		for (Rectangle walk : regexList) {
-			System.out.println("x=" + walk.x + "\ny=" + walk.y + "\nwidth=" + walk.width + "\nheight=" + walk.height);
+			System.out.println("x=" + walk.x + " y=" + walk.y + " width=" + walk.width + " height=" + walk.height);
 		}
 		return regexList;
 	}
