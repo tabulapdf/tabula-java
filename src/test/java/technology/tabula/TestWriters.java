@@ -65,9 +65,7 @@ public class TestWriters {
         StringBuilder sb = new StringBuilder();
         (new JSONWriter()).write(sb, table);
         String s = sb.toString();
-        System.out.println(s);
         assertEquals(expectedJson, s);
-       
     }
 
     @Test
