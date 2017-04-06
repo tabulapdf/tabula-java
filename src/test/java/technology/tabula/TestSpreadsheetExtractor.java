@@ -512,5 +512,24 @@ public class TestSpreadsheetExtractor {
         assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
 
     }
+    
+    @Test
+    public void testSpreadsheetExtractionIssue656() throws IOException {
+        Page page = UtilsForTesting
+                .getAreaFromFirstPage(
+                        "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
+                        56.925f,24.255f,549.945f,786.555f);
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
+        
+        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        List<Table> tables = (List<Table>) sea.extract(page);
+        assertEquals(1, tables.size());
+        Table table = tables.get(0);
+        
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        String result = sb.toString();
+        assertEquals(expectedCsv, result);
+    }    
 
 }

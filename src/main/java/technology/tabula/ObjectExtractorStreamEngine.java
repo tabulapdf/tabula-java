@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDCIDFont;
 import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDFontDescriptor;
 import org.apache.pdfbox.pdmodel.font.PDSimpleFont;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
@@ -356,6 +357,16 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         }
         // 1/2 the bbox is used as the height todo: why?
         float glyphHeight = bbox.getHeight() / 2;
+        
+        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
+        if (fontDescriptor != null)
+        {
+            float capHeight = fontDescriptor.getCapHeight();
+            if (capHeight != 0 && capHeight < glyphHeight)
+            {
+                glyphHeight = capHeight;
+            }
+        }        
 
         // transformPoint from glyph space -> text space
         float height;
