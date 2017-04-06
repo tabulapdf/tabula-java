@@ -36,12 +36,14 @@ public class TestWriters {
 
     @Test
     public void testCSVWriter() throws IOException {
+    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/argentina_diputados_voting_record.csv");
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         String s = sb.toString();
         String[] lines = s.split("\\r?\\n");
         assertEquals(lines[0], EXPECTED_CSV_WRITER_OUTPUT);
+        assertEquals(expectedCsv, s);
     }
 
     // TODO Add assertions
