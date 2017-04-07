@@ -43,8 +43,8 @@ public class RegexSearch {
 							upperCount = 0;
 							if (lowerBound.isEmpty()) {
 								// single character upper, no lower
-								regexList.add(
-										new Rectangle(firstElement.y, 0, page.width, page.height - firstElement.y));
+								regexList.add(new Rectangle(firstElement.y - firstElement.height, 0, page.width,
+										page.height - firstElement.y));
 							} else {
 								// single character upper, yes lower
 								upperExists = true;
@@ -67,7 +67,8 @@ public class RegexSearch {
 						upperCount = 0;
 						if (lowerBound.isEmpty()) {
 							// Multiple character upper, no lower
-							regexList.add(new Rectangle(firstElement.y, 0, page.width, page.height - firstElement.y));
+							regexList.add(new Rectangle(firstElement.y - firstElement.height, 0, page.width,
+									page.height - firstElement.y));
 						} else {
 							// Multiple character upper, yes lower
 							upperExists = true;
@@ -83,7 +84,7 @@ public class RegexSearch {
 							lastElement = currElement;
 							state = 0;
 							if (upperExists) { // upper and lower single char
-								regexList.add(new Rectangle(firstElement.y, 0, page.width,
+								regexList.add(new Rectangle(firstElement.y - firstElement.height, 0, page.width,
 										(lastElement.y - firstElement.y) + lastElement.height));
 							} else {
 								regexList.add(new Rectangle(0, 0, page.width, lastElement.y + lastElement.height));
@@ -109,7 +110,7 @@ public class RegexSearch {
 						state = 0;
 						lowerCount = 0;
 						if (upperExists) {
-							regexList.add(new Rectangle(firstElement.y, 0, page.width,
+							regexList.add(new Rectangle(firstElement.y - firstElement.height, 0, page.width,
 									(lastElement.y - firstElement.y) + lastElement.height));
 						} else {
 							regexList.add(new Rectangle(0, 0, page.width, lastElement.y + lastElement.height));
@@ -411,8 +412,10 @@ public class RegexSearch {
 		}
 
 		// may want to check if parameters match left/right schema first
-		float leftBound = Math.min(upperLeftElement.x, lowerLeftElement.x);
-		float topBound = Math.min(upperLeftElement.y, upperRightElement.y);
+		float leftBound = Math.min(upperLeftElement.x - upperLeftElement.width,
+				lowerLeftElement.x - lowerLeftElement.width);
+		float topBound = Math.min(upperLeftElement.y - upperLeftElement.height,
+				upperRightElement.y - upperRightElement.height);
 		float width = Math.max((upperRightElement.x + upperRightElement.width - leftBound),
 				(lowerRightElement.x + lowerRightElement.width - leftBound));
 		float height = Math.max((lowerLeftElement.y + lowerLeftElement.height - topBound),
