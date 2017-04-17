@@ -11,8 +11,76 @@ import technology.tabula.TextElement;
 
 public class RegexSearch {
 
+	public List<Rectangle> detect(Page page, String[] regexList) throws ParseException {
+		// check if page object is null
+		if(page == null) return new ArrayList<Rectangle>(); // return empty arraylist
+		
+		// only 3 and 4 string arrays accepted
+		if(regexList.length < 3 || regexList.length > 4) return new ArrayList<Rectangle>(); // return empty arraylist;
+		
+		// this is so dumb
+		String upperLeft = null;
+		String upperRight = null;
+		String lowerLeft = null;
+		String lowerRight = null;
+		
+		// parse out the input string array
+		for(int i = 0; i < regexList.length; i++) {
+			switch(i) {
+				case 0:
+					upperLeft = regexList[i];
+					break;
+				case 1:
+					upperRight = regexList[i];
+					break;
+				case 2:
+					lowerLeft = regexList[i];
+					break;
+				case 3:
+					lowerRight = regexList[i];
+					break;
+				default:
+					break;
+			}
+		}		
+		
+		// replace null strings with empty fields
+		if(upperLeft == null) upperLeft = "";
+		if(upperRight == null) upperRight = "";
+		if(lowerLeft == null) lowerLeft = "";
+		if(lowerRight == null) lowerRight = "";
+		
+		// count number of empty fields
+		int emptyCount = 0;
+		if(upperLeft.equals("")) emptyCount++;
+		if(upperRight.equals("")) emptyCount++;
+		if(lowerLeft.equals("")) emptyCount++;
+		if(lowerRight.equals("")) emptyCount++;
+		
+		// if 0 or 1 empty fields, perform 4 corner search
+		if(emptyCount <= 1) {
+			return detectFour(page, upperLeft, upperRight, lowerLeft, lowerRight);
+		}
+		
+		// if 2 fields are null, determine which then perform 2 corner search
+		if(emptyCount == 2 
+				&& (upperLeft.equals("") ^ upperRight.equals("")) 
+				&& (lowerLeft.equals("") ^ lowerRight.equals(""))) {
+			String upperBound;
+			String lowerBound;
+			if((upperRight.equals("")) && !(upperLeft.equals(""))) upperBound = upperLeft;
+			else upperBound = upperRight;
+			if((lowerRight.equals("")) && !(lowerLeft.equals(""))) lowerBound = lowerLeft;
+			else lowerBound = lowerRight;
+			return detectTwo(page, upperBound, lowerBound);
+		}
+		
+		return new ArrayList<Rectangle>(); // return empty arraylist
+		
+	}
+	
 	// test without expanding to page?
-	public List<Rectangle> detect(Page page, String upperBound, String lowerBound) throws ParseException {
+	private List<Rectangle> detectTwo(Page page, String upperBound, String lowerBound) throws ParseException {
 		List<Rectangle> regexList = new ArrayList<Rectangle>();
 		char currChar = 0;
 		Boolean upperExists = false;
@@ -24,6 +92,13 @@ public class RegexSearch {
 		int state = 0;
 
 		// check for empty upper and lower here instead of later
+		// Dont really need to check these if they are private and only called by detect function				
+		if(page == null){
+			return new ArrayList<Rectangle>(); // empty list
+		}
+		if(upperBound == null || lowerBound == null){
+			return new ArrayList<Rectangle>(); // empty list
+		}
 
 		// have page, can check text elements
 		List<TextElement> textElements = page.getText();
@@ -139,15 +214,19 @@ public class RegexSearch {
 	// implement empty field handling
 	//
 	// check for both strings at once in first state, then set flag
-	public List<Rectangle> detect(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight)
+	private List<Rectangle> detectFour(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight)
 			throws ParseException {
 
+		// Dont really need to check these if they are private and only called by detect function				
+		if(page == null){
+			return new ArrayList<Rectangle>(); // empty list
+		}
 		// if both top strings are null, return null
 		if (upperLeft == null && upperRight == null) {
 			return new ArrayList<Rectangle>(); // empty list
 		}
-
-		else if (lowerLeft == null && lowerRight == null) {
+		
+		if (lowerLeft == null && lowerRight == null) {
 			return new ArrayList<Rectangle>(); // empty list
 		}
 
@@ -166,6 +245,10 @@ public class RegexSearch {
 		TextElement lowerRightElement = null;
 
 		int backup = 0;
+		int lastGoodIndex = 0;
+		int resetCount = 0;
+		
+		int foundCount = 0; // use to count number of detected strings
 
 		int upperLeftCount = 0;
 		int upperRightCount = 0;
@@ -176,6 +259,7 @@ public class RegexSearch {
 		TextElement firstElement = null;
 		// TextElement lastElement = null;
 
+		int searchArea = 0;
 		int upperState = 0;
 		int lowerState = 0;
 
@@ -189,21 +273,27 @@ public class RegexSearch {
 			currElement = textElements.get(i);
 			currChar = currElement.getText().charAt(0);
 
+			if (upperLeftExists && upperRightExists) { // found both top, temp solution
+				searchArea = 1;
+			}
+			
+			try{
+			switch(searchArea) {
+			case 0:
 			// search for top elements
-			if (!(upperLeftExists && upperRightExists)) {
+			//if (!(upperLeftExists && upperRightExists)) {
 				switch (upperState) {
 				case 0: // search for first char of either top string
 				{
-
-					if (currChar == upperLeft.charAt(0) && !(upperLeftExists)) // valid
-																				// first
-																				// upper
-																				// left
+					// valid first upper left
+					if (upperLeft.startsWith(Character.toString(currChar)) && !(upperLeftExists))
 					{
 						if (upperLeft.length() == 1) // single character case
 						{
 							upperLeftElement = currElement;
 							upperLeftExists = true;
+							lastGoodIndex = i;
+							foundCount++;
 						}
 
 						else {
@@ -214,15 +304,15 @@ public class RegexSearch {
 						}
 					}
 
-					else if (currChar == upperRight.charAt(0) && !(upperRightExists)) // valid
-																						// first
-																						// upper
-																						// right
+					// valid first upper right
+					else if (upperRight.startsWith(Character.toString(currChar)) && !(upperRightExists))
 					{
 						if (upperRight.length() == 1) // single character case
 						{
 							upperRightElement = currElement;
 							upperRightExists = true;
+							lastGoodIndex = i;
+							foundCount++;
 						} else {
 							firstElement = currElement;
 							backup = i;
@@ -241,7 +331,8 @@ public class RegexSearch {
 					} else { // invalid char detected
 						upperLeftCount = 0;
 
-						if (upperLeft.charAt(0) == upperRight.charAt(0)) {
+						//if (upperLeft.charAt(0) == upperRight.charAt(0)) {
+						if (upperRight.startsWith(Character.toString(upperLeft.charAt(0)))) {
 							upperRightCount = 1;
 							upperState = 2;
 							i = backup; // go back to first character
@@ -255,6 +346,9 @@ public class RegexSearch {
 						upperLeftElement = firstElement;
 						upperLeftExists = true;
 						firstElement = null;
+						
+						lastGoodIndex = i;
+						foundCount++;
 
 						if (upperRightExists)
 							upperState = 3;
@@ -279,6 +373,9 @@ public class RegexSearch {
 						upperRightElement = currElement;
 						upperRightExists = true;
 						firstElement = null;
+						
+						lastGoodIndex = i;
+						foundCount++;
 
 						if (upperLeftExists)
 							upperState = 3; // replace
@@ -292,25 +389,26 @@ public class RegexSearch {
 				case 3: // found both upper strings, probably not needed because
 						// of if statement
 				{
-					// zzz
 					break;
 				}
-				}
 			}
-
-			else {
+				
+				break;
+			
+			case 1: // lower strings
+			//else {
 				switch (lowerState) {
 				case 0: // search for first char of either top string
 				{
-					if (currChar == lowerLeft.charAt(0) && !(lowerLeftExists)) // valid
-																				// first
-																				// lower
-																				// left
+					// valid first lower left
+					if (lowerLeft.startsWith(Character.toString(currChar)) && !(lowerLeftExists))
 					{
 						if (lowerLeft.length() == 1) // single character case
 						{
 							lowerLeftElement = currElement;
 							lowerLeftExists = true;
+							lastGoodIndex = i;
+							foundCount++;
 						}
 
 						else {
@@ -321,15 +419,15 @@ public class RegexSearch {
 						}
 					}
 
-					else if (currChar == lowerRight.charAt(0) && !(lowerRightExists)) // valid
-																						// first
-																						// lower
-																						// right
+					// valid first lower right
+					else if (lowerRight.startsWith(Character.toString(currChar)) && !(lowerRightExists))
 					{
 						if (lowerRight.length() == 1) // single character case
 						{
 							lowerRightElement = currElement;
 							lowerRightExists = true;
+							lastGoodIndex = i;
+							foundCount++;
 						} else {
 							firstElement = currElement;
 							backup = i;
@@ -348,7 +446,8 @@ public class RegexSearch {
 					} else { // invalid char detected
 						lowerLeftCount = 0;
 
-						if (lowerLeft.charAt(0) == lowerRight.charAt(0)) {
+						//if (lowerLeft.charAt(0) == lowerRight.charAt(0)) {
+						if (lowerRight.startsWith(Character.toString(lowerLeft.charAt(0)))) {
 							lowerRightCount = 1;
 							lowerState = 2;
 							i = backup; // go back to first character
@@ -362,6 +461,9 @@ public class RegexSearch {
 						lowerLeftElement = firstElement;
 						lowerLeftExists = true;
 						firstElement = null;
+						
+						lastGoodIndex = i;
+						foundCount++;
 
 						if (lowerRightExists)
 							lowerState = 3;
@@ -386,6 +488,9 @@ public class RegexSearch {
 						lowerRightElement = currElement;
 						lowerRightExists = true;
 						firstElement = null;
+						
+						lastGoodIndex = i;
+						foundCount++;
 
 						if (lowerLeftExists)
 							lowerState = 3;
@@ -396,21 +501,64 @@ public class RegexSearch {
 					break;
 				}
 
-				case 3: {
+				case 3: 
+				{
 					// zzz
 					break;
 				}
-				}
+			}
+				
+				break;
+			}
+			}
+			// this is so dumb
+			catch(NullPointerException npe){
+				//System.out.println(npe);
+			}
+			
+			// DONT LET THIS BECOME AN INF LOOP!
+			// if at end of page and only one upper string detected, need to roll back to last good index
+			// then begin searching for the bottom strings
+			if((i == (size - 1)) && !(upperRightExists && upperLeftExists) && (foundCount == 1) && (resetCount == 0)){
+				resetCount = 1;
+				i = lastGoodIndex;
+				searchArea = 1;
 			}
 		} // end of for loop
 
-		if (!(upperLeftExists && upperRightExists && lowerLeftExists && lowerRightExists)) // missing
-																							// item,
-																							// placeholder
-		{
+		// need at least 3 matched strings to form box
+		if (foundCount < 3)	{
 			return new ArrayList<Rectangle>(); // empty arraylist
 		}
 
+		// this is sooooo dumb
+		float leftBound;
+		float topBound;
+		float width;
+		float height;
+		
+		if(!upperLeftExists && lowerLeftExists) leftBound = lowerLeftElement.x - lowerLeftElement.width;
+		else if(upperLeftExists && !lowerLeftExists) leftBound = upperLeftElement.x - upperLeftElement.width;
+		else leftBound = Math.min(upperLeftElement.x - upperLeftElement.width,
+				lowerLeftElement.x - lowerLeftElement.width);
+		
+		if(!upperLeftExists && upperRightExists) topBound = upperRightElement.x - upperRightElement.width;
+		else if(upperLeftExists && !upperRightExists) topBound = upperLeftElement.x - upperLeftElement.width;
+		else topBound = Math.min(upperLeftElement.y - upperLeftElement.height,
+				upperRightElement.y - upperRightElement.height);
+		
+		if(!upperRightExists && lowerRightExists) width = lowerRightElement.x + lowerRightElement.width - leftBound;
+		else if(upperRightExists && !lowerRightExists) width = upperRightElement.x + upperRightElement.width - leftBound;
+		else width = Math.max((upperRightElement.x + upperRightElement.width - leftBound),
+				(lowerRightElement.x + lowerRightElement.width - leftBound));
+		
+		if(!lowerRightExists && lowerLeftExists) height = lowerLeftElement.y + lowerLeftElement.height - topBound;
+		else if(lowerRightExists && !lowerLeftExists) height = lowerRightElement.y + lowerRightElement.height - topBound;
+		else height = Math.max((lowerLeftElement.y + lowerLeftElement.height - topBound),
+				(lowerRightElement.y + lowerRightElement.height - topBound));
+		
+		
+		/*
 		// may want to check if parameters match left/right schema first
 		float leftBound = Math.min(upperLeftElement.x - upperLeftElement.width,
 				lowerLeftElement.x - lowerLeftElement.width);
@@ -420,7 +568,8 @@ public class RegexSearch {
 				(lowerRightElement.x + lowerRightElement.width - leftBound));
 		float height = Math.max((lowerLeftElement.y + lowerLeftElement.height - topBound),
 				(lowerRightElement.y + lowerRightElement.height - topBound));
-
+		*/
+		
 		Rectangle foundRectangle = new Rectangle(topBound, leftBound, width, height);
 		regexList.add(foundRectangle);
 
