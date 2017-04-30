@@ -15,6 +15,7 @@ import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.PageIterator;
 import technology.tabula.Rectangle;
+import technology.tabula.RectangularTextContainer;
 import technology.tabula.Table;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.RegexSearch;
@@ -111,8 +112,13 @@ public class BatchSelectionExtractor {
 				while ((currentString = br.readLine()) != null) {
 					// System.out.println(currentString);
 
+					// what happens if line doesnt match expectation?
 					regexList.add(currentString.split(",")); //split("[\\s,]+")));
+					
+					// if string is invalid, don't continue searching
 				}
+				
+				// if the regexList is empty, don't continue searching
 			}
 
 			else if (processType.equals("coords")) {
@@ -133,6 +139,8 @@ public class BatchSelectionExtractor {
 
 					coordList.add(new Rectangle(leftBound, topBound, width, height));
 				}
+				
+				// if the coordList is empty, don't continue searching
 			}
 
 			br.close();
@@ -167,6 +175,7 @@ public class BatchSelectionExtractor {
 						// reload pdfDocument as new ocr'd version
 
 						List<Table> tables = new ArrayList<Table>();
+						List<String> tableHeaders = new ArrayList<String>();
 						// List<Integer> pages;
 						
 						ObjectExtractor extractor = new ObjectExtractor(pdfDocument);						
@@ -183,7 +192,7 @@ public class BatchSelectionExtractor {
 						//
 						// scan assuming that document is text based	
 						
-						boolean textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables);
+						boolean textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables, tableHeaders);
 						
 						pdfDocument.close();
 						
@@ -191,28 +200,44 @@ public class BatchSelectionExtractor {
 						if(!textFound){// && ocr){							
 							System.out.println("Possible image based document: " + currentFile.getAbsolutePath());
 							
-							if(ocrAllowed){ // attempt to ocr document and processs again								
+							// attempt to ocr document and processs again	
+							if(ocrAllowed){
+								System.out.println("Attempting to convert document to text based format...");
 								
-								OcrConverter ocr = new OcrConverter();
+								try{
+									OcrConverter ocr = new OcrConverter();
+									
+									ocr.extract(currentFile.getAbsolutePath());
+									
+									File ocrFile = new File(currentFile.getAbsolutePath().substring(0, currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
+									
+									pdfDocument = PDDocument.load(ocrFile);
+									
+									extractor = new ObjectExtractor(pdfDocument);
+									
+									pageIterator = extractor.extract();
+									
+									textFound = false;
+									
+									textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables, tableHeaders);
+									
+									pdfDocument.close();
+									
+									// can this trigger an exception too?
+									// need another try-catch?
+									ocrFile.delete();
+								}
+								catch(Exception e){
+									System.out.println("Unable to properly convert and extract data from document");
+								}
 								
-								ocr.extract(currentFile.getAbsolutePath());
+								System.out.println("Attempt appears to have been successful");
 								
-								File ocrFile = new File(currentFile.getAbsolutePath().substring(0, currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
-								
-								pdfDocument = PDDocument.load(ocrFile);
-								
-								extractor = new ObjectExtractor(pdfDocument);
-								
-								pageIterator = extractor.extract();
-								
-								textFound = false;
-								
-								textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables);
 							}
+							else System.out.println("Ignored document based on input parameters");
 						}
-						else System.out.println("Possible text based document: " + currentFile.getAbsolutePath());
-						
-						pdfDocument.close();
+						// not useful for user
+						//else System.out.println("Possible text based document: " + currentFile.getAbsolutePath());
 
 						
 						// dont write file if tables is empty or no text found
@@ -231,7 +256,28 @@ public class BatchSelectionExtractor {
 						bufferedWriter = new BufferedWriter(fileWriter);
 						// assuming CSV format for demo
 						writer = new CSVWriter();
-						writer.write(bufferedWriter, tables);
+						
+						//writer.write(bufferedWriter, tables);
+						
+						int tableNum = 0; // needed?
+						
+						for(Table table : tables){
+							List<Table> fauxTableList = new ArrayList<Table>();
+							fauxTableList.add(table);
+							
+							// write table header
+							bufferedWriter.write(tableHeaders.get(tableNum) + "\n");
+							
+							// write single table 
+							writer.write(bufferedWriter, fauxTableList);
+							
+							// write line break
+							bufferedWriter.write("\n");
+							
+							// increment table number?
+							tableNum++;
+						}
+						
 						// need to write empty line between tables
 
 						// shut the door on your way out
@@ -254,8 +300,14 @@ public class BatchSelectionExtractor {
 		}
 	}
 	
-	private boolean scanDocForMatchedTables(PageIterator pageIterator, int overlapThreshold, String processType, List<String[]> regexList, List<Rectangle> coordList, List<String> pageList, List<Table> tables){
+	
+	// should insert an empty table after each real table for spacing purposes
+	// may also want to add extra header info before each table, including whether document was OCR'd
+	private boolean scanDocForMatchedTables(PageIterator pageIterator, int overlapThreshold, String processType, List<String[]> regexList, List<Rectangle> coordList, List<String> pageList, List<Table> tables, List<String> tableHeaders){
 		boolean textFound = false;
+		
+		int tableNumber = 1;
+		
 		while (pageIterator.hasNext()) {
 			Page page = pageIterator.next();
 
@@ -317,8 +369,8 @@ public class BatchSelectionExtractor {
 						List<Rectangle> spread = spreadDetect.detect(page);
 	
 						// print test
-						System.out.println(guesses.toString());
-						System.out.println(auto.toString());
+						/*System.out.println(guesses.toString());
+						System.out.println(auto.toString());*/
 						// System.out.println(spread.toString());
 	
 						// compare rectangle lists, create worklist
@@ -347,10 +399,10 @@ public class BatchSelectionExtractor {
 									float overlap = eval.overlapRatio(eval1);
 									float vertOverlap = eval.verticalOverlapRatio(eval1);
 	
-									System.out.println("Auto - Page #" + page.getPageNumber()
+									/*System.out.println("Auto - Page #" + page.getPageNumber()
 											+ " overlap = " + overlap);
 									System.out.println("Auto - Page #" + page.getPageNumber()
-											+ " vertOverlap = " + vertOverlap);
+											+ " vertOverlap = " + vertOverlap);*/
 	
 									if (overlap > bestOverlap) {
 										bestOverlap = overlap;
@@ -369,10 +421,10 @@ public class BatchSelectionExtractor {
 									float overlap = eval.overlapRatio(eval2);
 									float vertOverlap = eval.verticalOverlapRatio(eval2);
 	
-									System.out.println("Spread - Page #" + page.getPageNumber()
+									/*System.out.println("Spread - Page #" + page.getPageNumber()
 											+ " overlap1 = " + overlap);
 									System.out.println("Spread - Page #" + page.getPageNumber()
-											+ " vertOverlap = " + vertOverlap);
+											+ " vertOverlap = " + vertOverlap);*/
 	
 									if (overlap > bestOverlap) {
 										bestOverlap = overlap;
@@ -402,18 +454,38 @@ public class BatchSelectionExtractor {
 							Page guess = page.getArea(guessRect);
 							// may want to add a break after each
 							// table is appended
+							
+							// add table header?
+							tableHeaders.add("Table #" + tableNumber + "  ul: " + identifiers[0]
+																		+ "  ur: " + identifiers[1]
+																		+ "  ll: " + identifiers[2]
+																		+ "  lr: " + identifiers[3]);
+							
+							// add new table
 							tables.addAll(basicExtractor.extract(guess));
+							
+							tableNumber++;
 						}
 					}
 					catch(Exception e){
 						System.out.println(e);
 					}
 				}
+			// no need for exception handling?
 			} else if (processType.equals("coords")) {
 				for (int i = 0; i < coordList.size(); i++) {
 					if (page.getPageNumber() == Integer.parseInt(pageList.get(i))) {
 						Page guess = page.getArea(coordList.get(i));
+						
+						String test = coordList.get(i).toString();
+						
+						// add table header?
+						tableHeaders.add("Table #" + tableNumber + " Coord: " + coordList.get(i));
+						
+						// add new table
 						tables.addAll(basicExtractor.extract(guess));
+						
+						tableNumber++;
 					}
 				}
 			}
