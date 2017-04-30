@@ -15,7 +15,6 @@ import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.PageIterator;
 import technology.tabula.Rectangle;
-import technology.tabula.RectangularTextContainer;
 import technology.tabula.Table;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.RegexSearch;
@@ -112,8 +111,28 @@ public class BatchSelectionExtractor {
 				while ((currentString = br.readLine()) != null) {
 					// System.out.println(currentString);
 
+					// split the input stream
+					String[] splitString = currentString.split(",");
+					
+					if(splitString.length > 4){
+						System.out.println("Too many arguments for Regex Search: " + splitString);
+						continue; // test this
+					}
+					
+					String[] addString = new String[4];
+					
+					// copy to add string
+					for(int i = 0; i < splitString.length; i++){
+						addString[i] =  splitString[i];
+					}
+					
+					// empty null fields
+					for(int i = 0; i < addString.length; i++){
+						if(addString[i] == null) addString[i] = "";
+					}
+					
 					// what happens if line doesnt match expectation?
-					regexList.add(currentString.split(",")); //split("[\\s,]+")));
+					regexList.add(addString); //split("[\\s,]+")));
 					
 					// if string is invalid, don't continue searching
 				}
@@ -148,6 +167,7 @@ public class BatchSelectionExtractor {
 
 			// Create list of files in input directory
 			File[] fileList = parentPath.listFiles();
+			List<String> deleteList = new ArrayList<String>();
 
 			// iterate over all files in directory
 			// does not go into subfolders yet
@@ -165,8 +185,9 @@ public class BatchSelectionExtractor {
 					System.out.println(fileName + " is a valid PDF file and an attempt to process it will be made.");
 
 					// fix brackets
-					try {
+					try {						
 						PDDocument pdfDocument = PDDocument.load(currentFile);
+						boolean reading = true;
 						
 						// check if PDF document is text or image based
 						
@@ -195,6 +216,7 @@ public class BatchSelectionExtractor {
 						boolean textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables, tableHeaders);
 						
 						pdfDocument.close();
+						reading = false;
 						
 						// try to OCR document if allowed and no text found in original document
 						if(!textFound){// && ocr){							
@@ -211,7 +233,11 @@ public class BatchSelectionExtractor {
 									
 									File ocrFile = new File(currentFile.getAbsolutePath().substring(0, currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
 									
+									deleteList.add(ocrFile.getAbsolutePath());
+									
 									pdfDocument = PDDocument.load(ocrFile);
+									
+									reading = true;
 									
 									extractor = new ObjectExtractor(pdfDocument);
 									
@@ -223,19 +249,30 @@ public class BatchSelectionExtractor {
 									
 									pdfDocument.close();
 									
+									reading = false;
+									
+									// add document to list of created files instead? clean up later?
 									// can this trigger an exception too?
 									// need another try-catch?
-									ocrFile.delete();
+									//ocrFile.delete();
 								}
 								catch(Exception e){
-									System.out.println("Unable to properly convert and extract data from document");
+									//e.printStackTrace();
+									System.out.println("Unable to properly convert or extract data from document");
 								}
 								
-								System.out.println("Attempt appears to have been successful");
+								//System.out.println("Attempt appears to have been successful");
 								
 							}
 							else System.out.println("Ignored document based on input parameters");
 						}
+						
+						// just in case
+						if(reading){
+							pdfDocument.close();
+							reading = false;
+						}
+						
 						// not useful for user
 						//else System.out.println("Possible text based document: " + currentFile.getAbsolutePath());
 
@@ -291,6 +328,22 @@ public class BatchSelectionExtractor {
 					}
 				}
 			}
+			
+			System.out.println("Deleting OCR'd files...");
+			// clean up created OCR files
+			for(String ocrPath : deleteList){
+				System.out.println("Attempting to delete " + ocrPath);
+				try{
+					File ocrFile = new File(ocrPath);
+					ocrFile.delete();
+					System.out.println("File deleted");
+				}
+				catch(Exception e){
+					System.out.println("Unable to delete file!!!");
+				}
+				
+			}
+			
 			System.out.println("\nEnd of processing");
 			return 1;
 
@@ -477,7 +530,7 @@ public class BatchSelectionExtractor {
 					if (page.getPageNumber() == Integer.parseInt(pageList.get(i))) {
 						Page guess = page.getArea(coordList.get(i));
 						
-						String test = coordList.get(i).toString();
+						//String test = coordList.get(i).toString();
 						
 						// add table header?
 						tableHeaders.add("Table #" + tableNumber + " Coord: " + coordList.get(i));
