@@ -197,8 +197,8 @@ public class RegexSearch {
 			}
 		}
 		for (Rectangle walk : regexList) {
-			System.out.println(
-					"Box Found at x=" + walk.x + " y=" + walk.y + " width=" + walk.width + " height=" + walk.height);
+			/*System.out.println(
+					"Box Found at x=" + walk.x + " y=" + walk.y + " width=" + walk.width + " height=" + walk.height);*/
 		}
 		return regexList;
 	}
@@ -574,8 +574,8 @@ public class RegexSearch {
 		regexList.add(foundRectangle);
 
 		for (Rectangle walk : regexList) {
-			System.out.println(
-					"Box found at x=" + walk.x + " y=" + walk.y + " width=" + walk.width + " height=" + walk.height);
+			/*System.out.println(
+					"Box found at x=" + walk.x + " y=" + walk.y + " width=" + walk.width + " height=" + walk.height);*/
 		}
 		return regexList;
 	}
