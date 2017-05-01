@@ -229,7 +229,7 @@ public class BatchSelectionExtractor {
 								try{
 									OcrConverter ocr = new OcrConverter();
 									
-									ocr.extract(currentFile.getAbsolutePath());
+									ocr.extract(currentFile.getAbsolutePath(), true);
 									
 									File ocrFile = new File(currentFile.getAbsolutePath().substring(0, currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
 									
