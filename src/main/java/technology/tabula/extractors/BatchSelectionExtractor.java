@@ -29,20 +29,25 @@ import technology.tabula.writers.Writer;
 //		REGEX CONTAINER NO LONGER OF ANY REAL USE
 public class BatchSelectionExtractor {
 
-	// may not want to use globals, but works better for splitting up code into method calls
-	//private BasicExtractionAlgorithm basicExtractor;// = new BasicExtractionAlgorithm(); // needed as global?
-	//private List<RegexContainer> regexList;// = new ArrayList<RegexContainer>();
-	//private List<String> pageList;// = new ArrayList<String>();
-	//private List<Rectangle> coordList;// = new ArrayList<Rectangle>();
-	//private List<Table> tables;
+	// may not want to use globals, but works better for splitting up code into
+	// method calls
+	// private BasicExtractionAlgorithm basicExtractor;// = new
+	// BasicExtractionAlgorithm(); // needed as global?
+	// private List<RegexContainer> regexList;// = new
+	// ArrayList<RegexContainer>();
+	// private List<String> pageList;// = new ArrayList<String>();
+	// private List<Rectangle> coordList;// = new ArrayList<Rectangle>();
+	// private List<Table> tables;
 
 	// test finding all tables between upper and lower bound strings in input
 	// directory
 	// outputs csv files for individual pdfs to output director
 	// could instead use matrix of strings (2xN, 4xN, etc)
 
-	BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm(); // useful as global?
-	
+	BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm(); // useful
+																				// as
+																				// global?
+
 	public int extract(String inputPath, String outputPath, String jsonPath, String processType, boolean ocrAllowed,
 			int overlapThreshold) {
 		System.out.println("OCR Selection: " + ocrAllowed);
@@ -58,8 +63,10 @@ public class BatchSelectionExtractor {
 			// ----------------------------------------------------------
 			// Confirm input and output paths exist
 			// ----------------------------------------------------------
-			File inputFile = new File(inputPath); // inputPath could point to pdf or directory of pdfs
-												  // currently does not check subfolders
+			File inputFile = new File(inputPath); // inputPath could point to
+													// pdf or directory of pdfs
+													// currently does not check
+													// subfolders
 
 			File outputFile = new File(outputPath);
 
@@ -97,54 +104,54 @@ public class BatchSelectionExtractor {
 			// NEED TO CHECK THAT PARSED FILE IS VALID
 			FileReader fr = new FileReader(jsonPath);
 			BufferedReader br = new BufferedReader(fr);
-			
-			
+
 			List<String[]> regexList = new ArrayList<String[]>();
 			List<String> pageList = new ArrayList<String>();
 			List<Rectangle> coordList = new ArrayList<Rectangle>();
-						
+
 			String currentString;
 
 			if (processType.equals("regex")) {
 
-				//regexList = new ArrayList<RegexContainer>();
+				// regexList = new ArrayList<RegexContainer>();
 				while ((currentString = br.readLine()) != null) {
 					// System.out.println(currentString);
 
 					// split the input stream
 					String[] splitString = currentString.split(",");
-					
-					if(splitString.length > 4){
+
+					if (splitString.length > 4) {
 						System.out.println("Too many arguments for Regex Search: " + splitString);
 						continue; // test this
 					}
-					
+
 					String[] addString = new String[4];
-					
+
 					// copy to add string
-					for(int i = 0; i < splitString.length; i++){
-						addString[i] =  splitString[i];
+					for (int i = 0; i < splitString.length; i++) {
+						addString[i] = splitString[i];
 					}
-					
+
 					// empty null fields
-					for(int i = 0; i < addString.length; i++){
-						if(addString[i] == null) addString[i] = "";
+					for (int i = 0; i < addString.length; i++) {
+						if (addString[i] == null)
+							addString[i] = "";
 					}
-					
+
 					// what happens if line doesnt match expectation?
-					regexList.add(addString); //split("[\\s,]+")));
-					
+					regexList.add(addString); // split("[\\s,]+")));
+
 					// if string is invalid, don't continue searching
 				}
-				
+
 				// if the regexList is empty, don't continue searching
 			}
 
 			else if (processType.equals("coords")) {
 
-				//pageList = new ArrayList<String>();
-				//coordList = new ArrayList<Rectangle>();
-				
+				// pageList = new ArrayList<String>();
+				// coordList = new ArrayList<Rectangle>();
+
 				while ((currentString = br.readLine()) != null) {
 					// System.out.println(currentString);
 
@@ -158,7 +165,7 @@ public class BatchSelectionExtractor {
 
 					coordList.add(new Rectangle(leftBound, topBound, width, height));
 				}
-				
+
 				// if the coordList is empty, don't continue searching
 			}
 
@@ -185,100 +192,105 @@ public class BatchSelectionExtractor {
 					System.out.println(fileName + " is a valid PDF file and an attempt to process it will be made.");
 
 					// fix brackets
-					try {						
+					try {
 						PDDocument pdfDocument = PDDocument.load(currentFile);
 						boolean reading = true;
-						
+
 						// check if PDF document is text or image based
-						
+
 						// if image based and OCR is allowed, try to convert
-						
+
 						// reload pdfDocument as new ocr'd version
 
 						List<Table> tables = new ArrayList<Table>();
 						List<String> tableHeaders = new ArrayList<String>();
 						// List<Integer> pages;
-						
-						ObjectExtractor extractor = new ObjectExtractor(pdfDocument);						
-						basicExtractor = new BasicExtractionAlgorithm();
-						PageIterator pageIterator = extractor.extract(); 
-											 /*
-											 * (pages == null) ?
-											 * extractor.extract() :
-											 * extractor.extract(pages);
-											 */
 
-						// iterator over each page and search for table with identifiers
+						ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+						basicExtractor = new BasicExtractionAlgorithm();
+						PageIterator pageIterator = extractor.extract();
+						/*
+						 * (pages == null) ? extractor.extract() :
+						 * extractor.extract(pages);
+						 */
+
+						// iterator over each page and search for table with
+						// identifiers
 						// extract and append data to table if found
 						//
-						// scan assuming that document is text based	
-						
-						boolean textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables, tableHeaders);
-						
+						// scan assuming that document is text based
+
+						boolean textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType,
+								regexList, coordList, pageList, tables, tableHeaders);
+
 						pdfDocument.close();
 						reading = false;
-						
-						// try to OCR document if allowed and no text found in original document
-						if(!textFound){// && ocr){							
+
+						// try to OCR document if allowed and no text found in
+						// original document
+						if (!textFound) {// && ocr){
 							System.out.println("Possible image based document: " + currentFile.getAbsolutePath());
-							
-							// attempt to ocr document and processs again	
-							if(ocrAllowed){
+
+							// attempt to ocr document and processs again
+							if (ocrAllowed) {
 								System.out.println("Attempting to convert document to text based format...");
-								
-								try{
+
+								try {
 									OcrConverter ocr = new OcrConverter();
-									
+
 									ocr.extract(currentFile.getAbsolutePath(), true);
-									
-									File ocrFile = new File(currentFile.getAbsolutePath().substring(0, currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
-									
+
+									File ocrFile = new File(currentFile.getAbsolutePath().substring(0,
+											currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
+
 									deleteList.add(ocrFile.getAbsolutePath());
-									
+
 									pdfDocument = PDDocument.load(ocrFile);
-									
+
 									reading = true;
-									
+
 									extractor = new ObjectExtractor(pdfDocument);
-									
+
 									pageIterator = extractor.extract();
-									
+
 									textFound = false;
-									
-									textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType, regexList, coordList, pageList, tables, tableHeaders);
-									
+
+									textFound = scanDocForMatchedTables(pageIterator, overlapThreshold, processType,
+											regexList, coordList, pageList, tables, tableHeaders);
+
 									pdfDocument.close();
-									
+
 									reading = false;
-									
-									// add document to list of created files instead? clean up later?
+
+									// add document to list of created files
+									// instead? clean up later?
 									// can this trigger an exception too?
 									// need another try-catch?
-									//ocrFile.delete();
-								}
-								catch(Exception e){
-									//e.printStackTrace();
+									// ocrFile.delete();
+								} catch (Exception e) {
+									// e.printStackTrace();
 									System.out.println("Unable to properly convert or extract data from document");
 								}
-								
-								//System.out.println("Attempt appears to have been successful");
-								
-							}
-							else System.out.println("Ignored document based on input parameters");
+
+								// System.out.println("Attempt appears to have
+								// been successful");
+
+							} else
+								System.out.println("Ignored document based on input parameters");
 						}
-						
+
 						// just in case
-						if(reading){
+						if (reading) {
 							pdfDocument.close();
 							reading = false;
 						}
-						
-						// not useful for user
-						//else System.out.println("Possible text based document: " + currentFile.getAbsolutePath());
 
-						
+						// not useful for user
+						// else System.out.println("Possible text based
+						// document: " + currentFile.getAbsolutePath());
+
 						// dont write file if tables is empty or no text found
-						
+
 						// write data to new file
 						// currently overwrites existing files and creates a
 						// file even if no tables extracted
@@ -293,33 +305,33 @@ public class BatchSelectionExtractor {
 						bufferedWriter = new BufferedWriter(fileWriter);
 						// assuming CSV format for demo
 						writer = new CSVWriter();
-						
-						//writer.write(bufferedWriter, tables);
-						
+
+						// writer.write(bufferedWriter, tables);
+
 						int tableNum = 0; // needed?
-						
-						for(Table table : tables){
+
+						for (Table table : tables) {
 							List<Table> fauxTableList = new ArrayList<Table>();
 							fauxTableList.add(table);
-							
+
 							// write table header
 							bufferedWriter.write(tableHeaders.get(tableNum) + "\n");
-							
-							// write single table 
+
+							// write single table
 							writer.write(bufferedWriter, fauxTableList);
-							
+
 							// write line break
 							bufferedWriter.write("\n");
-							
+
 							// increment table number?
 							tableNum++;
 						}
-						
+
 						// need to write empty line between tables
 
 						// shut the door on your way out
 						bufferedWriter.close();
-						//pdfDocument.close();						
+						// pdfDocument.close();
 					}
 
 					catch (Exception e) {
@@ -328,22 +340,22 @@ public class BatchSelectionExtractor {
 					}
 				}
 			}
-			
-			System.out.println("Deleting OCR'd files...");
+
+			if (!deleteList.isEmpty())
+				System.out.println("Deleting OCR'd files...");
 			// clean up created OCR files
-			for(String ocrPath : deleteList){
+			for (String ocrPath : deleteList) {
 				System.out.println("Attempting to delete " + ocrPath);
-				try{
+				try {
 					File ocrFile = new File(ocrPath);
 					ocrFile.delete();
 					System.out.println("File deleted");
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 					System.out.println("Unable to delete file!!!");
 				}
-				
+
 			}
-			
+
 			System.out.println("\nEnd of processing");
 			return 1;
 
@@ -352,89 +364,91 @@ public class BatchSelectionExtractor {
 			return 0;
 		}
 	}
-	
-	
+
 	// should insert an empty table after each real table for spacing purposes
-	// may also want to add extra header info before each table, including whether document was OCR'd
-	private boolean scanDocForMatchedTables(PageIterator pageIterator, int overlapThreshold, String processType, List<String[]> regexList, List<Rectangle> coordList, List<String> pageList, List<Table> tables, List<String> tableHeaders){
+	// may also want to add extra header info before each table, including
+	// whether document was OCR'd
+	private boolean scanDocForMatchedTables(PageIterator pageIterator, int overlapThreshold, String processType,
+			List<String[]> regexList, List<Rectangle> coordList, List<String> pageList, List<Table> tables,
+			List<String> tableHeaders) {
 		boolean textFound = false;
-		
+
 		int tableNumber = 1;
-		
+
 		while (pageIterator.hasNext()) {
 			Page page = pageIterator.next();
 
-			if(page.hasText()){
+			if (page.hasText()) {
 				textFound = true;
-			}
-			else continue;
-			
+			} else
+				continue;
+
 			if (processType.equals("regex")) {
 				for (int i = 0; i < regexList.size(); i++) {
-					try{
+					try {
 						String[] identifiers = regexList.get(i);
-						//String[] identifiers = container.getIdentifiers();
-	
+						// String[] identifiers = container.getIdentifiers();
+
 						// get list of rectangles which match string
 						// inputs
 						RegexSearch regexSearch = new RegexSearch();
-	
+
 						// List<Rectangle> guesses =
 						// regexSearch.detect(page, upperBound,
 						// lowerBound);
-	
+
 						List<Rectangle> guesses = null;
-	
+
 						// one string version?
 						guesses = regexSearch.detect(page, identifiers);
-						
+
 						/*
-						if (container.getType() == 2) { // two
-														// string
-							guesses = regexSearch.detect(page, identifiers[0], null, identifiers[1], null); // guesses = regexSearch.detect(page, identifiers[0], identifiers[1]);
-						}
-	
-						else if (container.getType() == 4) { // four
-																// string
-	
-							guesses = regexSearch.detect(page, identifiers[0], identifiers[1],
-									identifiers[2], identifiers[3]);
-						}
-						*/
-	
+						 * if (container.getType() == 2) { // two // string
+						 * guesses = regexSearch.detect(page, identifiers[0],
+						 * null, identifiers[1], null); // guesses =
+						 * regexSearch.detect(page, identifiers[0],
+						 * identifiers[1]); }
+						 * 
+						 * else if (container.getType() == 4) { // four //
+						 * string
+						 * 
+						 * guesses = regexSearch.detect(page, identifiers[0],
+						 * identifiers[1], identifiers[2], identifiers[3]); }
+						 */
+
 						/*
-						else
-							continue; // procede to next regex
-										// container
-						*/
-						
+						 * else continue; // procede to next regex // container
+						 */
+
 						if (guesses.isEmpty()) {
 							continue; // go to next page, do not
 										// attempt to extract data
 						}
-	
+
 						// get auto detected list of rectangles
 						NurminenDetectionAlgorithm nurmDetect = new NurminenDetectionAlgorithm();
 						List<Rectangle> auto = nurmDetect.detect(page);
-	
+
 						// try spreadsheet if auto doesnt work?
 						SpreadsheetDetectionAlgorithm spreadDetect = new SpreadsheetDetectionAlgorithm();
 						List<Rectangle> spread = spreadDetect.detect(page);
-	
+
 						// print test
-						/*System.out.println(guesses.toString());
-						System.out.println(auto.toString());*/
+						/*
+						 * System.out.println(guesses.toString());
+						 * System.out.println(auto.toString());
+						 */
 						// System.out.println(spread.toString());
-	
+
 						// compare rectangle lists, create worklist
 						// by removing elements from both lists and
 						// using auto detect
 						List<Rectangle> worklist = new ArrayList<Rectangle>();
-	
-						//float bestOverlap = 0;
-						float bestOverlap = (float)overlapThreshold/100;
+
+						// float bestOverlap = 0;
+						float bestOverlap = (float) overlapThreshold / 100;
 						Rectangle bestGuess = null;
-	
+
 						// check if list is null or just take
 						// exception?
 						// try over lap of 1(2) and 2(1)? XX <--
@@ -442,64 +456,70 @@ public class BatchSelectionExtractor {
 						for (int j = 0; j < guesses.size(); j++) {
 							Rectangle eval = guesses.get(j);
 							bestGuess = eval;
-	
+
 							if (!auto.isEmpty()) {
 								for (int k = 0; k < auto.size(); k++) {
 									Rectangle eval1 = auto.get(k);
-	
+
 									// look for rectangle overlap or
 									// similarity?
 									float overlap = eval.overlapRatio(eval1);
 									float vertOverlap = eval.verticalOverlapRatio(eval1);
-	
-									/*System.out.println("Auto - Page #" + page.getPageNumber()
-											+ " overlap = " + overlap);
-									System.out.println("Auto - Page #" + page.getPageNumber()
-											+ " vertOverlap = " + vertOverlap);*/
-	
+
+									/*
+									 * System.out.println("Auto - Page #" +
+									 * page.getPageNumber() + " overlap = " +
+									 * overlap);
+									 * System.out.println("Auto - Page #" +
+									 * page.getPageNumber() + " vertOverlap = "
+									 * + vertOverlap);
+									 */
+
 									if (overlap > bestOverlap) {
 										bestOverlap = overlap;
 										bestGuess = eval1;
 									}
 								}
 							}
-	
+
 							// try spreadsheet?
 							if (!spread.isEmpty()) {
 								for (int k = 0; k < spread.size(); k++) {
 									Rectangle eval2 = spread.get(k);
-	
+
 									// look for rectangle overlap or
 									// similarity?
 									float overlap = eval.overlapRatio(eval2);
 									float vertOverlap = eval.verticalOverlapRatio(eval2);
-	
-									/*System.out.println("Spread - Page #" + page.getPageNumber()
-											+ " overlap1 = " + overlap);
-									System.out.println("Spread - Page #" + page.getPageNumber()
-											+ " vertOverlap = " + vertOverlap);*/
-	
+
+									/*
+									 * System.out.println("Spread - Page #" +
+									 * page.getPageNumber() + " overlap1 = " +
+									 * overlap);
+									 * System.out.println("Spread - Page #" +
+									 * page.getPageNumber() + " vertOverlap = "
+									 * + vertOverlap);
+									 */
+
 									if (overlap > bestOverlap) {
 										bestOverlap = overlap;
 										bestGuess = eval2;
 									}
 								}
 							}
-	
+
 							if (!bestGuess.isEmpty()) {
 								worklist.add(bestGuess);
 							}
 						}
-	
+
 						// *** NOTE: two identifiers on the same
 						// line give exception
 						/*
-						 * for (Rectangle guessRect : guesses) {
-						 * Page guess = page.getArea(guessRect); //
-						 * may want to add a break after each table
-						 * is appended
-						 * tables.addAll(basicExtractor.extract(
-						 * guess)); }
+						 * for (Rectangle guessRect : guesses) { Page guess =
+						 * page.getArea(guessRect); // may want to add a break
+						 * after each table is appended
+						 * tables.addAll(basicExtractor.extract( guess)); }
 						 */
 						// NOTE:
 						// dont add the same table twice
@@ -507,37 +527,34 @@ public class BatchSelectionExtractor {
 							Page guess = page.getArea(guessRect);
 							// may want to add a break after each
 							// table is appended
-							
+
 							// add table header?
-							tableHeaders.add("Table #" + tableNumber + "  ul: " + identifiers[0]
-																		+ "  ur: " + identifiers[1]
-																		+ "  ll: " + identifiers[2]
-																		+ "  lr: " + identifiers[3]);
-							
+							tableHeaders.add("Table #" + tableNumber + "  ul: " + identifiers[0] + "  ur: "
+									+ identifiers[1] + "  ll: " + identifiers[2] + "  lr: " + identifiers[3]);
+
 							// add new table
 							tables.addAll(basicExtractor.extract(guess));
-							
+
 							tableNumber++;
 						}
-					}
-					catch(Exception e){
+					} catch (Exception e) {
 						System.out.println(e);
 					}
 				}
-			// no need for exception handling?
+				// no need for exception handling?
 			} else if (processType.equals("coords")) {
 				for (int i = 0; i < coordList.size(); i++) {
 					if (page.getPageNumber() == Integer.parseInt(pageList.get(i))) {
 						Page guess = page.getArea(coordList.get(i));
-						
-						//String test = coordList.get(i).toString();
-						
+
+						// String test = coordList.get(i).toString();
+
 						// add table header?
 						tableHeaders.add("Table #" + tableNumber + " Coord: " + coordList.get(i));
-						
+
 						// add new table
 						tables.addAll(basicExtractor.extract(guess));
-						
+
 						tableNumber++;
 					}
 				}
@@ -577,11 +594,11 @@ public class BatchSelectionExtractor {
 			 * "Report 3", "Report 4")); regexList.add(new
 			 * RegexContainer("Report 1", "Report 3"));
 			 */
-			
-			//RegexSearch search = new RegexSearch();
+
+			// RegexSearch search = new RegexSearch();
 
 			BatchSelectionExtractor test = new BatchSelectionExtractor();
-			
+
 			int overlap = 0;
 
 			int result = test.extract(inputPath, outputPath, jsonPath, processType, true, overlap);
