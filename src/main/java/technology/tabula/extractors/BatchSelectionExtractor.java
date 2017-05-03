@@ -163,7 +163,7 @@ public class BatchSelectionExtractor {
 					float width = Float.valueOf(array[3]);
 					float height = Float.valueOf(array[4]);
 
-					coordList.add(new Rectangle(leftBound, topBound, width, height));
+					coordList.add(new Rectangle(topBound, leftBound, width, height));
 				}
 
 				// if the coordList is empty, don't continue searching
