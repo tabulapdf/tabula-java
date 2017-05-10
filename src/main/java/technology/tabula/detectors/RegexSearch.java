@@ -189,6 +189,7 @@ public class RegexSearch {
 
 			float bestOverlap = 0;
 			Rectangle bestGuess = eval;
+			Boolean replaced = false;
 			
 			// compare with autodetected tables
 			if (!auto.isEmpty()) {
@@ -201,6 +202,7 @@ public class RegexSearch {
 					if (overlap > bestOverlap) {
 						bestOverlap = overlap;
 						bestGuess = eval1;
+						replaced = true;
 					}
 				}
 			}
@@ -216,11 +218,13 @@ public class RegexSearch {
 					if (overlap > bestOverlap) {
 						bestOverlap = overlap;
 						bestGuess = eval2;
+						replaced = true;
 					}
 				}
 			}
 			
-			regexList.add(bestGuess);
+			if(!replaced) return new ArrayList<Rectangle>(); // empty list
+			else regexList.add(bestGuess);
 		}
 		
 		return regexList;
