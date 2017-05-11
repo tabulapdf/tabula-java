@@ -17,7 +17,7 @@ import technology.tabula.PageIterator;
 import technology.tabula.Rectangle;
 import technology.tabula.Table;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.detectors.RegexSearch;
+import technology.tabula.detectors.StringSearch;
 import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.Writer;
@@ -35,7 +35,7 @@ public class BatchSelectionExtractor {
 			// Confirm process type is valid
 			// ----------------------------------------------------------
 			
-			if (!processType.equals("both") && !processType.equals("coords") && !processType.equals("regex")) {
+			if (!processType.equals("both") && !processType.equals("coords") && !processType.equals("string")) {
 				// invalid process type
 				return 0;
 			}
@@ -86,20 +86,20 @@ public class BatchSelectionExtractor {
 			FileReader fr = new FileReader(jsonPath);
 			BufferedReader br = new BufferedReader(fr);
 
-			List<String[]> regexList = new ArrayList<String[]>();
+			List<String[]> stringList = new ArrayList<String[]>();
 			List<String> pageList = new ArrayList<String>();
 			List<Rectangle> coordList = new ArrayList<Rectangle>();
 
 			String currentString;
 
-			if (processType.equals("regex")) {
+			if (processType.equals("string")) {
 
 				while ((currentString = br.readLine()) != null) {
 					// split the input stream
 					String[] splitString = currentString.split(",");
 
 					if (splitString.length > 4) {
-						System.out.println("Too many arguments for Regex Search: " + splitString);
+						System.out.println("Too many arguments for String Search: " + splitString);
 						continue; // untested
 					}
 
@@ -117,12 +117,12 @@ public class BatchSelectionExtractor {
 					}
 
 					// what happens if line doesnt match expectation?
-					regexList.add(addString); // split("[\\s,]+")));
+					stringList.add(addString); // split("[\\s,]+")));
 
 					// if string is invalid, don't continue searching?
 				}
 
-				// if the regexList is empty, don't continue searching?
+				// if the stringList is empty, don't continue searching?
 			}
 
 			else if (processType.equals("coords")) {
@@ -186,7 +186,7 @@ public class BatchSelectionExtractor {
 						// extract and append data to table if found
 						// scan assuming that document is text based
 						boolean textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold, 
-								processType, regexList, coordList, pageList, tables, tableHeaders);
+								processType, stringList, coordList, pageList, tables, tableHeaders);
 
 						pdfDocument.close();
 						reading = false;
@@ -221,7 +221,7 @@ public class BatchSelectionExtractor {
 									textFound = false;
 
 									textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold, processType,
-											regexList, coordList, pageList, tables, tableHeaders);
+											stringList, coordList, pageList, tables, tableHeaders);
 
 									pdfDocument.close();
 
@@ -317,7 +317,7 @@ public class BatchSelectionExtractor {
 	// should be rewritten so that fewer paramters are required
 	// more method calls? globals?
 	private boolean scanDocForMatchedTables(BasicExtractionAlgorithm basicExtractor, PageIterator pageIterator, int overlapThreshold, String processType,
-			List<String[]> regexList, List<Rectangle> coordList, List<String> pageList, List<Table> tables,
+			List<String[]> stringList, List<Rectangle> coordList, List<String> pageList, List<Table> tables,
 			List<String> tableHeaders) {
 		boolean textFound = false;
 
@@ -331,18 +331,18 @@ public class BatchSelectionExtractor {
 			} else
 				continue;
 
-			if (processType.equals("regex")) {
-				for (int i = 0; i < regexList.size(); i++) {
+			if (processType.equals("string")) {
+				for (int i = 0; i < stringList.size(); i++) {
 					try {
-						String[] identifiers = regexList.get(i);
+						String[] identifiers = stringList.get(i);
 
 						// get list of rectangles which match string inputs
-						RegexSearch regexSearch = new RegexSearch();
+						StringSearch stringSearch = new StringSearch();
 
 						List<Rectangle> guesses = null;
 
 						// one string version?
-						guesses = regexSearch.detect(page, identifiers);
+						guesses = stringSearch.detect(page, identifiers);
 
 						if (guesses.isEmpty()) {
 							continue; // go to next page, do not

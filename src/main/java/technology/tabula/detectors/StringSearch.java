@@ -9,14 +9,14 @@ import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
-public class RegexSearch {
+public class StringSearch {
 
-	public List<Rectangle> detect(Page page, String[] regexList) throws ParseException {
+	public List<Rectangle> detect(Page page, String[] stringList) throws ParseException {
 		// check if page object is null
 		if(page == null) return new ArrayList<Rectangle>(); // return empty arraylist
 		
 		// only 3 and 4 string arrays accepted
-		if(regexList.length < 3 || regexList.length > 4) return new ArrayList<Rectangle>(); // return empty arraylist;
+		if(stringList.length < 3 || stringList.length > 4) return new ArrayList<Rectangle>(); // return empty arraylist;
 		
 		// this is so dumb
 		String upperLeft = null;
@@ -25,19 +25,19 @@ public class RegexSearch {
 		String lowerRight = null;
 		
 		// parse out the input string array
-		for(int i = 0; i < regexList.length; i++) {
+		for(int i = 0; i < stringList.length; i++) {
 			switch(i) {
 				case 0:
-					upperLeft = regexList[i];
+					upperLeft = stringList[i];
 					break;
 				case 1:
-					upperRight = regexList[i];
+					upperRight = stringList[i];
 					break;
 				case 2:
-					lowerLeft = regexList[i];
+					lowerLeft = stringList[i];
 					break;
 				case 3:
-					lowerRight = regexList[i];
+					lowerRight = stringList[i];
 					break;
 				default:
 					break;
@@ -93,7 +93,7 @@ public class RegexSearch {
 	}
 	
 	private List<Rectangle> detectString(Page page, String searchString) {		
-		List<Rectangle> regexList = new ArrayList<Rectangle>();
+		List<Rectangle> stringList = new ArrayList<Rectangle>();
 		char currChar = 0;
 		TextElement currElement = null;
 		TextElement firstElement = null;
@@ -130,7 +130,7 @@ public class RegexSearch {
 						// check for single character case
 						if(searchString.length() == 1){
 							stringFound = true;
-							regexList.add(new Rectangle(firstElement.y,
+							stringList.add(new Rectangle(firstElement.y,
 														firstElement.x,
 														firstElement.width,
 														firstElement.height));
@@ -224,14 +224,14 @@ public class RegexSearch {
 			}
 			
 			if(!replaced) return new ArrayList<Rectangle>(); // empty list
-			else regexList.add(bestGuess);
+			else stringList.add(bestGuess);
 		}
 		
-		return regexList;
+		return stringList;
 	}
 
 	private List<Rectangle> detectTwo(Page page, String upperBound, String lowerBound) throws ParseException {
-		List<Rectangle> regexList = new ArrayList<Rectangle>();
+		List<Rectangle> stringList = new ArrayList<Rectangle>();
 		char currChar = 0;
 		Boolean upperExists = false;
 		Boolean lowerExists = false;
@@ -332,10 +332,10 @@ public class RegexSearch {
 			
 			Rectangle foundRectangle = new Rectangle(topBound, leftBound, width, height);
 			
-			regexList.add(foundRectangle);
+			stringList.add(foundRectangle);
 		}
 		
-		return regexList;
+		return stringList;
 	}
 
 	private List<Rectangle> detectFour(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight)
@@ -354,7 +354,7 @@ public class RegexSearch {
 			return new ArrayList<Rectangle>(); // empty list
 		}
 
-		List<Rectangle> regexList = new ArrayList<Rectangle>();
+		List<Rectangle> stringList = new ArrayList<Rectangle>();
 		char currChar = 0;
 
 		// could check elements for null instead
@@ -684,8 +684,8 @@ public class RegexSearch {
 		float height = botBound - topBound;
 		
 		Rectangle foundRectangle = new Rectangle(topBound, leftBound, width, height);
-		regexList.add(foundRectangle);
+		stringList.add(foundRectangle);
 
-		return regexList;
+		return stringList;
 	}
 }
