@@ -10,21 +10,21 @@ public class Cell extends RectangularTextContainer<TextChunk> {
     private boolean spanning;
     private boolean placeholder;
     private List<TextChunk> textElements;
-    
+
     public Cell(float top, float left, float width, float height) {
         super(top, left, width, height);
         this.setPlaceholder(false);
         this.setSpanning(false);
         this.setTextElements(new ArrayList<TextChunk>());
     }
-    
+
     public Cell(Point2D topLeft, Point2D bottomRight) {
         super((float) topLeft.getY(), (float) topLeft.getX(), (float) (bottomRight.getX() - topLeft.getX()), (float) (bottomRight.getY() - topLeft.getY()));
         this.setPlaceholder(false);
         this.setSpanning(false);
         this.setTextElements(new ArrayList<TextChunk>());
     }
-    
+
     @Override
     public String getText(boolean useLineReturns) {
         if (this.textElements.size() == 0) {

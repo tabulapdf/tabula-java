@@ -36,7 +36,7 @@ public class TestWriters {
 
     @Test
     public void testCSVWriter() throws IOException {
-    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/argentina_diputados_voting_record.csv");
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/argentina_diputados_voting_record.csv");
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);

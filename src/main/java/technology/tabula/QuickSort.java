@@ -22,16 +22,16 @@ import java.util.Stack;
 
 /**
  * see http://de.wikipedia.org/wiki/Quicksort.
- * 
+ *
  * @author UWe Pachler
  */
 public class QuickSort
 {
-    
+
     private QuickSort()
     {
     }
-    
+
     private static final Comparator<? extends Comparable> objComp = new Comparator<Comparable>()
     {
         public int compare(Comparable object1, Comparable object2)
@@ -67,7 +67,7 @@ public class QuickSort
             if (right - left < 2) continue;
             int p = left + ((right-left)/2);
             p = partition(list, cmp, p, left, right);
-            
+
             stack.push(p+1);
             stack.push(right);
 
@@ -76,7 +76,7 @@ public class QuickSort
 
         }
     }
-    
+
     private static <T> int partition(List<T> list, Comparator<T> cmp, int p, int start, int end) {
         int l = start;
         int h = end - 2;
@@ -86,9 +86,9 @@ public class QuickSort
         while (l < h) {
             if (cmp.compare(list.get(l), piv) <= 0) {
                 l++;
-            } else if (cmp.compare(piv, list.get(h)) <= 0) { 
+            } else if (cmp.compare(piv, list.get(h)) <= 0) {
                 h--;
-            } else { 
+            } else {
                 swap(list,l,h);
             }
         }
@@ -97,7 +97,7 @@ public class QuickSort
         swap(list,end-1,idx);
         return idx;
     }
-    
+
 
     private static <T> void swap(List<T> list, int i, int j)
     {

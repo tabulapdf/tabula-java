@@ -12,14 +12,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestProjectionProfile {
-	
+
 	ProjectionProfile pProfile;
 	Page page;
 
 	@Before
 	public void setUpProjectionProfile() {
 		PDPage pdPage = new PDPage();
-		
+
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
 		TextElement textElement2 = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
 		List<TextElement> textList = new ArrayList<TextElement>();
@@ -32,10 +32,10 @@ public class TestProjectionProfile {
 
 
 		page = new Page(0, 0, 1, 1, 0, 1, pdPage, textList, rulingList);
-		
+
 		List<Rectangle> rectangles = new ArrayList<Rectangle>();
 		rectangles.add(new Rectangle(0f, 0f, 500f, 5f));
-		
+
 		pProfile = new ProjectionProfile(page, rectangles, 5, 5);
 	}
 
@@ -93,7 +93,7 @@ public class TestProjectionProfile {
 	public void testGetFirstDeriv() {
 //		float[]
 //		float[] projection = pProfile.getFirstDeriv(new float[]{0.0, 0.0)
-//		System.out.println(Arrays.toString(projection));    
+//		System.out.println(Arrays.toString(projection));
 //		assertEquals(10, projection[0], 1e-15);
 		}
 

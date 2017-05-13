@@ -128,9 +128,9 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     @Override
     /*
-        We're comparing based on ordering in the logical ordering of text here. 
-        Assuming identical Y-axis positions, if TextChunk A has a lower X-axis 
-        than TextChunk B, then A is "before" it -- iff this is LTR text. Otherwise, 
+        We're comparing based on ordering in the logical ordering of text here.
+        Assuming identical Y-axis positions, if TextChunk A has a lower X-axis
+        than TextChunk B, then A is "before" it -- iff this is LTR text. Otherwise,
         it is A is after B.
     */
     public int compareTo(Rectangle other) {

@@ -30,7 +30,7 @@ public class Page extends Rectangle {
         this.pageNumber = page_number;
         this.pdPage = pdPage;
     }
-    
+
     public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage,
             List<TextElement> characters, List<Ruling> rulings) {
 
@@ -50,7 +50,7 @@ public class Page extends Rectangle {
         this.spatial_index = index;
     }
 
-    
+
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
         float min_char_width  = 7;
@@ -79,46 +79,46 @@ public class Page extends Rectangle {
                 t,
                 Ruling.cropRulingsToArea(getRulings(), area),
                 min_char_width,
-                min_char_height,                
+                min_char_height,
                 spatial_index);
-        
+
         rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getLeft(), 
-                    rv.getTop()), 
-                new Point2D.Double(rv.getRight(), 
+                new Point2D.Double(rv.getLeft(),
+                    rv.getTop()),
+                new Point2D.Double(rv.getRight(),
                     rv.getTop())));
         rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getRight(), 
-                    rv.getTop()), 
-                new Point2D.Double(rv.getRight(), 
+                new Point2D.Double(rv.getRight(),
+                    rv.getTop()),
+                new Point2D.Double(rv.getRight(),
                     rv.getBottom())));
         rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getRight(), 
-                    rv.getBottom()), 
-                new Point2D.Double(rv.getLeft(), 
+                new Point2D.Double(rv.getRight(),
+                    rv.getBottom()),
+                new Point2D.Double(rv.getLeft(),
                     rv.getBottom())));
         rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getLeft(), 
-                    rv.getBottom()), 
-                new Point2D.Double(rv.getLeft(), 
+                new Point2D.Double(rv.getLeft(),
+                    rv.getBottom()),
+                new Point2D.Double(rv.getLeft(),
                     rv.getTop())));
- 
+
         return rv;
     }
-    
+
     public Page getArea(float top, float left, float bottom, float right) {
         Rectangle area = new Rectangle(top, left, right - left, bottom - top);
         return this.getArea(area);
     }
-    
+
     public List<TextElement> getText() {
         return texts;
     }
-    
+
     public List<TextElement> getText(Rectangle area) {
         return this.spatial_index.contains(area);
     }
-    
+
     public List<TextElement> getText(float top, float left, float bottom, float right) {
         return this.getText(new Rectangle(top, left, right - left, bottom - top));
     }
@@ -134,7 +134,7 @@ public class Page extends Rectangle {
     public List<TextElement> getTexts() {
         return texts;
     }
-    
+
     /**
      * Returns the minimum bounding box that contains all the TextElements on this Page
      */
@@ -146,22 +146,22 @@ public class Page extends Rectangle {
         else {
             return new Rectangle();
         }
-        
+
     }
 
     public List<Ruling> getRulings() {
         if (this.cleanRulings != null) {
             return this.cleanRulings;
         }
-        
+
         if (this.rulings == null || this.rulings.isEmpty()) {
             this.verticalRulingLines = new ArrayList<Ruling>();
             this.horizontalRulingLines = new ArrayList<Ruling>();
             return new ArrayList<Ruling>();
         }
-        
+
         Utils.snapPoints(this.rulings, this.minCharWidth, this.minCharHeight);
-        
+
         List<Ruling> vrs = new ArrayList<Ruling>();
         for (Ruling vr: this.rulings) {
             if (vr.vertical()) {
@@ -169,22 +169,22 @@ public class Page extends Rectangle {
             }
         }
         this.verticalRulingLines = Ruling.collapseOrientedRulings(vrs);
-        
-        List<Ruling> hrs = new ArrayList<Ruling>(); 
+
+        List<Ruling> hrs = new ArrayList<Ruling>();
         for (Ruling hr: this.rulings) {
             if (hr.horizontal()) {
                 hrs.add(hr);
             }
         }
         this.horizontalRulingLines = Ruling.collapseOrientedRulings(hrs);
-        
+
         this.cleanRulings = new ArrayList<Ruling>(this.verticalRulingLines);
         this.cleanRulings.addAll(this.horizontalRulingLines);
-        
+
         return this.cleanRulings;
-        
+
     }
-    
+
     public List<Ruling> getVerticalRulings() {
         if (this.verticalRulingLines != null) {
             return this.verticalRulingLines;
@@ -192,7 +192,7 @@ public class Page extends Rectangle {
         this.getRulings();
         return this.verticalRulingLines;
     }
-    
+
     public List<Ruling> getHorizontalRulings() {
         if (this.horizontalRulingLines != null) {
             return this.horizontalRulingLines;
@@ -200,7 +200,7 @@ public class Page extends Rectangle {
         this.getRulings();
         return this.horizontalRulingLines;
     }
-    
+
     public void addRuling(Ruling r) {
         if (r.oblique()) {
             throw new UnsupportedOperationException("Can't add an oblique ruling");
@@ -211,7 +211,7 @@ public class Page extends Rectangle {
         this.horizontalRulingLines = null;
         this.cleanRulings = null;
     }
-    
+
     public List<Ruling> getUnprocessedRulings() {
         return this.rulings;
     }
@@ -231,10 +231,10 @@ public class Page extends Rectangle {
     public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
     }
-    
+
     public boolean hasText() {
         return this.texts.size() > 0;
     }
-    
-    
+
+
 }

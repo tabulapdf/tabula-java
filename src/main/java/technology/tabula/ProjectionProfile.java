@@ -15,7 +15,7 @@ public class ProjectionProfile {
     private final double areaWidth, areaHeight, areaTop, areaLeft;
     private float minCharWidth = Float.MAX_VALUE, minCharHeight = Float.MAX_VALUE, horizontalKernelSize, verticalKernelSize;
     private float maxHorizontalProjection = 0, maxVerticalProjection = 0;
-    
+
     public ProjectionProfile(Page area, List<? extends Rectangle> elements, float horizontalKernelSize, float verticalKernelSize) {
         this.area = area;
         this.areaWidth = area.getWidth();
@@ -27,7 +27,7 @@ public class ProjectionProfile {
         this.horizontalKernelSize = horizontalKernelSize;
         this.verticalKernelSize = verticalKernelSize;
         this.textBounds = area.getTextBounds();
-        
+
         for (Rectangle element: elements) {
             // exclude elements that take more than 80% of the width
             // of the area. They won't contribute to determining columns
@@ -36,20 +36,20 @@ public class ProjectionProfile {
             }
             this.addRectangle(element);
         }
-        
+
         this.verticalProjection = smooth(this.verticalProjection, toFixed(verticalKernelSize));
         this.horizontalProjection = smooth(this.horizontalProjection, toFixed(horizontalKernelSize));
     }
-    
+
     private void addRectangle(Rectangle element) {
         // calculate horizontal and vertical projection profiles
         if (!area.contains(element)) {
             return;
         }
-        
+
         this.minCharHeight = (float) Math.min(this.minCharHeight, element.getHeight());
         this.minCharWidth = (float) Math.min(this.minCharWidth, element.getWidth());
-        
+
         for (int k = toFixed(element.getLeft()); k < toFixed(element.getRight()); k++) {
             this.horizontalProjection[k - toFixed(areaLeft)] += element.getHeight();
             this.maxHorizontalProjection = Math.max(this.maxHorizontalProjection, this.horizontalProjection[k - toFixed(areaLeft)]);
@@ -59,7 +59,7 @@ public class ProjectionProfile {
             this.maxVerticalProjection = Math.max(this.maxVerticalProjection, this.verticalProjection[k - toFixed(areaTop)]);
         }
     }
-    
+
     public float[] getVerticalProjection() {
         return verticalProjection;
     }
@@ -67,7 +67,7 @@ public class ProjectionProfile {
     public float[] getHorizontalProjection() {
         return horizontalProjection;
     }
-    
+
     public float[] findVerticalSeparators(float minColumnWidth) {
         boolean foundNarrower = false;
 
@@ -77,15 +77,15 @@ public class ProjectionProfile {
                 verticalSeparators.add(toFixed(r.getPosition() - this.areaLeft));
             }
         }
-        
+
         List<Integer> seps = findSeparatorsFromProjection(filter(getFirstDeriv(this.horizontalProjection), 0.1f));
-        
+
         for (Integer foundSep: seps) {
             for (Integer explicitSep: verticalSeparators) {
                 if (Math.abs(toDouble(foundSep - explicitSep)) <= minColumnWidth) {
                     foundNarrower = true;
                     break;
-                } 
+                }
             }
             if (!foundNarrower) {
                 verticalSeparators.add(foundSep);
@@ -99,7 +99,7 @@ public class ProjectionProfile {
         }
         return rv;
     }
-    
+
     public float[] findHorizontalSeparators(float minRowHeight) {
         boolean foundShorter = false;
 
@@ -110,15 +110,15 @@ public class ProjectionProfile {
                 horizontalSeparators.add(toFixed(r.getPosition() - this.areaTop));
             }
         }
-        
+
         List<Integer> seps = findSeparatorsFromProjection(filter(getFirstDeriv(this.verticalProjection), 0.1f));
-        
+
         for (Integer foundSep: seps) {
             for (Integer explicitSep: horizontalSeparators) {
                 if (Math.abs(toDouble(foundSep - explicitSep)) <= minRowHeight) {
                     foundShorter = true;
                     break;
-                } 
+                }
             }
             if (!foundShorter) {
                 horizontalSeparators.add(foundSep);
@@ -132,13 +132,13 @@ public class ProjectionProfile {
         }
         return rv;
     }
-    
+
     private static List<Integer> findSeparatorsFromProjection(float[] derivative) {
         List<Integer> separators = new ArrayList<Integer>();
         Integer lastNeg = null;
         float s;
         boolean positiveSlope = false;
-        
+
         // find separators based on histogram
         for (int i = 0; i < derivative.length; i++) {
             s = derivative[i];
@@ -153,11 +153,11 @@ public class ProjectionProfile {
         }
         return separators;
     }
-    
+
     public static float[] smooth(float[] data, int kernelSize) {
         float[] rv = new float[data.length];
         float s;
-        
+
         for (int pass = 0; pass < 1; pass++) {
             for (int i = 0; i < data.length; i++) {
                 s = 0;
@@ -170,9 +170,9 @@ public class ProjectionProfile {
         }
         return rv;
     }
-    
-    
-    /** 
+
+
+    /**
      * Simple Low pass filter
      */
     public static float[] filter(float[] data, float alpha) {
@@ -185,16 +185,16 @@ public class ProjectionProfile {
 
         return rv;
     }
-    
+
     public static float[] getAutocorrelation(float[] projection) {
         float[] rv = new float[projection.length-1];
         for (int i = 1; i < projection.length - 1; i++) {
             rv[i] = (projection[i] * projection[i-1]) / 100f;
         }
         return rv;
-        
+
     }
-    
+
     public static float[] getFirstDeriv(float[] projection) {
         float[] rv = new float[projection.length];
         rv[0] = projection[1] - projection[0];
@@ -209,9 +209,9 @@ public class ProjectionProfile {
     private static int toFixed(double value) {
         return (int) Math.round(value * (Math.pow(10, DECIMAL_PLACES)));
     }
-    
+
     private static double toDouble(int value) {
         return (double) value / Math.pow(10, DECIMAL_PLACES);
     }
-    
+
 }
