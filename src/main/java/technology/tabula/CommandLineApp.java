@@ -13,10 +13,10 @@ import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
@@ -56,7 +56,7 @@ public class CommandLineApp {
     }
 
     public static void main(String[] args) {
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(buildOptions(), args);
@@ -281,41 +281,48 @@ public class CommandLineApp {
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
-        o.addOption(OptionBuilder.withLongOpt("batch")
-                .withDescription("Convert all .pdfs in the provided directory.")
+        o.addOption(Option.builder("b")
+                .longOpt("batch")
+                .desc("Convert all .pdfs in the provided directory.")
                 .hasArg()
-                .withArgName("DIRECTORY")
-                .create("b"));
-        o.addOption(OptionBuilder.withLongOpt("outfile")
-                .withDescription("Write output to <file> instead of STDOUT. Default: -")
+                .argName("DIRECTORY")
+                .build());
+        o.addOption(Option.builder("o")
+                .longOpt("outfile")
+                .desc("Write output to <file> instead of STDOUT. Default: -")
                 .hasArg()
-                .withArgName("OUTFILE")
-                .create("o"));
-        o.addOption(OptionBuilder.withLongOpt("format")
-                .withDescription("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
+                .argName("OUTFILE")
+                .build());
+        o.addOption(Option.builder("f")
+                .longOpt("format")
+                .desc("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
                 .hasArg()
-                .withArgName("FORMAT")
-                .create("f"));
-        o.addOption(OptionBuilder.withLongOpt("password")
-                .withDescription("Password to decrypt document. Default is empty")
+                .argName("FORMAT")
+                .build());
+        o.addOption(Option.builder("s")
+                .longOpt("password")
+                .desc("Password to decrypt document. Default is empty")
                 .hasArg()
-                .withArgName("PASSWORD")
-                .create("s"));
-        o.addOption(OptionBuilder.withLongOpt("columns")
-                .withDescription("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3")
+                .argName("PASSWORD")
+                .build());
+        o.addOption(Option.builder("c")
+                .longOpt("columns")
+                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3")
                 .hasArg()
-                .withArgName("COLUMNS")
-                .create("c"));
-        o.addOption(OptionBuilder.withLongOpt("area")
-                .withDescription("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
+                .argName("COLUMNS")
+                .build());
+        o.addOption(Option.builder("a")
+                .longOpt("area")
+                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
                 .hasArg()
-                .withArgName("AREA")
-                .create("a"));
-        o.addOption(OptionBuilder.withLongOpt("pages")
-                .withDescription("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
+                .argName("AREA")
+                .build());
+        o.addOption(Option.builder("p")
+                .longOpt("pages")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
                 .hasArg()
-                .withArgName("PAGES")
-                .create("p"));
+                .argName("PAGES")
+                .build());
 
         return o;
     }
