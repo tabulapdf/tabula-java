@@ -94,7 +94,7 @@ public class CommandLineApp {
         }
 
         if (line.getArgs().length != 1) {
-            throw new ParseException("Need one filename\nTry --help for help");
+            throw new ParseException("Need exactly one filename\nTry --help for help");
         }
 
         File pdfFile = new File(line.getArgs()[0]);
