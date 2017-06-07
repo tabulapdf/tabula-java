@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.cli.*;
 import technology.tabula.Cell;
 import technology.tabula.CommandLineApp;
 import technology.tabula.Line;
@@ -30,13 +31,6 @@ import technology.tabula.Utils;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
@@ -299,19 +293,23 @@ public class Debug {
         o.addOption("n", "clipping-paths", false, "Show clipping paths");
         o.addOption("d", "detected-tables", false, "Show detected tables");
 
-        o.addOption(OptionBuilder.withLongOpt("area")
-                .withDescription(
-                        "Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
-                .hasArg().withArgName("AREA").create("a"));
-        o.addOption(OptionBuilder.withLongOpt("pages")
-                .withDescription(
-                        "Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
-                .hasArg().withArgName("PAGES").create("p"));
+        o.addOption(Option.builder("a").longOpt("area")
+                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
+                .hasArg()
+                .argName("AREA")
+                .build());
+
+        o.addOption(Option.builder("p").longOpt("pages")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
+                .hasArg()
+                .argName("PAGES")
+                .build());
+
         return o;
     }
 
     public static void main(String[] args) throws IOException {
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(buildOptions(), args);
