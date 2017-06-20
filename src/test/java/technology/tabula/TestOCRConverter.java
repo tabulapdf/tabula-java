@@ -1,6 +1,12 @@
 package technology.tabula;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.Test;
@@ -11,16 +17,26 @@ public class TestOCRConverter {
 
 	@Test
 	public void testConvert() {
-		OcrConverter myConverter = new OcrConverter();
-		String conversionResponse = myConverter
-				.extract("src/test/resources/technology/tabula/wellExample_imageBased.pdf", true);
 		try {
-			Page page = UtilsForTesting.getPage(conversionResponse, 0);
+			// check for old version of OCR output
+			Files.deleteIfExists(FileSystems.getDefault().getPath("src/test/resources/technology/tabula/wellExample_imageBased_OCR.pdf"));
+			
+			// convert document to text
+			OcrConverter ocrConverter = new OcrConverter();
+			String conversionResponse = ocrConverter.extract("src/test/resources/technology/tabula/wellExample_imageBased.pdf", true);
+			assertEquals("Success", conversionResponse);	// check for valid response
+			
+			// check that some text is as expected
+			Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/wellExample_imageBased_OCR.pdf", 1);
 			List<TextElement> textElements = page.getText();
-			assert textElements.size() == 0;
+			
+			assertTrue(textElements.size() > 1200);	// check that text was extracted and is around approximate acceptable limit
+													// this limit may change if Tesseract is updated
+			
+			// delete unneeded file
+			Files.deleteIfExists(FileSystems.getDefault().getPath("src/test/resources/technology/tabula/wellExample_imageBased_OCR.pdf"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			fail(e.getMessage());
 		}
 	}
 
