@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 
 import technology.tabula.detectors.StringSearch;
@@ -36,8 +35,6 @@ public class TestStringSearch {
 
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} catch (ParseException e) {
-			fail(e.getMessage());
 		}
 	}
 
@@ -63,8 +60,6 @@ public class TestStringSearch {
 			assertTrue(Math.abs(table.x - 51.3) < 1);
 			assertTrue(Math.abs(table.y - 388.3) < 1);
 		} catch (IOException e) {
-			fail(e.getMessage());
-		} catch (ParseException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -92,8 +87,6 @@ public class TestStringSearch {
 			assertTrue(Math.abs(table.x - 51.3) < 1);
 			assertTrue(Math.abs(table.y - 388.3) < 1);
 		} catch (IOException e) {
-			fail(e.getMessage());
-		} catch (ParseException e) {
 			fail(e.getMessage());
 		}
 	}

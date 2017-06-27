@@ -3,26 +3,30 @@ package technology.tabula.detectors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.cli.ParseException;
-
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
+/**
+ * Created by Dean on 2017-01-10
+ *
+ * This class handles searching for strings on a given page of a document.
+ *
+ * Passing the detect method a list of strings returns a set of rectangles encompassing the strings.
+ */
 public class StringSearch {
 
-	public List<Rectangle> detect(Page page, String[] stringList) throws ParseException {
+	public List<Rectangle> detect(Page page, String[] stringList) {
 		// check if page object is null
 		if(page == null) return new ArrayList<Rectangle>(); // return empty arraylist
 		
 		// only 3 and 4 string arrays accepted
 		if(stringList.length < 3 || stringList.length > 4) return new ArrayList<Rectangle>(); // return empty arraylist;
 		
-		// this is so dumb
-		String upperLeft = null;
-		String upperRight = null;
-		String lowerLeft = null;
-		String lowerRight = null;
+		String upperLeft = "";
+		String upperRight = "";
+		String lowerLeft = "";
+		String lowerRight = "";
 		
 		// parse out the input string array
 		for(int i = 0; i < stringList.length; i++) {
@@ -42,7 +46,7 @@ public class StringSearch {
 				default:
 					break;
 			}
-		}		
+		}
 		
 		// replace null strings with empty fields
 		if(upperLeft == null) upperLeft = "";
@@ -230,7 +234,7 @@ public class StringSearch {
 		return stringList;
 	}
 
-	private List<Rectangle> detectTwo(Page page, String upperBound, String lowerBound) throws ParseException {
+	private List<Rectangle> detectTwo(Page page, String upperBound, String lowerBound) {
 		List<Rectangle> stringList = new ArrayList<Rectangle>();
 		char currChar = 0;
 		Boolean upperExists = false;
@@ -338,8 +342,7 @@ public class StringSearch {
 		return stringList;
 	}
 
-	private List<Rectangle> detectFour(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight)
-			throws ParseException {
+	private List<Rectangle> detectFour(Page page, String upperLeft, String upperRight, String lowerLeft, String lowerRight) {
 
 		// Dont really need to check these if they are private and only called by detect function				
 		if(page == null){

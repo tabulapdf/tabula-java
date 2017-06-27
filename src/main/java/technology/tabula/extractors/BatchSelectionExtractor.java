@@ -3,13 +3,16 @@ package technology.tabula.extractors;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
@@ -26,10 +29,10 @@ import technology.tabula.writers.Writer;
 //		need to remove tables from auto/spread list if they are used as a best guess
 //		or remove very similar tables from the list before extracting data
 public class BatchSelectionExtractor {
-
 	public int extract(String inputPath, String outputPath, String jsonPath, String processType, boolean ocrAllowed,
 			int overlapThreshold) {
-		System.out.println("OCR Selection: " + ocrAllowed);
+		Logger log = LoggerFactory.getLogger(BatchSelectionExtractor.class);
+
 		try {
 			// ----------------------------------------------------------
 			// Confirm process type is valid
@@ -52,15 +55,15 @@ public class BatchSelectionExtractor {
 			File outputFile = new File(outputPath);
 
 			if (!inputFile.exists()) {
-				throw new ParseException("Input file or directory does not exist");
+				throw new FileNotFoundException("Input file or directory does not exist");
 			}
 
 			if (!outputFile.exists()) {
-				throw new ParseException("Output directory does not exist");
+				throw new FileNotFoundException("Output directory does not exist");
 			}
 
 			if (!outputFile.isDirectory()) {
-				throw new ParseException("Output path does not point to a directory");
+				throw new FileNotFoundException("Output path does not point to a directory");
 			}
 
 			File parentPath;
@@ -72,10 +75,8 @@ public class BatchSelectionExtractor {
 				parentPath = inputFile;
 			}
 
-			if (parentPath.isDirectory()) {
-				System.out.println("Valid folder"); // check that path is valid
-			} else {
-				throw new Exception("Invalid file path");
+			if (!parentPath.isDirectory()) {
+				throw new FileNotFoundException("Invalid file path");
 			}
 
 			// ----------------------------------------------------------
@@ -99,8 +100,8 @@ public class BatchSelectionExtractor {
 					String[] splitString = currentString.split(",");
 
 					if (splitString.length > 4) {
-						System.out.println("Too many arguments for String Search: " + splitString);
-						continue; // untested
+						log.debug("Too many arguments for String Search: " + splitString);
+						continue;
 					}
 
 					String[] addString = new String[4];
@@ -128,8 +129,6 @@ public class BatchSelectionExtractor {
 			else if (processType.equals("coords")) {
 
 				while ((currentString = br.readLine()) != null) {
-					// System.out.println(currentString);
-
 					String array[] = currentString.split("[\\s,]+");
 
 					pageList.add(array[0]);
@@ -165,12 +164,9 @@ public class BatchSelectionExtractor {
 				String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
 
 				// could check if file is directory for subfolder scanning
-				if (!extension.equals("pdf")) {
-					System.out.println(fileName + " is not a valid PDF file and will not be processed.");
-				} else {
-					System.out.println(fileName + " is a valid PDF file and an attempt to process it will be made.");
+				if (extension.equals("pdf")) {
+					log.debug(fileName + " is a valid PDF file.");
 
-					// fix brackets
 					try {
 						PDDocument pdfDocument = PDDocument.load(currentFile);
 						boolean reading = true;
@@ -193,12 +189,12 @@ public class BatchSelectionExtractor {
 
 						// try to OCR document if allowed and no text found in
 						// original document
-						if (!textFound) {// && ocr){
-							System.out.println("Possible image based document: " + currentFile.getAbsolutePath());
+						if (!textFound) {
+							log.debug("Possible image based document: " + currentFile.getAbsolutePath());
 
-							// attempt to ocr document and processs again
+							// attempt to OCR document and process again
 							if (ocrAllowed) {
-								System.out.println("Attempting to convert document to text based format...");
+								log.debug("Attempting to convert document to text based format...");
 
 								try {
 									OcrConverter ocr = new OcrConverter();
@@ -226,17 +222,12 @@ public class BatchSelectionExtractor {
 									pdfDocument.close();
 
 									reading = false;
-
-									// add document to list of created files instead? clean up later?
-									// can this trigger an exception too?
-									// need another try-catch?
 								} catch (Exception e) {
-									// e.printStackTrace();
-									System.out.println("Unable to properly convert or extract data from document");
+									log.error("Unable to properly convert or extract data from document");
 								}
 
 							} else
-								System.out.println("Ignored document based on input parameters");
+								log.debug("Ignored document based on input parameters");
 						}
 
 						// just in case
@@ -260,7 +251,6 @@ public class BatchSelectionExtractor {
 
 						int tableNum = 0; // needed?
 
-						// add header for OCR'd files?
 						for (Table table : tables) {
 							List<Table> fauxTableList = new ArrayList<Table>();
 							fauxTableList.add(table);
@@ -281,9 +271,7 @@ public class BatchSelectionExtractor {
 						// shut the door on your way out
 						bufferedWriter.close();
 						// pdfDocument.close();
-					}
-
-					catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 						continue;
 					}
@@ -291,27 +279,27 @@ public class BatchSelectionExtractor {
 			} // end of file list
 
 			if (!deleteList.isEmpty())
-				System.out.println("Deleting OCR'd files...");
+				log.debug("Deleting OCR'd files...");
 			// clean up created OCR files
 			for (String ocrPath : deleteList) {
-				System.out.println("Attempting to delete " + ocrPath);
 				try {
 					File ocrFile = new File(ocrPath);
 					ocrFile.delete();
-					System.out.println("File deleted");
-				} catch (Exception e) {
-					System.out.println("Unable to delete file!!!");
+				} catch (SecurityException e) {
+					log.error(e.getMessage());
 				}
 
 			}
 
-			System.out.println("\nEnd of processing");
 			return 1;
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (FileNotFoundException  e) {
+			log.error(e.getMessage());
 			return 0;
+		} catch (IOException e) {
+			log.error(e.getMessage());
 		}
+		return 0;
 	}
 
 	// should be rewritten so that fewer paramters are required
@@ -445,29 +433,29 @@ public class BatchSelectionExtractor {
 		return textFound;
 	}
 
-	public static void main(String[] args) {
-		try {
-			if (args.length != 6) {
-				throw new Exception("Command line parameters must be:\n" + "inputPath outputPath jsonPath processType ocrAllowed overlap");
-			}
-
-			String inputPath = args[0];
-			String outputPath = args[1];
-			String jsonPath = args[2];
-			String processType = args[3];
-			boolean ocrAllowed = Boolean.valueOf(args[4]);
-			int overlap = Integer.valueOf(args[5]);
-
-			BatchSelectionExtractor test = new BatchSelectionExtractor();
-
-			int result = test.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlap);
-			System.out.println(result);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
-
-		System.exit(0);
-	}
+//	public static void main(String[] args) {
+//		try {
+//			if (args.length != 6) {
+//				throw new Exception("Command line parameters must be:\n" + "inputPath outputPath jsonPath processType ocrAllowed overlap");
+//			}
+//
+//			String inputPath = args[0];
+//			String outputPath = args[1];
+//			String jsonPath = args[2];
+//			String processType = args[3];
+//			boolean ocrAllowed = Boolean.valueOf(args[4]);
+//			int overlap = Integer.valueOf(args[5]);
+//
+//			BatchSelectionExtractor test = new BatchSelectionExtractor();
+//
+//			int result = test.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlap);
+//			System.out.println(result);
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.exit(0);
+//		}
+//
+//		System.exit(0);
+//	}
 }
