@@ -1,6 +1,5 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -23,8 +22,8 @@ public class TestOCRConverter {
 			
 			// convert document to text
 			OcrConverter ocrConverter = new OcrConverter();
-			String conversionResponse = ocrConverter.extract("src/test/resources/technology/tabula/wellExample_imageBased.pdf", true);
-			assertEquals("Success", conversionResponse);	// check for valid response
+			boolean conversionResponse = ocrConverter.extract("src/test/resources/technology/tabula/wellExample_imageBased.pdf", true);
+			assertTrue(conversionResponse);	// check for valid response
 			
 			// check that some text is as expected
 			Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/wellExample_imageBased_OCR.pdf", 1);

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.jaiimageio.impl.plugins.tiff.TIFFImageWriterSpi;
 
 // Tess4j imports
@@ -21,9 +24,11 @@ public class OcrConverter {
 	 * method to run OCR on a given input_file.
 	 * @param input_filepath	file to image-based input PDF
 	 * @param OCR_rename		boolean to determine if output should have "_OCR" appended to the filename
-	 * @return		string to indicate success or failure of text extraction
+	 * @return		boolean to indicate success or failure of text extraction
 	 */
-	public String extract(String input_filepath, boolean OCR_rename) {
+	public boolean extract(String input_filepath, boolean OCR_rename) {
+		Logger log = LoggerFactory.getLogger(OcrConverter.class);
+		
 		IIORegistry.getDefaultInstance().registerServiceProvider(new TIFFImageWriterSpi(), ImageWriterSpi.class);
 		ArrayList<ITesseract.RenderedFormat> list = new ArrayList<ITesseract.RenderedFormat>();
 		list.add(ITesseract.RenderedFormat.PDF);
@@ -42,17 +47,17 @@ public class OcrConverter {
 			} else {
 				instance.createDocuments(image_filepath, input_filepath.substring(0, input_filepath.length() - 4), list);
 			}
-			System.out.println("OCR Done");
-			return "Success";
+			log.debug("OCR Done");
+			return true;
 		} catch (TesseractException e) {
-			System.err.println(e.getMessage());
+			log.error(e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		} catch (SecurityException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		} catch (NullPointerException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
-		return "Failed";
+		return false;
 	}
 }
