@@ -1,28 +1,26 @@
 package technology.tabula;
 
-import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.GnuParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
+import technology.tabula.extractors.OcrConverter;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
@@ -59,6 +57,7 @@ public class CommandLineApp {
         CommandLineParser parser = new GnuParser();
         try {
             // parse the command line arguments
+
             CommandLine line = parser.parse(buildOptions(), args);
 
             if (line.hasOption('h')) {
@@ -119,6 +118,10 @@ public class CommandLineApp {
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
         Appendable outFile = this.defaultOutput;
+		if (line.hasOption('e')) {
+			OcrConverter OCRDoc = new OcrConverter();
+			OCRDoc.extract(pdfFile.getAbsolutePath(), false);
+		}
         if (!line.hasOption('o')) {
             extractFile(pdfFile, this.defaultOutput);
             return;
@@ -281,6 +284,7 @@ public class CommandLineApp {
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+		o.addOption("e", "OCR", false, "Complete OCR on documents");
         o.addOption(OptionBuilder.withLongOpt("batch")
                 .withDescription("Convert all .pdfs in the provided directory.")
                 .hasArg()
