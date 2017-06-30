@@ -120,7 +120,7 @@ public class CommandLineApp {
         Appendable outFile = this.defaultOutput;
 		if (line.hasOption('e')) {
 			OcrConverter OCRDoc = new OcrConverter();
-			OCRDoc.extract(pdfFile.getAbsolutePath(), false);
+			OCRDoc.extract(pdfFile.getAbsolutePath());
 		}
         if (!line.hasOption('o')) {
             extractFile(pdfFile, this.defaultOutput);

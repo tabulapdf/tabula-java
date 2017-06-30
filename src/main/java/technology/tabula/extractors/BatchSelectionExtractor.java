@@ -7,9 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +194,10 @@ public class BatchSelectionExtractor {
 						if (!textFound) {
 							log.debug("Possible image based document: " + currentFile.getAbsolutePath());
 
+							// copy file to temporary directory before extraction
+							File ocrFile = Files.createTempFile("ocr_", ".pdf").toFile();
+							FileUtils.copyFile(currentFile, ocrFile);
+
 							// attempt to OCR document and process again
 							if (ocrAllowed) {
 								log.debug("Attempting to convert document to text based format...");
@@ -199,10 +205,7 @@ public class BatchSelectionExtractor {
 								try {
 									OcrConverter ocr = new OcrConverter();
 
-									ocr.extract(currentFile.getAbsolutePath(), true);
-
-									File ocrFile = new File(currentFile.getAbsolutePath().substring(0,
-											currentFile.getAbsolutePath().length() - 4) + "_OCR.pdf");
+									ocr.extract(ocrFile.getAbsolutePath());
 
 									deleteList.add(ocrFile.getAbsolutePath());
 

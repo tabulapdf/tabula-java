@@ -26,7 +26,7 @@ public class OcrConverter {
 	 * @param OCR_rename		boolean to determine if output should have "_OCR" appended to the filename
 	 * @return		boolean to indicate success or failure of text extraction
 	 */
-	public boolean extract(String input_filepath, boolean OCR_rename) {
+	public boolean extract(String input_filepath) {
 		Logger log = LoggerFactory.getLogger(OcrConverter.class);
 		
 		IIORegistry.getDefaultInstance().registerServiceProvider(new TIFFImageWriterSpi(), ImageWriterSpi.class);
@@ -42,11 +42,8 @@ public class OcrConverter {
 
 			// output - create PDF from image above
 			String image_filepath = image.getAbsolutePath();
-			if (OCR_rename) {
-				instance.createDocuments(image_filepath, input_filepath.substring(0, input_filepath.length() - 4) + "_OCR", list);
-			} else {
-				instance.createDocuments(image_filepath, input_filepath.substring(0, input_filepath.length() - 4), list);
-			}
+			instance.createDocuments(image_filepath, input_filepath.substring(0, input_filepath.length() - 4), list);
+
 			log.debug("OCR Done");
 			return true;
 		} catch (TesseractException e) {
