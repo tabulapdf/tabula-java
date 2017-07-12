@@ -1,6 +1,7 @@
 package technology.tabula;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -62,7 +63,10 @@ public class TestBatchExtractor {
 		batch.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
 		
 		// verify output folders
-		File[] files = new File(outputPath).listFiles();
+		File outputDir = new File(outputPath);
+		assertNotNull(outputDir);
+		
+		File[] files = outputDir.listFiles();
 		assertEquals(4, files.length);
 		for (int i = 0; i < 4; i++) {
 			checkEquality(new File(batchPath + "/expected/" + ocr_names[i]), files[i]);
@@ -84,7 +88,10 @@ public class TestBatchExtractor {
 		batch.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
 		
 		// verify output folders
-		File[] files = new File(outputPath).listFiles();
+		File outputDir = new File(outputPath);
+		assertNotNull(outputDir);
+		
+		File[] files = outputDir.listFiles();
 		assertEquals(4, files.length);
 		// special case
 		assertEquals("well_image_a.csv", files[0].getName());
