@@ -76,6 +76,7 @@ public class TestBatchExtractor {
 		File[] files = outputDir.listFiles();
 		assertNotNull(files);
 		assertEquals(4, files.length);
+		Arrays.sort(files);
 		for (int i = 0; i < 4; i++) {
 			checkEquality(new File(batchPath + "/expected/" + ocr_names[i]), files[i]);
 		}
@@ -102,6 +103,7 @@ public class TestBatchExtractor {
 		File[] files = outputDir.listFiles();
 		assertNotNull(files);
 		assertEquals(4, files.length);
+		Arrays.sort(files);
 		// special case
 		assertEquals("well_image_a.csv", files[0].getName());
 		try {
