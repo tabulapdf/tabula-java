@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -249,8 +250,7 @@ public class BatchSelectionExtractor {
 					// may be better to check if file already exists
 					Writer writer = null;
 					BufferedWriter bufferedWriter = null;
-					File testFile = new File(
-							outputPath + "\\" + fileName.substring(0, fileName.lastIndexOf(".")) + ".csv");
+					File testFile = Paths.get(outputPath, fileName.substring(0, fileName.lastIndexOf(".")) + ".csv").toAbsolutePath().toFile();
 					testFile.createNewFile();
 					FileWriter fileWriter = new FileWriter(testFile);
 					bufferedWriter = new BufferedWriter(fileWriter);
