@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -34,6 +35,12 @@ public class TestBatchExtractor {
 		if (outputFolder != null) {
 			for (File f : outputFolder) {
 				f.delete();
+			}
+		} else {
+			try {
+				Files.createDirectory(Paths.get(outputPath));
+			} catch (IOException e) {
+				fail("Could not create output directory.");
 			}
 		}
 	}
@@ -67,6 +74,7 @@ public class TestBatchExtractor {
 		assertNotNull(outputDir);
 		
 		File[] files = outputDir.listFiles();
+		assertNotNull(files);
 		assertEquals(4, files.length);
 		for (int i = 0; i < 4; i++) {
 			checkEquality(new File(batchPath + "/expected/" + ocr_names[i]), files[i]);
@@ -92,6 +100,7 @@ public class TestBatchExtractor {
 		assertNotNull(outputDir);
 		
 		File[] files = outputDir.listFiles();
+		assertNotNull(files);
 		assertEquals(4, files.length);
 		// special case
 		assertEquals("well_image_a.csv", files[0].getName());
