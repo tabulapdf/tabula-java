@@ -8,9 +8,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -24,19 +25,19 @@ import technology.tabula.Rectangle;
 import technology.tabula.Table;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.StringSearch;
-import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.writers.CSVWriter;
-import technology.tabula.writers.Writer;
+import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 
 // NOTES:
 //		need to remove tables from auto/spread list if they are used as a best guess
 //		or remove very similar tables from the list before extracting data
 public class BatchSelectionExtractor {
-	public int extract(String inputPath, String outputPath, String jsonPath, String processType, boolean ocrAllowed,
-			int overlapThreshold) {
+	public Map<String, List<Table>> extract(String inputPath, String outputPath, String jsonPath, String processType,
+			boolean ocrAllowed, int overlapThreshold) {
 		Logger log = LoggerFactory.getLogger(BatchSelectionExtractor.class);
 
 		File parentPath;
+		File outputDirectory;
 		List<String[]> stringList = new ArrayList<String[]>();
 		List<String> pageList = new ArrayList<String>();
 		List<Rectangle> coordList = new ArrayList<Rectangle>();
@@ -45,32 +46,33 @@ public class BatchSelectionExtractor {
 			// ----------------------------------------------------------
 			// Confirm process type is valid
 			// ----------------------------------------------------------
-			
+
 			if (!processType.equals("both") && !processType.equals("coords") && !processType.equals("string")) {
 				// invalid process type
-				return 0;
+				log.error("Process type invalid");
+				return null;
 			}
 
 			// ----------------------------------------------------------
 			// Confirm input and output paths exist
 			// ----------------------------------------------------------
-			
+
 			File inputFile = new File(inputPath); // inputPath could point to
 													// pdf or directory of pdfs
 													// currently does not check
 													// subfolders
 
-			File outputFile = new File(outputPath);
+			outputDirectory = new File(outputPath);
 
 			if (!inputFile.exists()) {
 				throw new FileNotFoundException("Input file or directory does not exist");
 			}
 
-			if (!outputFile.exists()) {
+			if (!outputDirectory.exists()) {
 				throw new FileNotFoundException("Output directory does not exist");
 			}
 
-			if (!outputFile.isDirectory()) {
+			if (!outputDirectory.isDirectory()) {
 				throw new FileNotFoundException("Output path does not point to a directory");
 			}
 
@@ -88,7 +90,7 @@ public class BatchSelectionExtractor {
 			// ----------------------------------------------------------
 			// Confirm json file is valid
 			// ----------------------------------------------------------
-			
+
 			// STILL NEED TO CHECK THAT PARSED FILE IS VALID
 			FileReader fr = new FileReader(jsonPath);
 			BufferedReader br = new BufferedReader(fr);
@@ -146,20 +148,21 @@ public class BatchSelectionExtractor {
 
 			br.close();
 			fr.close();
-		} catch (FileNotFoundException  e) {
+		} catch (FileNotFoundException e) {
 			log.error(e.getMessage());
-			return 0;
+			return null;
 		} catch (IOException e) {
 			log.error(e.getMessage());
-			return 0;
+			return null;
 		}
 
 		// ----------------------------------------------------------
 		// Scan through input folder for PDF documents
 		// ----------------------------------------------------------
-		
+
 		// Create list of files in input directory
 		File[] fileList = parentPath.listFiles();
+		Map<String, List<Table>> FileTables = new HashMap<String, List<Table>>();
 		List<String> deleteList = new ArrayList<String>();
 
 		// iterate over all files in directory
@@ -189,7 +192,7 @@ public class BatchSelectionExtractor {
 					// iterator over each page and search for table with identifiers
 					// extract and append data to table if found
 					// scan assuming that document is text based
-					boolean textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold, 
+					boolean textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold,
 							processType, stringList, coordList, pageList, tables, tableHeaders);
 
 					pdfDocument.close();
@@ -200,33 +203,26 @@ public class BatchSelectionExtractor {
 					if (!textFound) {
 						log.debug("Possible image based document: " + currentFile.getAbsolutePath());
 
-						// copy file to temporary directory before extraction
-						File ocrFile = Files.createTempFile("ocr_", ".pdf").toFile();
-						FileUtils.copyFile(currentFile, ocrFile);
-
 						// attempt to OCR document and process again
 						if (ocrAllowed) {
 							log.debug("Attempting to convert document to text based format...");
 
 							try {
-								OcrConverter ocr = new OcrConverter();
+								// copy file to temporary directory before extraction
+								File ocrFile = Files.createTempFile("ocr_", ".pdf").toFile();
+								FileUtils.copyFile(currentFile, ocrFile);
 
+								OcrConverter ocr = new OcrConverter();
 								ocr.extract(ocrFile.getAbsolutePath());
 
 								deleteList.add(ocrFile.getAbsolutePath());
 
 								pdfDocument = PDDocument.load(ocrFile);
-
 								reading = true;
-
 								extractor = new ObjectExtractor(pdfDocument);
-
 								pageIterator = extractor.extract();
-
-								textFound = false;
-
-								textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold, processType,
-										stringList, coordList, pageList, tables, tableHeaders);
+								textFound = scanDocForMatchedTables(basicExtractor, pageIterator, overlapThreshold,
+										processType, stringList, coordList, pageList, tables, tableHeaders);
 
 								pdfDocument.close();
 
@@ -244,46 +240,19 @@ public class BatchSelectionExtractor {
 						pdfDocument.close();
 						reading = false;
 					}
-					// write data to new file
-					// currently overwrites existing files and creates a
-					// 	file even if no tables extracted
-					// may be better to check if file already exists
-					Writer writer = null;
-					BufferedWriter bufferedWriter = null;
-					File testFile = Paths.get(outputPath, fileName.substring(0, fileName.lastIndexOf(".")) + ".csv").toAbsolutePath().toFile();
-					testFile.createNewFile();
-					FileWriter fileWriter = new FileWriter(testFile);
-					bufferedWriter = new BufferedWriter(fileWriter);
-					// assuming CSV format for demo
-					writer = new CSVWriter();
 
-					int tableNum = 0; // needed?
-
-					for (Table table : tables) {
-						List<Table> fauxTableList = new ArrayList<Table>();
-						fauxTableList.add(table);
-
-						// write table header
-						bufferedWriter.write(tableHeaders.get(tableNum) + "\n");
-
-						// write single table
-						writer.write(bufferedWriter, fauxTableList);
-
-						// write line break
-						bufferedWriter.write("\n");
-
-						// increment table number?
-						tableNum++;
-					}
-
-					// shut the door on your way out
+					File outputFile = new File(currentFile.getPath().replaceFirst("(\\.pdf|)$", ".csv"));
+					outputFile.createNewFile();
+					FileWriter fileWriter = new FileWriter(outputFile.getAbsoluteFile());
+					BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+					new CSVWriter().write(bufferedWriter, tables);
+					FileTables.put(fileName, tables);
 					bufferedWriter.close();
-					// pdfDocument.close();
 				} catch (IOException e) {
 					log.error(e.getMessage());
 					continue;
 				}
-			} // end of current pdf processing 
+			} // end of current pdf processing
 		} // end of file list
 
 		if (!deleteList.isEmpty())
@@ -299,14 +268,14 @@ public class BatchSelectionExtractor {
 
 		}
 
-		return 1;
+		return FileTables;
 	}
 
 	// should be rewritten so that fewer paramters are required
 	// more method calls? globals?
-	private boolean scanDocForMatchedTables(BasicExtractionAlgorithm basicExtractor, PageIterator pageIterator, int overlapThreshold, String processType,
-			List<String[]> stringList, List<Rectangle> coordList, List<String> pageList, List<Table> tables,
-			List<String> tableHeaders) {
+	private boolean scanDocForMatchedTables(BasicExtractionAlgorithm basicExtractor, PageIterator pageIterator,
+			int overlapThreshold, String processType, List<String[]> stringList, List<Rectangle> coordList,
+			List<String> pageList, List<Table> tables, List<String> tableHeaders) {
 		boolean textFound = false;
 
 		int tableNumber = 1;
@@ -389,17 +358,17 @@ public class BatchSelectionExtractor {
 							worklist.add(bestGuess);
 						}
 					}
-					
+
 					// todo: determine if table has been added to the worklist
-					// 	multiple times based on overlap
+					// multiple times based on overlap
 					for (Rectangle guessRect : worklist) {
 						Page guess = page.getArea(guessRect);
 						// may want to add a break after each
 						// table is appended
 
 						// add table header?
-						tableHeaders.add("Table #" + tableNumber + "  ul: " + identifiers[0] + "  ur: "
-								+ identifiers[1] + "  ll: " + identifiers[2] + "  lr: " + identifiers[3]);
+						tableHeaders.add("Table #" + tableNumber + "  ul: " + identifiers[0] + "  ur: " + identifiers[1]
+								+ "  ll: " + identifiers[2] + "  lr: " + identifiers[3]);
 
 						// add new table
 						tables.addAll(basicExtractor.extract(guess));
