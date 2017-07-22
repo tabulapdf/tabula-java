@@ -39,11 +39,11 @@ public class TestObjectExtractor {
         assertEquals(2, i);
     }
     
-    /*
+
     @Test
     public void testGoodPassword() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, "userpassword"); 
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"), "userpassword");
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
         List<Page> pages = new ArrayList<Page>();
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
@@ -51,7 +51,7 @@ public class TestObjectExtractor {
         }
         assertEquals(1, pages.size());
     }
-    */
+
 
     @Test
     public void testTextExtractionDoesNotRaise() throws IOException {
