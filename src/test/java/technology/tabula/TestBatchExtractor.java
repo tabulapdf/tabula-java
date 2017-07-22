@@ -11,10 +11,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
-import technology.tabula.extractors.BatchSelectionExtractor;
+import technology.tabula.extractors.BatchExtractionAlgorithm;
+import technology.tabula.writers.BatchWriter;
 
 public class TestBatchExtractor {
 	// parameters
@@ -66,9 +69,10 @@ public class TestBatchExtractor {
 		emptyFolder(outputPath);
 		
 		// run extraction
-		BatchSelectionExtractor batch = new BatchSelectionExtractor();
-		batch.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
-		
+		BatchExtractionAlgorithm batch = new BatchExtractionAlgorithm();
+		Map<String, List<Table>> batchOutput = batch.extract(inputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
+		BatchWriter batchWriter = new BatchWriter();
+		batchWriter.write(batchOutput, outputPath);
 		// verify output folders
 		File outputDir = new File(outputPath);
 		assertNotNull(outputDir);
@@ -93,8 +97,10 @@ public class TestBatchExtractor {
 		emptyFolder(outputPath);
 		
 		// run extraction
-		BatchSelectionExtractor batch = new BatchSelectionExtractor();
-		batch.extract(inputPath, outputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
+		BatchExtractionAlgorithm batch = new BatchExtractionAlgorithm();
+		Map<String, List<Table>> batchOutput = batch.extract(inputPath, jsonPath, processType, ocrAllowed, overlapThreshold);
+		BatchWriter batchWriter = new BatchWriter();
+		batchWriter.write(batchOutput, outputPath);
 		
 		// verify output folders
 		File outputDir = new File(outputPath);

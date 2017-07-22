@@ -1,11 +1,9 @@
 package technology.tabula.extractors;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -25,19 +23,17 @@ import technology.tabula.Rectangle;
 import technology.tabula.Table;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.StringSearch;
-import technology.tabula.writers.CSVWriter;
 import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 
 // NOTES:
 //		need to remove tables from auto/spread list if they are used as a best guess
 //		or remove very similar tables from the list before extracting data
-public class BatchSelectionExtractor {
-	public Map<String, List<Table>> extract(String inputPath, String outputPath, String jsonPath, String processType,
+public class BatchExtractionAlgorithm {
+	public Map<String, List<Table>> extract(String inputPath, String jsonPath, String processType,
 			boolean ocrAllowed, int overlapThreshold) {
-		Logger log = LoggerFactory.getLogger(BatchSelectionExtractor.class);
+		Logger log = LoggerFactory.getLogger(BatchExtractionAlgorithm.class);
 
 		File parentPath;
-		File outputDirectory;
 		List<String[]> stringList = new ArrayList<String[]>();
 		List<String> pageList = new ArrayList<String>();
 		List<Rectangle> coordList = new ArrayList<Rectangle>();
@@ -62,18 +58,10 @@ public class BatchSelectionExtractor {
 													// currently does not check
 													// subfolders
 
-			outputDirectory = new File(outputPath);
+	
 
 			if (!inputFile.exists()) {
 				throw new FileNotFoundException("Input file or directory does not exist");
-			}
-
-			if (!outputDirectory.exists()) {
-				throw new FileNotFoundException("Output directory does not exist");
-			}
-
-			if (!outputDirectory.isDirectory()) {
-				throw new FileNotFoundException("Output path does not point to a directory");
 			}
 
 			// get folder containing template
@@ -241,13 +229,7 @@ public class BatchSelectionExtractor {
 						reading = false;
 					}
 
-					File outputFile = new File(currentFile.getPath().replaceFirst("(\\.pdf|)$", ".csv"));
-					outputFile.createNewFile();
-					FileWriter fileWriter = new FileWriter(outputFile.getAbsoluteFile());
-					BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-					new CSVWriter().write(bufferedWriter, tables);
 					FileTables.put(fileName, tables);
-					bufferedWriter.close();
 				} catch (IOException e) {
 					log.error(e.getMessage());
 					continue;
@@ -267,7 +249,6 @@ public class BatchSelectionExtractor {
 			}
 
 		}
-
 		return FileTables;
 	}
 
