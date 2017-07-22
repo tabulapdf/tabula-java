@@ -133,4 +133,16 @@ public class TestCommandLineApp {
         assertEquals("FLA Audit Profile,,,,,,,,,", s.split("\\r?\\n")[0]);
     }
 
+    @Test(expected=org.apache.commons.cli.ParseException.class)
+    public void testEncryptedWrongPassword() throws ParseException {
+        String s = this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/encrypted.pdf",
+                "-s", "wrongpassword",
+                "-p", "1",
+                "-f", "CSV"
+        });
+    }
+
+
+
 }
