@@ -357,7 +357,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         }
         // 1/2 the bbox is used as the height todo: why?
         float glyphHeight = bbox.getHeight() / 2;
-        
+
         PDFontDescriptor fontDescriptor = font.getFontDescriptor();
         if (fontDescriptor != null)
         {
@@ -366,7 +366,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             {
                 glyphHeight = capHeight;
             }
-        }        
+        }
 
         // transformPoint from glyph space -> text space
         float height;

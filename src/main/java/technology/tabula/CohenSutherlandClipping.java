@@ -57,7 +57,7 @@ public final class CohenSutherlandClipping
     private static final int TOP    = 8;
 
     private final int regionCode(double x, double y) {
-        int code = x < xMin 
+        int code = x < xMin
             ? LEFT
             : x > xMax
                 ? RIGHT
@@ -86,7 +86,7 @@ public final class CohenSutherlandClipping
 
         boolean vertical = p1x == p2x;
 
-        double slope = vertical 
+        double slope = vertical
             ? 0d
             : (p2y-p1y)/(p2x-p1x);
 

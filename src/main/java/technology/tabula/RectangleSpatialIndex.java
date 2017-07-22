@@ -10,7 +10,7 @@ import net.sf.jsi.SpatialIndex;
 import net.sf.jsi.rtree.RTree;
 
 class RectangleSpatialIndex<T extends Rectangle> {
-    
+
     class SaveToListProcedure implements TIntProcedure {
         private List<Integer> ids = new ArrayList<Integer>();
 
@@ -18,22 +18,22 @@ class RectangleSpatialIndex<T extends Rectangle> {
           ids.add(id);
           return true;
         };
-        
+
         private List<Integer> getIds() {
           return ids;
         }
     };
-	
+
     private final SpatialIndex si;
     private final List<T> rectangles;
     private Rectangle bounds = null;
-    
+
     public RectangleSpatialIndex() {
         si = new RTree();
         si.init(null);
         rectangles = new ArrayList<T>();
     }
-    
+
     public void add(T te) {
         rectangles.add(te);
         if (bounds == null) {
@@ -41,11 +41,11 @@ class RectangleSpatialIndex<T extends Rectangle> {
             bounds.setRect(te);
         }
         else {
-            bounds.merge(te);            
+            bounds.merge(te);
         }
         si.add(rectangleToSpatialIndexRectangle(te), rectangles.size() - 1);
     }
-    
+
     public List<T> contains(Rectangle r) {
         SaveToListProcedure proc = new SaveToListProcedure();
         si.contains(rectangleToSpatialIndexRectangle(r), proc);
@@ -56,7 +56,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
         Utils.sort(rv);
         return rv;
     }
-    
+
     public List<T> intersects(Rectangle r) {
         SaveToListProcedure proc = new SaveToListProcedure();
         si.intersects(rectangleToSpatialIndexRectangle(r), proc);
@@ -67,7 +67,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
         Utils.sort(rv);
         return rv;
     }
-    
+
     private net.sf.jsi.Rectangle rectangleToSpatialIndexRectangle(Rectangle r) {
         return new net.sf.jsi.Rectangle((float) r.getX(),
                 (float) r.getY(),
@@ -75,10 +75,10 @@ class RectangleSpatialIndex<T extends Rectangle> {
                 (float) (r.getY() + r.getHeight()));
     }
 
-    
+
     /**
      * Minimum bounding box of all the Rectangles contained on this RectangleSpatialIndex
-     * 
+     *
      * @return a Rectangle
      */
     public Rectangle getBounds() {

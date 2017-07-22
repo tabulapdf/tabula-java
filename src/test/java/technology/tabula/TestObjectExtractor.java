@@ -15,7 +15,7 @@ public class TestObjectExtractor {
     /*@Test(expected=IOException.class)
     public void testWrongPasswordRaisesException() throws IOException {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, "wrongpass"); 
+        ObjectExtractor oe = new ObjectExtractor(pdf_document, "wrongpass");
         oe.extract().next();
     }*/
 
@@ -38,12 +38,12 @@ public class TestObjectExtractor {
         }
         assertEquals(2, i);
     }
-    
+
     /*
     @Test
     public void testGoodPassword() throws IOException {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, "userpassword"); 
+        ObjectExtractor oe = new ObjectExtractor(pdf_document, "userpassword");
         List<Page> pages = new ArrayList<Page>();
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
@@ -111,14 +111,14 @@ public class TestObjectExtractor {
         oe.extract(3);
 
     }
-    
+
     /*
     @Test
     public void testExtractWithoutExtractingRulings() throws IOException {
         PDDocument pdf_document = PDDocument.load("src/test/resources/technology/tabula/should_detect_rulings.pdf");
         ObjectExtractor oe = new ObjectExtractor(pdf_document, null, false, false);
         PageIterator pi = oe.extract();
-       
+
         assertTrue(pi.hasNext());
         Page page = pi.next();
         assertNotNull(page);

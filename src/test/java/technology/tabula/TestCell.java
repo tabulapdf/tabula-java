@@ -31,16 +31,16 @@ public class TestCell {
 	public void testGetTextElements() {
 		Cell cell = new Cell(0, 0, 0, 0);
 		assertTrue(cell.getTextElements().isEmpty());
-		
+
 		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		List<TextChunk> tList = new ArrayList<TextChunk>();
 		tList.add(tChunk);
 		cell.setTextElements(tList);
-		
+
 		assertEquals("test", cell.getTextElements().get(0).getText());
-		
-		
+
+
 		}
 
 }

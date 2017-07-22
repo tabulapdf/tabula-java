@@ -12,7 +12,7 @@ public class TestCellPosition {
 	public void testHashCode() {
 		Table table = new Table();
 		CellPosition cellPosition = table.new CellPosition(5,  5);
-		
+
 		assertEquals(500005, cellPosition.hashCode());
 
 	}
@@ -24,7 +24,7 @@ public class TestCellPosition {
 
 		assertTrue(cellPosition1.equals(cellPosition1));
 	}
-	
+
 	@Test
 	public void testNotEqualsObject() {
 		Table table = new Table();
@@ -33,7 +33,7 @@ public class TestCellPosition {
 
 		assertFalse(cellPosition1.equals(cellPosition2));
 	}
-	
+
 	@Test
 	public void testNotInstanceOfObject() {
 		Table table = new Table();

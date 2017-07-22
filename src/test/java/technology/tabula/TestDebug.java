@@ -11,7 +11,7 @@ import technology.tabula.debug.Debug;
 public class TestDebug {
 
     private final static String PATH = "src/test/resources/technology/tabula/spanning_cells.pdf";
-        
+
 //    @Test
 //    public void test() throws IOException {
 //        File outFile = new File(new File(System.getProperty("java.io.tmpdir")), "/rendered_page.jpg");

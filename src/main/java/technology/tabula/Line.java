@@ -10,7 +10,7 @@ public class Line extends Rectangle {
 
     List<TextChunk> textChunks = new ArrayList<TextChunk>();
     public static final Character[] WHITE_SPACE_CHARS = { ' ', '\t', '\r', '\n', '\f' };
-    
+
 
     public List<TextChunk> getTextElements() {
         return textChunks;
@@ -25,7 +25,7 @@ public class Line extends Rectangle {
             throw new IllegalArgumentException("i can't be less than 0");
         }
 
-        int s = this.textChunks.size(); 
+        int s = this.textChunks.size();
         if (s < i + 1) {
             for (; s <= i; s++) {
                 this.textChunks.add(null);
@@ -47,7 +47,7 @@ public class Line extends Rectangle {
         }
         this.textChunks.add(textChunk);
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -64,13 +64,13 @@ public class Line extends Rectangle {
     static Line removeRepeatedCharacters(Line line, Character c, int minRunLength) {
 
         Line rv = new Line();
-        
+
         for(TextChunk t: line.getTextElements()) {
             for (TextChunk r: t.squeeze(c, minRunLength)) {
                 rv.addTextChunk(r);
             }
         }
-        
+
         return rv;
     }
 }
