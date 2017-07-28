@@ -10,14 +10,14 @@ import java.nio.file.FileSystems;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 
 public class TestCommandLineApp {
 
     private String csvFromCommandLineArgs(String[] args) throws ParseException {
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(CommandLineApp.buildOptions(), args);
 
         StringBuilder stringBuilder = new StringBuilder();
