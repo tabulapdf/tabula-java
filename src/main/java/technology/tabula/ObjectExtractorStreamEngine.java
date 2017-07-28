@@ -253,9 +253,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     public Rectangle2D currentClippingPath() {
         Shape clippingPath = this.getGraphicsState().getCurrentClippingPath();
         Shape transformedClippingPath = this.getPageTransform().createTransformedShape(clippingPath);
-        Rectangle2D transformedClippingPathBounds = transformedClippingPath.getBounds2D();
 
-        return transformedClippingPathBounds;
+        return transformedClippingPath.getBounds2D();
     }
 
     public boolean isDebugClippingPaths() {

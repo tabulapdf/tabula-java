@@ -13,8 +13,8 @@ public class TextStripper extends PDFTextStripper {
     private PDDocument document;
     public ArrayList<TextElement> textElements;
     public RectangleSpatialIndex<TextElement> spatialIndex;
-    public float minCharWidth = Float.MAX_VALUE;;
-    public float minCharHeight = Float.MAX_VALUE;;
+    public float minCharWidth = Float.MAX_VALUE;
+    public float minCharHeight = Float.MAX_VALUE;
 
     public TextStripper(PDDocument document, int pageNumber) throws IOException {
         super();

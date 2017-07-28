@@ -95,10 +95,8 @@ public class TextElement extends Rectangle implements HasText {
                 return false;
         } else if (!text.equals(other.text))
             return false;
-        if (java.lang.Float.floatToIntBits(widthOfSpace) != java.lang.Float
-                .floatToIntBits(other.widthOfSpace))
-            return false;
-        return true;
+        return java.lang.Float.floatToIntBits(widthOfSpace) == java.lang.Float
+                .floatToIntBits(other.widthOfSpace);
     }
 
     public static List<TextChunk> mergeWords(List<TextElement> textElements) {

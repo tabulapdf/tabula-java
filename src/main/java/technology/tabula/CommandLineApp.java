@@ -178,10 +178,9 @@ public class CommandLineApp {
 
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
-        PageIterator pageIterator = (pages == null) ?
+        return (pages == null) ?
                 extractor.extract() :
                 extractor.extract(pages);
-        return pageIterator;
     }
 
     // CommandLine parsing methods

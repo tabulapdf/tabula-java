@@ -17,13 +17,13 @@ class RectangleSpatialIndex<T extends Rectangle> {
         public boolean execute(int id) {
           ids.add(id);
           return true;
-        };
-        
+        }
+
         private List<Integer> getIds() {
           return ids;
         }
-    };
-	
+    }
+
     private final SpatialIndex si;
     private final List<T> rectangles;
     private Rectangle bounds = null;

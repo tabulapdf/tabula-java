@@ -25,7 +25,7 @@ public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
 
-        List<Rectangle> tables = sea.findSpreadsheetsFromCells(cells);
+        List<Rectangle> tables = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
 
         // we want tables to be returned from top to bottom on the page
         Collections.sort(tables);
