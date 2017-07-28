@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -96,7 +95,7 @@ public class TestRectangle {
 		toSortList.add(first);
 		toSortList.add(fourth);
 		
-		Collections.sort(toSortList);
+		Utils.sort(toSortList);
 		
 		assertEquals(expectedList, toSortList);
 	}
