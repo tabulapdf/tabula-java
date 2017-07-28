@@ -48,11 +48,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
     public List<Shape> clippingPaths;
-    private int pageRotation;
-    private PDRectangle pageSize;
 
     private Matrix translateMatrix;
-    private GlyphList glyphList;
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
@@ -61,8 +58,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
         this.rulings = new ArrayList<Ruling>();
         this.pageTransform = null;
-        this.pageRotation = page.getRotation();
-        this.pageSize = page.getCropBox();
 
         // calculate page transform
         PDRectangle cb = this.getPage().getCropBox();
@@ -76,16 +71,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         } else {
             this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
             this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
-        }
-
-        // load additional glyph list for Unicode mapping
-        String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
-        InputStream input = GlyphList.class.getClassLoader().getResourceAsStream(path);
-        this.glyphList = null;
-        try {
-            this.glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
-        } catch (IOException e) {
-            this.log.error("Error loading glyph list", e);
         }
     }
 
