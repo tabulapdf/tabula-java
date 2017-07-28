@@ -71,8 +71,11 @@ public class TestObjectExtractor {
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         PageIterator pi = oe.extract();
 
-        while (pi.hasNext()) {
-            assertNotEquals(0, pi.next().getRulings().size());
+        Page page = pi.next();
+        List<Ruling> rulings = page.getRulings();
+
+        for (Ruling r: rulings) {
+            assertTrue(page.contains(r.getBounds()));
         }
     }
 
