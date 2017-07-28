@@ -44,7 +44,7 @@ public class TestObjectExtractor {
     public void testGoodPassword() throws IOException {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"), "userpassword");
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        List<Page> pages = new ArrayList<Page>();
+        List<Page> pages = new ArrayList<>();
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
             pages.add(pi.next());
@@ -122,9 +122,6 @@ public class TestObjectExtractor {
         for (TextElement te: page.getText()) {
             assertTrue(page.contains(te));
         }
-        System.out.println(page);
-
-
     }
     
     /*
