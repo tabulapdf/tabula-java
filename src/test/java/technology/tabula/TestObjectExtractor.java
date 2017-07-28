@@ -39,19 +39,19 @@ public class TestObjectExtractor {
         assertEquals(2, i);
     }
     
-    /*
+
     @Test
     public void testGoodPassword() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, "userpassword"); 
-        List<Page> pages = new ArrayList<Page>();
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"), "userpassword");
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        List<Page> pages = new ArrayList<>();
         PageIterator pi = oe.extract();
         while (pi.hasNext()) {
             pages.add(pi.next());
         }
         assertEquals(1, pages.size());
     }
-    */
+
 
     @Test
     public void testTextExtractionDoesNotRaise() throws IOException {
@@ -110,6 +110,18 @@ public class TestObjectExtractor {
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         oe.extract(3);
 
+    }
+
+    @Test
+    public void testTextElementsContainedInPage() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/cs-en-us-pbms.pdf"));
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+
+        Page page = oe.extractPage(1);
+
+        for (TextElement te: page.getText()) {
+            assertTrue(page.contains(te));
+        }
     }
     
     /*
