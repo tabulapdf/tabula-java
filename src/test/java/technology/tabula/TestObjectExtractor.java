@@ -111,6 +111,21 @@ public class TestObjectExtractor {
         oe.extract(3);
 
     }
+
+    @Test
+    public void testTextElementsContainedInPage() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/cs-en-us-pbms.pdf"));
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+
+        Page page = oe.extractPage(1);
+
+        for (TextElement te: page.getText()) {
+            assertTrue(page.contains(te));
+        }
+        System.out.println(page);
+
+
+    }
     
     /*
     @Test
