@@ -7,12 +7,11 @@ import org.apache.pdfbox.pdmodel.PDPage;
 
 public class ObjectExtractor {
 
-    private PDDocument pdfDocument;
+    private final PDDocument pdfDocument;
 
     public ObjectExtractor(PDDocument pdfDocument) throws IOException {
         this.pdfDocument = pdfDocument;
     }
-
 
     protected Page extractPage(Integer pageNumber) throws IOException {
 
@@ -26,7 +25,12 @@ public class ObjectExtractor {
         ObjectExtractorStreamEngine se = new ObjectExtractorStreamEngine(p);
         se.processPage(p);
 
-        Utils.sort(se.characters);
+
+        TextStripper pdfTextStripper = new TextStripper(this.pdfDocument, pageNumber);
+
+        pdfTextStripper.process();
+
+        Utils.sort(pdfTextStripper.textElements);
 
         float w, h;
         int pageRotation = p.getRotation();
@@ -38,8 +42,8 @@ public class ObjectExtractor {
             h = p.getCropBox().getHeight();
         }
 
-        return new Page(0, 0, w, h, pageRotation, pageNumber, p, se.characters,
-                se.rulings, se.minCharWidth, se.minCharHeight, se.spatialIndex);
+        return new Page(0, 0, w, h, pageRotation, pageNumber, p, pdfTextStripper.textElements,
+                se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
     }
 
     public PageIterator extract(Iterable<Integer> pages) {
@@ -57,5 +61,7 @@ public class ObjectExtractor {
     public void close() throws IOException {
         this.pdfDocument.close();
     }
+
+
 
 }

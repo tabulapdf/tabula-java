@@ -40,11 +40,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
     private static final String NBSP = "\u00A0";
 
-    protected float minCharWidth;
-    protected float minCharHeight;
-    protected List<TextElement> characters;
     protected List<Ruling> rulings;
-    protected RectangleSpatialIndex<TextElement> spatialIndex;
     private AffineTransform pageTransform;
     private boolean debugClippingPaths;
     private boolean extractRulingLines = true;
@@ -52,25 +48,16 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
     public List<Shape> clippingPaths;
-    private int pageRotation;
-    private PDRectangle pageSize;
 
     private Matrix translateMatrix;
-    private GlyphList glyphList;
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
 
         this.log = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
 
-        this.characters = new ArrayList<TextElement>();
         this.rulings = new ArrayList<Ruling>();
         this.pageTransform = null;
-        this.spatialIndex = new RectangleSpatialIndex<TextElement>();
-        this.minCharWidth = Float.MAX_VALUE;
-        this.minCharHeight = Float.MAX_VALUE;
-        this.pageRotation = page.getRotation();
-        this.pageSize = page.getCropBox();
 
         // calculate page transform
         PDRectangle cb = this.getPage().getCropBox();
@@ -85,62 +72,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
             this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
         }
-
-        // load additional glyph list for Unicode mapping
-        String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
-        InputStream input = GlyphList.class.getClassLoader().getResourceAsStream(path);
-        this.glyphList = null;
-        try {
-            this.glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
-        } catch (IOException e) {
-            this.log.error("Error loading glyph list", e);
-        }
-    }
-
-    @Override
-    protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode, Vector displacement)
-            throws IOException {
-
-        TextPosition textPosition = getTextPosition(textRenderingMatrix, font, code, unicode, displacement);
-
-        if (textPosition != null) {
-
-            String c = textPosition.getUnicode();
-
-            // if c not printable, return
-            if (!isPrintable(c)) {
-                return;
-            }
-
-            Float h = textPosition.getHeightDir();
-
-            if (c.equals(NBSP)) { // replace non-breaking space for space
-                c = " ";
-            }
-
-            float wos = textPosition.getWidthOfSpace();
-
-            TextElement te = new TextElement(Utils.round(textPosition.getYDirAdj() - h, 2),
-                    Utils.round(textPosition.getXDirAdj(), 2), Utils.round(textPosition.getWidthDirAdj(), 2),
-                    Utils.round(textPosition.getHeightDir(), 2), textPosition.getFont(), textPosition.getFontSize(), c,
-                    // workaround a possible bug in PDFBox:
-                    // https://issues.apache.org/jira/browse/PDFBOX-1755
-                    wos, textPosition.getDir());
-
-            if (this.currentClippingPath().intersects(te)) {
-
-                this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
-                this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-
-                this.spatialIndex.add(te);
-                this.characters.add(te);
-            }
-
-            if (this.isDebugClippingPaths() && !this.clippingPaths.contains(this.currentClippingPath())) {
-                this.clippingPaths.add(this.currentClippingPath());
-            }
-        }
-
     }
 
     @Override
@@ -325,180 +256,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         Rectangle2D transformedClippingPathBounds = transformedClippingPath.getBounds2D();
 
         return transformedClippingPathBounds;
-    }
-
-    private static boolean isPrintable(String s) {
-        Character c;
-        Character.UnicodeBlock block;
-        boolean printable = false;
-        for (int i = 0; i < s.length(); i++) {
-            c = s.charAt(i);
-            block = Character.UnicodeBlock.of(c);
-            printable |= !Character.isISOControl(c) && block != null && block != Character.UnicodeBlock.SPECIALS;
-        }
-        return printable;
-    }
-
-    private TextPosition getTextPosition(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
-                                         Vector displacement) throws IOException {
-
-        // LegacyPDFStreamEngine
-        PDGraphicsState state = getGraphicsState();
-        Matrix ctm = state.getCurrentTransformationMatrix();
-        float fontSize = state.getTextState().getFontSize();
-        float horizontalScaling = state.getTextState().getHorizontalScaling() / 100f;
-        Matrix textMatrix = getTextMatrix();
-
-        BoundingBox bbox = font.getBoundingBox();
-        if (bbox.getLowerLeftY() < Short.MIN_VALUE) {
-            // PDFBOX-2158 and PDFBOX-3130
-            // files by Salmat eSolutions / ClibPDF Library
-            bbox.setLowerLeftY(-(bbox.getLowerLeftY() + 65536));
-        }
-        // 1/2 the bbox is used as the height todo: why?
-        float glyphHeight = bbox.getHeight() / 2;
-        
-        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
-        if (fontDescriptor != null)
-        {
-            float capHeight = fontDescriptor.getCapHeight();
-            if (capHeight != 0 && capHeight < glyphHeight)
-            {
-                glyphHeight = capHeight;
-            }
-        }        
-
-        // transformPoint from glyph space -> text space
-        float height;
-        if (font instanceof PDType3Font) {
-            height = font.getFontMatrix().transformPoint(0, glyphHeight).y;
-        } else {
-            height = glyphHeight / 1000;
-        }
-
-        float displacementX = displacement.getX();
-        // the sorting algorithm is based on the width of the character. As the
-        // displacement
-        // for vertical characters doesn't provide any suitable value for it, we
-        // have to
-        // calculate our own
-        if (font.isVertical()) {
-            displacementX = font.getWidth(code) / 1000;
-            // there may be an additional scaling factor for true type fonts
-            TrueTypeFont ttf = null;
-            if (font instanceof PDTrueTypeFont) {
-                ttf = ((PDTrueTypeFont) font).getTrueTypeFont();
-            } else if (font instanceof PDType0Font) {
-                PDCIDFont cidFont = ((PDType0Font) font).getDescendantFont();
-                if (cidFont instanceof PDCIDFontType2) {
-                    ttf = ((PDCIDFontType2) cidFont).getTrueTypeFont();
-                }
-            }
-            if (ttf != null && ttf.getUnitsPerEm() != 1000) {
-                displacementX *= 1000f / ttf.getUnitsPerEm();
-            }
-        }
-
-        // (modified) combined displacement, this is calculated *without* taking
-        // the character
-        // spacing and word spacing into account, due to legacy code in
-        // TextStripper
-        float tx = displacementX * fontSize * horizontalScaling;
-        float ty = displacement.getY() * fontSize;
-
-        // (modified) combined displacement matrix
-        Matrix td = Matrix.getTranslateInstance(tx, ty);
-
-        // (modified) text rendering matrix
-        Matrix nextTextRenderingMatrix = td.multiply(textMatrix).multiply(ctm); // text
-        // space
-        // ->
-        // device
-        // space
-        float nextX = nextTextRenderingMatrix.getTranslateX();
-        float nextY = nextTextRenderingMatrix.getTranslateY();
-
-        // (modified) width and height calculations
-        float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
-        float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
-
-        //
-        // start of the original method
-        //
-
-        // Note on variable names. There are three different units being used in
-        // this code.
-        // Character sizes are given in glyph units, text locations are
-        // initially given in text
-        // units, and we want to save the data in display units. The variable
-        // names should end with
-        // Text or Disp to represent if the values are in text or disp units (no
-        // glyph units are
-        // saved).
-
-        float glyphSpaceToTextSpaceFactor = 1 / 1000f;
-        if (font instanceof PDType3Font) {
-            glyphSpaceToTextSpaceFactor = font.getFontMatrix().getScaleX();
-        }
-
-        float spaceWidthText = 0;
-        try {
-            // to avoid crash as described in PDFBOX-614, see what the space
-            // displacement should be
-            spaceWidthText = font.getSpaceWidth() * glyphSpaceToTextSpaceFactor;
-        } catch (Throwable exception) {
-            this.log.warn("Error getting spaceWidthText", exception);
-        }
-
-        if (spaceWidthText == 0) {
-            spaceWidthText = font.getAverageFontWidth() * glyphSpaceToTextSpaceFactor;
-            // the average space width appears to be higher than necessary so
-            // make it smaller
-            spaceWidthText *= .80f;
-        }
-        if (spaceWidthText == 0) {
-            spaceWidthText = 1.0f; // if could not find font, use a generic
-            // value
-        }
-
-        // the space width has to be transformed into display units
-        float spaceWidthDisplay = spaceWidthText * textRenderingMatrix.getScalingFactorX();
-
-        // use our additional glyph list for Unicode mapping
-        unicode = font.toUnicode(code, glyphList);
-
-        // when there is no Unicode mapping available, Acrobat simply coerces
-        // the character code
-        // into Unicode, so we do the same. Subclasses of PDFStreamEngine don't
-        // necessarily want
-        // this, which is why we leave it until this point in
-        // PDFTextStreamEngine.
-        if (unicode == null) {
-            if (font instanceof PDSimpleFont) {
-                char c = (char) code;
-                unicode = new String(new char[]{c});
-            } else {
-                // Acrobat doesn't seem to coerce composite font's character
-                // codes, instead it
-                // skips them. See the "allah2.pdf" TestTextStripper file.
-                return null;
-            }
-        }
-
-        // adjust for cropbox if needed
-        Matrix translatedTextRenderingMatrix;
-        if (translateMatrix == null) {
-            translatedTextRenderingMatrix = textRenderingMatrix;
-        } else {
-            translatedTextRenderingMatrix = Matrix.concatenate(translateMatrix, textRenderingMatrix);
-            nextX -= pageSize.getLowerLeftX();
-            nextY -= pageSize.getLowerLeftY();
-
-        }
-
-        return new TextPosition(pageRotation, pageSize.getWidth(), pageSize.getHeight(), translatedTextRenderingMatrix,
-                nextX, nextY, Math.abs(dyDisplay), dxDisplay, Math.abs(spaceWidthDisplay), unicode, new int[]{code},
-                font, fontSize, (int) (fontSize * textMatrix.getScalingFactorX()));
     }
 
     public boolean isDebugClippingPaths() {
