@@ -57,6 +57,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
             this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
         }
+
+        this.pageTransform.translate(-cb.getLowerLeftX(), -cb.getLowerLeftY());
     }
 
     @Override
