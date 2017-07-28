@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.cli.ParseException;
-import org.junit.Before;
 import org.junit.Test;
 
 public class TestUtils {

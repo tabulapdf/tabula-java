@@ -1,7 +1,6 @@
 package technology.tabula.extractors;
 
 import java.awt.geom.Point2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,7 +18,6 @@ import technology.tabula.Table;
 import technology.tabula.TableWithRulingLines;
 import technology.tabula.TextElement;
 import technology.tabula.Utils;
-import technology.tabula.writers.CSVWriter;
 
 /**
  * @author manuel

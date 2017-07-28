@@ -1,13 +1,10 @@
 package technology.tabula.detectors;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.Cell;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 

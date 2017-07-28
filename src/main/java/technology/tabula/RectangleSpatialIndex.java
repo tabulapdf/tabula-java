@@ -3,7 +3,6 @@ package technology.tabula;
 import gnu.trove.procedure.TIntProcedure;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.sf.jsi.SpatialIndex;

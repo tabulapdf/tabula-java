@@ -1,7 +1,5 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.List;
