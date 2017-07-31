@@ -34,7 +34,8 @@ import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+
+import javax.imageio.ImageIO;
 
 public class Debug {
 
@@ -272,7 +273,7 @@ public class Debug {
 
         document.close();
 
-        ImageIOUtil.writeImage(image, outPath, 72);
+        ImageIO.write(image, "jpg", new File(outPath));
     }
 
     @SuppressWarnings("static-access")
