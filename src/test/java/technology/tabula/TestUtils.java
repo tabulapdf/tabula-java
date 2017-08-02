@@ -5,12 +5,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.pdfbox.rendering.ImageType;
 import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.Test;
 
 public class TestUtils {
@@ -113,6 +118,13 @@ public class TestUtils {
     	QuickSort.sort(numbers);
 
     	assertEquals(expectedNumbers, numbers);
+    }
+
+    @Test
+    public void testJPEG2000DoesNotRaise() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
+        PDPage page = pdf_document.getPage(0);
+        Utils.pageConvertToImage(page, 360, ImageType.RGB);
     }
 
 }
