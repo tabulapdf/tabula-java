@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 
+// NOTE: this class is currently not used by the extraction algorithms
+// keeping it for potential use.
 public class ProjectionProfile {
 
     public static final int DECIMAL_PLACES = 1; // fixed <-> float conversion precision

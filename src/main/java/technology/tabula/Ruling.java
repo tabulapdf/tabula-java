@@ -16,7 +16,7 @@ public class Ruling extends Line2D.Float {
     
     private static int PERPENDICULAR_PIXEL_EXPAND_AMOUNT = 2;
     private static int COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT = 1;
-    private enum SOType { VERTICAL, HRIGHT, HLEFT };
+    private enum SOType { VERTICAL, HRIGHT, HLEFT }
 
     public Ruling(float top, float left, float width, float height) {
         this(new Point2D.Float(left, top), new Point2D.Float(left+width, top+height));

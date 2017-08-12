@@ -6,7 +6,6 @@ before_install:
 install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dgpg.skip=true -B -V
 script: mvn test -Dgpg.skip=true
 jdk:
-  - oraclejdk7
   - openjdk7
   - oraclejdk8
 

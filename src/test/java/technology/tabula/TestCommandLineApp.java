@@ -10,14 +10,14 @@ import java.nio.file.FileSystems;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 
 public class TestCommandLineApp {
 
     private String csvFromCommandLineArgs(String[] args) throws ParseException {
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(CommandLineApp.buildOptions(), args);
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -121,5 +121,28 @@ public class TestCommandLineApp {
                 "-g"
         }));
     }
+
+    @Test
+    public void testEncryptedPasswordSupplied() throws ParseException {
+        String s = this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/encrypted.pdf",
+                "-s", "userpassword",
+                "-p", "1",
+                "-f", "CSV"
+        });
+        assertEquals("FLA Audit Profile,,,,,,,,,", s.split("\\r?\\n")[0]);
+    }
+
+    @Test(expected=org.apache.commons.cli.ParseException.class)
+    public void testEncryptedWrongPassword() throws ParseException {
+        String s = this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/encrypted.pdf",
+                "-s", "wrongpassword",
+                "-p", "1",
+                "-f", "CSV"
+        });
+    }
+
+
 
 }

@@ -1,10 +1,8 @@
 package technology.tabula.detectors;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
 
-import java.io.File;
 import java.util.List;
 
 /**
