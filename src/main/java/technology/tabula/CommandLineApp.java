@@ -112,6 +112,10 @@ public class CommandLineApp {
         });
 
         for (File pdfFile : pdfs) {
+        	if (line.hasOption('e')) {
+    			OcrConverter OCRDoc = new OcrConverter();
+    			OCRDoc.extract(pdfFile.getAbsolutePath());
+    		}
             File outputFile = new File(getOutputFilename(pdfFile));
             extractFileInto(pdfFile, outputFile);
         }
@@ -283,8 +287,8 @@ public class CommandLineApp {
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
         o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
-     		o.addOption("e", "OCR", false, "Complete OCR on documents");
-        o.addOption(Option.builder("b")
+     	o.addOption("e", "OCR", false, "Complete OCR on documents");
+     	o.addOption(Option.builder("b")
                 .longOpt("batch")
                 .desc("Convert all .pdfs in the provided directory.")
                 .hasArg()
