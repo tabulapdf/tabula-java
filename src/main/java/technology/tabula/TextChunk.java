@@ -126,33 +126,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return new TextChunk(everything);
     }
 
-    @Override
-    /*
-        We're comparing based on ordering in the logical ordering of text here. 
-        Assuming identical Y-axis positions, if TextChunk A has a lower X-axis 
-        than TextChunk B, then A is "before" it -- iff this is LTR text. Otherwise, 
-        it is A is after B.
-    */
-    public int compareTo(Rectangle other) {
-        double thisBottom = this.getBottom();
-        double otherBottom = other.getBottom();
-        int rv;
-
-        if (this.equals(other)) return 0;
-
-        if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
-            rv = java.lang.Double.compare(this.getX(), other.getX());
-
-            // reverse the ordering if both TextChunks are RTL
-            if (this.isLtrDominant() == -1 && other.isLtrDominant() == -1) {
-                rv = -1 * rv;
-            }
-        } else {
-            rv = java.lang.Double.compare(thisBottom, otherBottom);
-        }
-        return rv;
-    }
-
     public int isLtrDominant() {
         int ltrCnt = 0;
         int rtlCnt = 0;

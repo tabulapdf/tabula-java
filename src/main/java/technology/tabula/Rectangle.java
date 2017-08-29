@@ -19,20 +19,30 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
     }
 
     @Override
+    /*
+        We're comparing based on ordering in the logical ordering of text here. 
+        Assuming identical Y-axis positions, if TextChunk A has a lower X-axis 
+        than TextChunk B, then A is "before" it -- iff this is LTR text. Otherwise, 
+        it is A is after B.
+    */
     public int compareTo(Rectangle other) {
         double thisBottom = this.getBottom();
         double otherBottom = other.getBottom();
         int rv;
 
-       if (this.equals(other)) return 0;
+        if (this.equals(other)) return 0;
 
-       if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
+        if (this.verticalOverlap(other) > VERTICAL_COMPARISON_THRESHOLD) {
             rv = java.lang.Double.compare(this.getX(), other.getX());
-       }
-       else {
-           rv = java.lang.Double.compare(thisBottom, otherBottom);
-       }
-       return rv;
+
+            // reverse the ordering if both TextChunks are RTL
+            if (this.isLtrDominant() == -1 && other.isLtrDominant() == -1) {
+                rv = -1 * rv;
+            }
+        } else {
+            rv = java.lang.Double.compare(thisBottom, otherBottom);
+        }
+        return rv;
     }
 
     // I'm bad at Java and need this for fancy sorting in technology.tabula.TextChunk.
