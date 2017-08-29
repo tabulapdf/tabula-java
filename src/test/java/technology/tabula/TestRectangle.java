@@ -234,6 +234,43 @@ public class TestRectangle {
 		
 		
 	}
-	
-	
+
+	@Test
+	public void testTransitiveComparison1() {
+		// +-------+
+		// |       |
+		// |   A   | +-------+
+		// |       | |       |
+		// +-------+ |   B   | +-------+
+		//           |       | |       |
+		//           +-------+ |   C   |
+		//                     |       |
+		//                     +-------+
+		Rectangle a = new Rectangle(0,0,2,2);
+		Rectangle b = new Rectangle(1,1,2,2);
+		Rectangle c = new Rectangle(2,2,2,2);
+		assertTrue(a.compareTo(b) < 0);
+		assertTrue(b.compareTo(c) < 0);
+		assertTrue(a.compareTo(c) < 0);
+	}
+
+	@Test
+	public void testTransitiveComparison2() {
+		//                     +-------+
+		//                     |       |
+		//           +-------+ |   C   |
+		//           |       | |       |
+		// +-------+ |   B   | +-------+
+		// |       | |       |
+		// |   A   | +-------+
+		// |       |
+		// +-------+
+		Rectangle a = new Rectangle(2,0,2,2);
+		Rectangle b = new Rectangle(1,1,2,2);
+		Rectangle c = new Rectangle(0,2,2,2);
+		assertTrue(a.compareTo(b) < 0);
+		assertTrue(b.compareTo(c) < 0);
+		assertTrue(a.compareTo(c) < 0);
+	}
+
 }
