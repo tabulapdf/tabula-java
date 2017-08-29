@@ -26,6 +26,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
         it is A is after B.
     */
     public int compareTo(Rectangle other) {
+        // FIXME this needs fixing - see https://github.com/tabulapdf/tabula-java/issues/116#issuecomment-325798979
         double thisBottom = this.getBottom();
         double otherBottom = other.getBottom();
         int rv;

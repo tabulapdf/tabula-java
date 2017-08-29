@@ -24,29 +24,26 @@ public class JSONWriter implements Writer {
 		@Override public boolean shouldSkipField(FieldAttributes fa) { return !fa.hasModifier(Modifier.PUBLIC); }
 	};
 
-	
-	final Gson gson;
-
-	public JSONWriter() {
-		gson = new GsonBuilder().addSerializationExclusionStrategy(ALLCLASSES_SKIPNONPUBLIC)
-				.registerTypeAdapter(Table.class, TableSerializer.INSTANCE)
-				.registerTypeAdapter(RectangularTextContainer.class, RectangularTextContainerSerializer.INSTANCE)
-				.registerTypeAdapter(Cell.class, RectangularTextContainerSerializer.INSTANCE)
-				.registerTypeAdapter(TextChunk.class, RectangularTextContainerSerializer.INSTANCE).create();
-	}
-
 	@Override
 	public void write(Appendable out, Table table) throws IOException {
-		out.append(gson.toJson(table, Table.class));
+		out.append(gson().toJson(table, Table.class));
 	}
 
 	@Override public void write(Appendable out, List<Table> tables) throws IOException {
+		Gson gson = gson();
 		JsonArray array = new JsonArray();
-		for (Table table : tables) {
-			array.add(gson.toJsonTree(table, Table.class));
-		}
+		for (Table table : tables) array.add(gson.toJsonTree(table, Table.class));
 		out.append(gson.toJson(array));
+	}
 
+	private static Gson gson() {
+		return new GsonBuilder()
+				.addSerializationExclusionStrategy(ALLCLASSES_SKIPNONPUBLIC)
+				.registerTypeAdapter(Table.class, TableSerializer.INSTANCE)
+				.registerTypeAdapter(RectangularTextContainer.class, RectangularTextContainerSerializer.INSTANCE)
+				.registerTypeAdapter(Cell.class, RectangularTextContainerSerializer.INSTANCE)
+				.registerTypeAdapter(TextChunk.class, RectangularTextContainerSerializer.INSTANCE)
+				.create();
 	}
 
 }
