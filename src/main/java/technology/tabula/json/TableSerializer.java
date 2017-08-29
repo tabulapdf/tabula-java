@@ -12,33 +12,39 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class TableSerializer implements JsonSerializer<Table> {
+public final class TableSerializer implements JsonSerializer<Table> {
 
-    @Override
-    public JsonElement serialize(Table table, Type type,
-            JsonSerializationContext context) {
+	public static final TableSerializer INSTANCE = new TableSerializer();
 
-        JsonObject object = new JsonObject();
-        if( table.getExtractionAlgorithm() == null){
-            object.addProperty("extraction_method", "");
-        }else{
-            object.addProperty("extraction_method", (table.getExtractionAlgorithm()).toString());
-        }
-        object.addProperty("top", table.getTop());
-        object.addProperty("left", table.getLeft());
-        object.addProperty("width", table.getWidth());
-        object.addProperty("height", table.getHeight());
-        
-        JsonArray jsonDataArray = new JsonArray();
-        for (List<RectangularTextContainer> row: table.getRows()) {
-            JsonArray jsonRowArray = new JsonArray();
-            for (RectangularTextContainer textChunk: row) {
-                jsonRowArray.add(context.serialize(textChunk));
-            }
-            jsonDataArray.add(jsonRowArray);
-        }
-        object.add("data", jsonDataArray);
-        
-        return object;
-    }
+	private TableSerializer() {
+		// singleton
+	}
+
+	@Override
+	public JsonElement serialize(Table src, Type typeOfSrc, JsonSerializationContext context) {
+
+		JsonObject result = new JsonObject();
+
+		if (src.getExtractionAlgorithm() == null) {
+			result.addProperty("extraction_method", "");
+		} else {
+			result.addProperty("extraction_method", (src.getExtractionAlgorithm()).toString());
+		}
+		result.addProperty("top",    src.getTop());
+		result.addProperty("left",   src.getLeft());
+		result.addProperty("width",  src.getWidth());
+		result.addProperty("height", src.getHeight());
+
+		JsonArray data;
+		result.add("data", data = new JsonArray());
+		
+		for (List<RectangularTextContainer> srcRow : src.getRows()) {
+			JsonArray row = new JsonArray();
+			for (RectangularTextContainer textChunk : srcRow) row.add(context.serialize(textChunk));
+			data.add(row);
+		}
+
+		return result;
+	}
+
 }

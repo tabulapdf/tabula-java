@@ -8,5 +8,4 @@ public class TSVWriter extends CSVWriter {
 		super(CSVFormat.TDF);
 	}
 
-
 }
