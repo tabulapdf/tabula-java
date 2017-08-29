@@ -4,19 +4,18 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import technology.tabula.Cell;
-import technology.tabula.RectangularTextContainer;
-import technology.tabula.Table;
-import technology.tabula.TextChunk;
-import technology.tabula.json.TableSerializer;
-import technology.tabula.json.RectangularTextContainerSerializer;
-
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonSerializer;
+
+import technology.tabula.Cell;
+import technology.tabula.RectangularTextContainer;
+import technology.tabula.Table;
+import technology.tabula.TextChunk;
+import technology.tabula.json.RectangularTextContainerSerializer;
+import technology.tabula.json.TableSerializer;
 
 public class JSONWriter implements Writer {
 
@@ -31,7 +30,7 @@ public class JSONWriter implements Writer {
 	public JSONWriter() {
 		gson = new GsonBuilder().addSerializationExclusionStrategy(ALLCLASSES_SKIPNONPUBLIC)
 				.registerTypeAdapter(Table.class, TableSerializer.INSTANCE)
-				.registerTypeAdapter(RectangularTextContainer.class, new RectangularTextContainerSerializer())
+				.registerTypeAdapter(RectangularTextContainer.class, RectangularTextContainerSerializer.INSTANCE)
 				.registerTypeAdapter(Cell.class, RectangularTextContainerSerializer.INSTANCE)
 				.registerTypeAdapter(TextChunk.class, RectangularTextContainerSerializer.INSTANCE).create();
 	}
@@ -41,7 +40,7 @@ public class JSONWriter implements Writer {
 		out.append(gson.toJson(table, Table.class));
 	}
 
-	public void write(Appendable out, List<Table> tables) throws IOException {
+	@Override public void write(Appendable out, List<Table> tables) throws IOException {
 		JsonArray array = new JsonArray();
 		for (Table table : tables) {
 			array.add(gson.toJsonTree(table, Table.class));
