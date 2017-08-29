@@ -9,7 +9,7 @@ import com.google.gson.JsonSerializer;
 
 import technology.tabula.RectangularTextContainer;
 
-public final class RectangularTextContainerSerializer implements JsonSerializer<RectangularTextContainer> {
+public final class RectangularTextContainerSerializer implements JsonSerializer<RectangularTextContainer<?>> {
 
 	public static final RectangularTextContainerSerializer INSTANCE = new RectangularTextContainerSerializer();
 
@@ -18,7 +18,7 @@ public final class RectangularTextContainerSerializer implements JsonSerializer<
 	}
 
 	@Override
-	public JsonElement serialize(RectangularTextContainer src, Type typeOfSrc, JsonSerializationContext context) {
+	public JsonElement serialize(RectangularTextContainer<?> src, Type typeOfSrc, JsonSerializationContext context) {
 		JsonObject result = new JsonObject();
 		result.addProperty("top",    src.getTop());
 		result.addProperty("left",   src.getLeft());
