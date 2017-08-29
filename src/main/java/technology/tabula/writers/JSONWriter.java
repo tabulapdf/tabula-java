@@ -9,55 +9,45 @@ import technology.tabula.RectangularTextContainer;
 import technology.tabula.Table;
 import technology.tabula.TextChunk;
 import technology.tabula.json.TableSerializer;
-import technology.tabula.json.TextChunkSerializer;
+import technology.tabula.json.RectangularTextContainerSerializer;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonSerializer;
 
 public class JSONWriter implements Writer {
 
-    class TableSerializerExclusionStrategy implements ExclusionStrategy {
+	private static final ExclusionStrategy ALLCLASSES_SKIPNONPUBLIC = new ExclusionStrategy() {
+		@Override public boolean shouldSkipClass(Class<?> c) { return false; }
+		@Override public boolean shouldSkipField(FieldAttributes fa) { return !fa.hasModifier(Modifier.PUBLIC); }
+	};
 
-        @Override
-        public boolean shouldSkipClass(Class<?> arg0) {
-            return false;
-        }
+	
+	final Gson gson;
 
-        @Override
-        public boolean shouldSkipField(FieldAttributes fa) {
-            return !fa.hasModifier(Modifier.PUBLIC);
-        }
-    }
+	public JSONWriter() {
+		gson = new GsonBuilder().addSerializationExclusionStrategy(ALLCLASSES_SKIPNONPUBLIC)
+				.registerTypeAdapter(Table.class, TableSerializer.INSTANCE)
+				.registerTypeAdapter(RectangularTextContainer.class, new RectangularTextContainerSerializer())
+				.registerTypeAdapter(Cell.class, RectangularTextContainerSerializer.INSTANCE)
+				.registerTypeAdapter(TextChunk.class, RectangularTextContainerSerializer.INSTANCE).create();
+	}
 
+	@Override
+	public void write(Appendable out, Table table) throws IOException {
+		out.append(gson.toJson(table, Table.class));
+	}
 
-    final Gson gson;
+	public void write(Appendable out, List<Table> tables) throws IOException {
+		JsonArray array = new JsonArray();
+		for (Table table : tables) {
+			array.add(gson.toJsonTree(table, Table.class));
+		}
+		out.append(gson.toJson(array));
 
-    public JSONWriter() {
-        gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(new TableSerializerExclusionStrategy())
-                .registerTypeAdapter(Table.class, new TableSerializer())
-                .registerTypeAdapter(RectangularTextContainer.class, new TextChunkSerializer())
-                .registerTypeAdapter(Cell.class, new TextChunkSerializer())
-                .registerTypeAdapter(TextChunk.class, new TextChunkSerializer())
-                .create();
-    }
+	}
 
-    @Override
-    public void write(Appendable out, Table table) throws IOException {
-
-        out.append(gson.toJson(table, Table.class));
-    }
-
-    public void write(Appendable out, List<Table> tables) throws IOException {
-
-        JsonArray array = new JsonArray();
-        for (Table table : tables) {
-            array.add(gson.toJsonTree(table, Table.class));
-        }
-        out.append(gson.toJson(array));
-
-    }
 }
