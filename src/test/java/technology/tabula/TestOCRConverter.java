@@ -20,22 +20,23 @@ public class TestOCRConverter {
 		try {
 			// create backup of wellExample_imageBased.pdf
 			File tmpFile = Files.createTempFile("", ".tmp").toFile();
-			FileUtils.copyFile(new File("src/test/resources/technology/tabula/wellExample_imageBased.pdf"), tmpFile);
+			File testFile = new File("src/test/resources/technology/tabula/wellExample_imageBased.pdf");
+			FileUtils.copyFile(testFile, tmpFile);
 			
 			// convert document to text
 			OcrConverter ocrConverter = new OcrConverter();
-			boolean conversionResponse = ocrConverter.extract("src/test/resources/technology/tabula/wellExample_imageBased.pdf");
+			boolean conversionResponse = ocrConverter.extract(testFile.getAbsolutePath(), null);
 			assertTrue(conversionResponse);	// check for valid response
 			
 			// check that some text is as expected
-			Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/wellExample_imageBased.pdf", 1);
+			Page page = UtilsForTesting.getPage(testFile.getAbsolutePath(), 1);
 			List<TextElement> textElements = page.getText();
 			
 			assertTrue(textElements.size() > 1200);	// check that text was extracted and is around approximate acceptable limit
 													// this limit may change if Tesseract is updated
 			
 			// restore original copy of wellExample_imageBased.pdf
-			FileUtils.copyFile(tmpFile, new File("src/test/resources/technology/tabula/wellExample_imageBased.pdf"));
+			FileUtils.copyFile(tmpFile, testFile);
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
@@ -113,8 +115,16 @@ public class CommandLineApp {
 
         for (File pdfFile : pdfs) {
         	if (line.hasOption('e')) {
-    			OcrConverter OCRDoc = new OcrConverter();
-    			OCRDoc.extract(pdfFile.getAbsolutePath());
+				try {
+					// create temporary file so original file is not destroyed by OCR
+					File tmpFile = Files.createTempFile("", ".pdf").toFile();
+					FileUtils.copyFile(pdfFile, tmpFile);
+
+					OcrConverter OCRDoc = new OcrConverter();
+					OCRDoc.extract(tmpFile.getAbsolutePath(), pages);
+				} catch (IOException e) {
+					System.out.println("Error creating temporary file " + e);
+				}
     		}
             File outputFile = new File(getOutputFilename(pdfFile));
             extractFileInto(pdfFile, outputFile);
@@ -122,10 +132,17 @@ public class CommandLineApp {
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
-        Appendable outFile = this.defaultOutput;
 		if (line.hasOption('e')) {
-			OcrConverter OCRDoc = new OcrConverter();
-			OCRDoc.extract(pdfFile.getAbsolutePath());
+			try {
+				// create temporary file so original file is not destroyed by OCR
+				File tmpFile = Files.createTempFile("", ".pdf").toFile();
+				FileUtils.copyFile(pdfFile, tmpFile);
+
+				OcrConverter OCRDoc = new OcrConverter();
+				OCRDoc.extract(tmpFile.getAbsolutePath(), pages);
+			} catch (IOException e) {
+				System.out.println("Error creating temporary file " + e);
+			}
 		}
         if (!line.hasOption('o')) {
             extractFile(pdfFile, this.defaultOutput);

@@ -201,7 +201,7 @@ public class BatchExtractionAlgorithm {
 								FileUtils.copyFile(currentFile, ocrFile);
 
 								OcrConverter ocr = new OcrConverter();
-								ocr.extract(ocrFile.getAbsolutePath());
+								ocr.extract(ocrFile.getAbsolutePath(), null);
 
 								deleteList.add(ocrFile.getAbsolutePath());
 
