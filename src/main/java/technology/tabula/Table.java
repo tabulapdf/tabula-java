@@ -9,7 +9,7 @@ import technology.tabula.extractors.ExtractionAlgorithm;
 @SuppressWarnings("serial")
 public class Table extends Rectangle {
     
-    class CellPosition implements Comparable<CellPosition> {
+    static class CellPosition implements Comparable<CellPosition> {
         int row, col;
         CellPosition(int row, int col) {
             this.row = row; this.col = col;
