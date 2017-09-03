@@ -129,9 +129,9 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
-        Collections.sort(cells);
+        Collections.sort(cells, Rectangle.ILL_DEFINED_ORDER);
         List<Cell> expected = Arrays.asList(EXPECTED_CELLS);
-        Collections.sort(expected);
+        Collections.sort(expected, Rectangle.ILL_DEFINED_ORDER);
         assertTrue(cells.equals(expected));
     }
 
@@ -174,9 +174,9 @@ public class TestSpreadsheetExtractor {
 
 
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
-        Collections.sort(expected);
+        Collections.sort(expected, Rectangle.ILL_DEFINED_ORDER);
         List<Rectangle> foundRectangles = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
-        Collections.sort(foundRectangles);
+        Collections.sort(foundRectangles, Rectangle.ILL_DEFINED_ORDER);
         assertTrue(foundRectangles.equals(expected));
     }
 

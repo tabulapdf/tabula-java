@@ -117,17 +117,19 @@ public class Utils {
         return ret;
     }
 
-    /**
-     * Wrap Collections.sort so we can fallback to a non-stable quicksort
-     * if we're running on JDK7+
-     */
-    public static <T extends Comparable<? super T>> void sort(List<T> list) {
-        if (useQuickSort) {
-            QuickSort.sort(list);
-        } else {
-            Collections.sort(list);
-        }
-    }
+	/**
+	 * Wrap Collections.sort so we can fallback to a non-stable quicksort if we're
+	 * running on JDK7+
+	 */
+	public static <T extends Comparable<? super T>> void sort(List<T> list) {
+		if (useQuickSort) QuickSort.sort(list);
+		else              Collections.sort(list);
+	}
+
+	public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
+		if (useQuickSort) QuickSort.sort(list, comparator);
+		else              Collections.sort(list, comparator);
+	}
 
     private static boolean useCustomQuickSort() {
         // taken from PDFBOX:
