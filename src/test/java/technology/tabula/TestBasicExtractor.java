@@ -123,7 +123,7 @@ public class TestBasicExtractor {
 		{"AARON, MICHAEL, R",    "",                           "BROOKLYN, NY",      "MEALS",                "$65.92"}
 	};
 
-    private static final String[][] EXPECTED_EMPTY_TABLE = { /* actually empty! */ };
+	private static final String[][] EXPECTED_EMPTY_TABLE = { /* actually empty! */ };
 
 
     @Test
