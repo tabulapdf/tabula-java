@@ -6,22 +6,17 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import technology.tabula.extractors.ExtractionAlgorithm;
+
 @SuppressWarnings("serial")
 public class TableWithRulingLines extends Table {
 
     List<Ruling> verticalRulings, horizontalRulings;
     RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
     
-    public TableWithRulingLines() {
-        super();
-    }
-
-    public TableWithRulingLines(Rectangle area, Page page, List<Cell> cells,
-            List<Ruling> horizontalRulings,
-            List<Ruling> verticalRulings) {
-        this();
+    public TableWithRulingLines(Rectangle area, List<Cell> cells, List<Ruling> horizontalRulings, List<Ruling> verticalRulings, ExtractionAlgorithm extractionAlgorithm) {
+        super(extractionAlgorithm);
         this.setRect(area);
-        this.page = page;
         this.verticalRulings = verticalRulings;
         this.horizontalRulings = horizontalRulings;
         this.addCells(cells);

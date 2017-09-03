@@ -13,12 +13,8 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 
-import technology.tabula.Page;
-import technology.tabula.Ruling;
-import technology.tabula.Table;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
-import technology.tabula.UtilsForTesting;
 
 public class TestBasicExtractor {
 
@@ -254,7 +250,7 @@ public class TestBasicExtractor {
                 page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
 
-        List<RectangularTextContainer> cells = table.getCells();
+        List<RectangularTextContainer> cells = new ArrayList<>(table.cells.values());
         for (RectangularTextContainer rectangularTextContainer : cells) {
             System.out.println(rectangularTextContainer.getText());
         }
