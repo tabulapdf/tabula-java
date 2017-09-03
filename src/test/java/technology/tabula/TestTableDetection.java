@@ -169,7 +169,7 @@ public class TestTableDetection {
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
         // parse expected tables from the ground truth dataset
-        Map<Integer, List<Rectangle>> expectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> expectedTables = new HashMap<>();
 
         int numExpectedTables = 0;
 
@@ -188,7 +188,7 @@ public class TestTableDetection {
 
             List<Rectangle> pageTables = expectedTables.get(page);
             if (pageTables == null) {
-                pageTables = new ArrayList<Rectangle>();
+                pageTables = new ArrayList<>();
                 expectedTables.put(page, pageTables);
             }
 
@@ -207,7 +207,7 @@ public class TestTableDetection {
         }
 
         // now find tables detected by tabula-java
-        Map<Integer, List<Rectangle>> detectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> detectedTables = new HashMap<>();
 
         // the algorithm we're going to be testing
         NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();

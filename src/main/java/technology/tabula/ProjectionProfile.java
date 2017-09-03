@@ -105,7 +105,7 @@ public class ProjectionProfile {
     public float[] findHorizontalSeparators(float minRowHeight) {
         boolean foundShorter = false;
 
-        List<Integer> horizontalSeparators = new ArrayList<Integer>();
+        List<Integer> horizontalSeparators = new ArrayList<>();
         for (Ruling r: area.getHorizontalRulings()) {
             System.out.println(r.length() / this.textBounds.getWidth());
             if (r.length() / this.textBounds.getWidth() >= 0.95) {
@@ -136,7 +136,7 @@ public class ProjectionProfile {
     }
     
     private static List<Integer> findSeparatorsFromProjection(float[] derivative) {
-        List<Integer> separators = new ArrayList<Integer>();
+        List<Integer> separators = new ArrayList<>();
         Integer lastNeg = null;
         float s;
         boolean positiveSlope = false;
