@@ -40,7 +40,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         List<TextElement> textElements = page.getText();
         
         if (textElements.size() == 0) {
-            return Arrays.asList(new Table[] { Table.EMPTY });
+            return Arrays.asList(new Table[] { Table.empty() });
         }
         
         List<TextChunk> textChunks = this.verticalRulings == null ? TextElement.mergeWords(page.getText()) : TextElement.mergeWords(page.getText(), this.verticalRulings);

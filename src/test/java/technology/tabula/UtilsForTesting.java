@@ -8,6 +8,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.junit.Assert;
 
 public class UtilsForTesting {
 
@@ -36,7 +37,7 @@ public class UtilsForTesting {
     public static String[][] tableToArrayOfRows(Table table) {
         List<List<RectangularTextContainer>> tableRows = table.getRows();
 
-        int maxColCount = -Integer.MAX_VALUE;
+        int maxColCount = 0;
 
         for (int i = 0; i < tableRows.size(); i++) {
             List<RectangularTextContainer> row = tableRows.get(i);
@@ -44,6 +45,9 @@ public class UtilsForTesting {
                 maxColCount = row.size();
             }
         }
+        
+        Assert.assertEquals(maxColCount, table.getColCount());
+        
         String[][] rv = new String[tableRows.size()][maxColCount];
 
         for (int i = 0; i < tableRows.size(); i++) {
@@ -57,14 +61,14 @@ public class UtilsForTesting {
     }
 
     public static String loadJson(String path) throws IOException {
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line = null;
-
-        while ((line = reader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
+ 
+	    	StringBuilder stringBuilder = new StringBuilder();
+	    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))) {
+	        String line = null;
+	        while ((line = reader.readLine()) != null) {
+	            stringBuilder.append(line);
+	        }
+	    }
 
         return stringBuilder.toString();
 
