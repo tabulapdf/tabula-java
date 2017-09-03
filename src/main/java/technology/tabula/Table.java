@@ -83,7 +83,7 @@ class CellPosition implements Comparable<CellPosition> {
 	final int row, col;
 
 	@Override public int hashCode() {
-		return Integer.hashCode(row) + 101 * Integer.hashCode(col);
+		return row + 101 * col;
 	}
 
 	@Override public boolean equals(Object obj) {
