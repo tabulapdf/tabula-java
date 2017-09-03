@@ -47,10 +47,6 @@ public class TestTableDetection {
         private transient boolean firstRun;
         private transient String pdfFilename;
 
-        public TestStatus() {
-            this(null);
-        }
-
         public TestStatus(String pdfFilename) {
             this.numExpectedTables = 0;
             this.numCorrectlyDetectedTables = 0;
@@ -74,8 +70,7 @@ public class TestTableDetection {
         }
 
         public void save() {
-            try {
-                FileWriter w = new FileWriter(jsonFilename(this.pdfFilename));
+            try (FileWriter w = new FileWriter(jsonFilename(this.pdfFilename))) {
                 Gson gson = new Gson();
                 w.write(gson.toJson(this));
                 w.close();
@@ -145,6 +140,7 @@ public class TestTableDetection {
         try {
             this.builder = factory.newDocumentBuilder();
         } catch (Exception e) {
+            // ignored
         }
     }
 

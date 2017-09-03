@@ -48,7 +48,7 @@ public class TestUtils {
 
     @Test
     public void testBoundsOfOneRectangle() {
-        ArrayList<Rectangle> shapes = new ArrayList();
+        ArrayList<Rectangle> shapes = new ArrayList<>();
         shapes.add(new Rectangle(0, 0, 20, 40));
         Rectangle r = Utils.bounds(shapes);
         assertEquals(r, shapes.get(0));

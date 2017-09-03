@@ -269,18 +269,13 @@ public class Utils {
         }
     }
 
-    public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
-        // Yeah, this sucks. But PDFBox 2 wants PDFRenderers to have
-        // a reference to a PDDocument (unnecessarily, IMHO)
-
-        PDDocument document = new PDDocument();
-        document.addPage(page);
-
-        PDFRenderer renderer = new PDFRenderer(document);
-
-        document.close();
-
-        return renderer.renderImageWithDPI(0, dpi, imageType);
-    }
+	public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
+		try (PDDocument document = new PDDocument()) {
+			document.addPage(page);
+			PDFRenderer renderer = new PDFRenderer(document);
+			document.close();
+			return renderer.renderImageWithDPI(0, dpi, imageType);
+		}
+	}
 
 }

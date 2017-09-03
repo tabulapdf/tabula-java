@@ -131,11 +131,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 }
             }
                         
-            TableWithRulingLines t = new TableWithRulingLines(area, page, overlappingCells,
-                    horizontalOverlappingRulings, verticalOverlappingRulings);
-            
-            t.setExtractionAlgorithm(this);
-            
+            TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this);
             spreadsheets.add(t);
         }
         Utils.sort(spreadsheets);
@@ -159,16 +155,16 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             return false;
         }
         Table table = tables.get(0);
-        int rowsDefinedByLines = table.getRows().size();
-        int colsDefinedByLines = table.getCols().size();
+        int rowsDefinedByLines = table.getRowCount();
+        int colsDefinedByLines = table.getColCount();
         
         tables = new BasicExtractionAlgorithm().extract(minimalRegion);
         if (tables.size() == 0) {
             // TODO WHAT DO WE DO HERE?
         }
         table = tables.get(0);
-        int rowsDefinedWithoutLines = table.getRows().size();
-        int colsDefinedWithoutLines = table.getCols().size();
+        int rowsDefinedWithoutLines = table.getRowCount();
+        int colsDefinedWithoutLines = table.getColCount();
         
         float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) + ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
         
