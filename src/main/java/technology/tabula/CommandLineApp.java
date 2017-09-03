@@ -246,7 +246,7 @@ public class CommandLineApp {
 
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");
-        List<Float> rv = new ArrayList<Float>();
+        List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
                 rv.add(Float.parseFloat(f[i]));

@@ -79,14 +79,14 @@ public class TableWithRulingLines extends Table {
         Iterator<Cell> iter = cells.iterator();
         c = iter.next();
         lastTop = (float) c.getTop();
-        lastRow = new ArrayList<Cell>();
+        lastRow = new ArrayList<>();
         lastRow.add(c);
         rv.add(lastRow);
         
         while (iter.hasNext()) {
             c = iter.next();
             if (!Utils.feq(c.getTop(), lastTop)) {
-                lastRow = new ArrayList<Cell>();
+                lastRow = new ArrayList<>();
                 rv.add(lastRow);
             }
             lastRow.add(c);

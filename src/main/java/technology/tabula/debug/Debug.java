@@ -314,7 +314,7 @@ public class Debug {
         try {
             // parse the command line arguments
             CommandLine line = parser.parse(buildOptions(), args);
-            List<Integer> pages = new ArrayList<Integer>();
+            List<Integer> pages = new ArrayList<>();
             if (line.hasOption('p')) {
                 pages = Utils.parsePagesOption(line.getOptionValue('p'));
             } else {
@@ -353,7 +353,7 @@ public class Debug {
                 PDDocument document = PDDocument.load(pdfFile);
 
                 int numPages = document.getNumberOfPages();
-                pages = new ArrayList<Integer>(numPages);
+                pages = new ArrayList<>(numPages);
 
                 for (int i = 1; i <= numPages; i++) {
                     pages.add(i);

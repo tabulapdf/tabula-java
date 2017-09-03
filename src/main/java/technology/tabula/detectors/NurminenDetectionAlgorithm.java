@@ -517,13 +517,13 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         // get all text edges (lines that align with the left, middle and right of chunks of text) that extend
         // uninterrupted over at least REQUIRED_TEXT_LINES_FOR_EDGE lines of text
-        List<TextEdge> leftTextEdges = new ArrayList<TextEdge>();
-        List<TextEdge> midTextEdges = new ArrayList<TextEdge>();
-        List<TextEdge> rightTextEdges = new ArrayList<TextEdge>();
+        List<TextEdge> leftTextEdges = new ArrayList<>();
+        List<TextEdge> midTextEdges = new ArrayList<>();
+        List<TextEdge> rightTextEdges = new ArrayList<>();
 
-        Map<Integer, List<TextChunk>> currLeftEdges = new HashMap<Integer, List<TextChunk>>();
-        Map<Integer, List<TextChunk>> currMidEdges = new HashMap<Integer, List<TextChunk>>();
-        Map<Integer, List<TextChunk>> currRightEdges = new HashMap<Integer, List<TextChunk>>();
+        Map<Integer, List<TextChunk>> currLeftEdges = new HashMap<>();
+        Map<Integer, List<TextChunk>> currMidEdges = new HashMap<>();
+        Map<Integer, List<TextChunk>> currRightEdges = new HashMap<>();
 
         for (Line textRow : lines) {
             for (TextChunk text : textRow.getTextElements()) {

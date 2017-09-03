@@ -54,7 +54,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
                     return Double.compare(arg0.getLeft(), arg1.getLeft());
                 }
             });
-            columns = new ArrayList<Float>(this.verticalRulings.size());
+            columns = new ArrayList<>(this.verticalRulings.size());
             for (Ruling vr: this.verticalRulings) {
                 columns.add(vr.getLeft());
             }
@@ -150,7 +150,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             }
         }
         
-        List<java.lang.Float> rv = new ArrayList<java.lang.Float>();
+        List<java.lang.Float> rv = new ArrayList<>();
         for (Rectangle r: regions) {
             rv.add((float) r.getRight());
         }
