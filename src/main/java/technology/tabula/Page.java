@@ -116,11 +116,13 @@ public class Page extends Rectangle {
         return this.spatial_index.contains(area);
     }
     
-    public List<TextElement> getText(float top, float left, float bottom, float right) {
+    /** @deprecated use {@linkplain #getText(Rectangle)} instead  */
+    @Deprecated public List<TextElement> getText(float top, float left, float bottom, float right) {
         return this.getText(new Rectangle(top, left, right - left, bottom - top));
     }
 
-    public Integer getRotation() {
+    /** @deprecated with no replacement  */
+    @Deprecated public Integer getRotation() {
         return rotation;
     }
 
@@ -128,7 +130,8 @@ public class Page extends Rectangle {
         return pageNumber;
     }
 
-    public List<TextElement> getTexts() {
+    /** @deprecated use {@linkplain #getText()} instead  */
+    @Deprecated public List<TextElement> getTexts() {
         return texts;
     }
     
@@ -213,11 +216,13 @@ public class Page extends Rectangle {
         return this.rulings;
     }
 
-    public float getMinCharWidth() {
+    /** @deprecated with no replacement  */
+    @Deprecated public float getMinCharWidth() {
         return minCharWidth;
     }
 
-    public float getMinCharHeight() {
+    /** @deprecated with no replacement  */
+    @Deprecated public float getMinCharHeight() {
         return minCharHeight;
     }
 
@@ -225,11 +230,13 @@ public class Page extends Rectangle {
       return pdPage;
     }
 
-    public RectangleSpatialIndex<TextElement> getSpatialIndex() {
+    /** @deprecated with no replacement  */
+    @Deprecated public RectangleSpatialIndex<TextElement> getSpatialIndex() {
         return this.spatial_index;
     }
     
-    public boolean hasText() {
+    /** @deprecated with no replacement  */
+    @Deprecated public boolean hasText() {
         return this.texts.size() > 0;
     }
     
