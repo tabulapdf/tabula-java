@@ -9,7 +9,7 @@ import technology.tabula.extractors.ExtractionAlgorithm;
 @SuppressWarnings("serial")
 public class Table extends Rectangle {
 
-	public static final Table EMPTY = new Table("");
+	public static final Table empty() { return new Table(""); }
 
 	private Table(String extractionMethod) {
 		this.extractionMethod = extractionMethod;
@@ -34,8 +34,8 @@ public class Table extends Rectangle {
 	public void add(RectangularTextContainer chunk, int row, int col) {
 		this.merge(chunk);
 		
-		rowCount = Math.max(rowCount, row);
-		colCount = Math.max(colCount, col);
+		rowCount = Math.max(rowCount, row + 1);
+		colCount = Math.max(colCount, col + 1);
 		
 		CellPosition cp = new CellPosition(row, col);
 		
@@ -55,10 +55,10 @@ public class Table extends Rectangle {
 
 	private List<List<RectangularTextContainer>> computeRows() {
 		List<List<RectangularTextContainer>> rows = new ArrayList<>();
-		for (int i = 0; i <= rowCount; i++) {
+		for (int i = 0; i < rowCount; i++) {
 			List<RectangularTextContainer> lastRow = new ArrayList<>();
 			rows.add(lastRow);
-			for (int j = 0; j <= colCount; j++) {
+			for (int j = 0; j < colCount; j++) {
 				RectangularTextContainer cell = cells.get(new CellPosition(i,j)); // JAVA_8 use getOrDefault()
 				lastRow.add(cell != null ? cell : TextChunk.EMPTY);
 			}
