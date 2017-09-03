@@ -151,7 +151,7 @@ public class CommandLineApp {
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
             PageIterator pageIterator = getPageIterator(pdfDocument);
-            List<Table> tables = new ArrayList<Table>();
+            List<Table> tables = new ArrayList<>();
 
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
@@ -262,7 +262,6 @@ public class CommandLineApp {
         formatter.printHelp("tabula", BANNER, buildOptions(), "", true);
     }
 
-    @SuppressWarnings("static-access")
     public static Options buildOptions() {
         Options o = new Options();
 
@@ -362,7 +361,7 @@ public class CommandLineApp {
                 case SPREADSHEET:
                     return extractTablesSpreadsheet(page);
                 default:
-                    return new ArrayList<Table>();
+                    return new ArrayList<>();
             }
         }
 
@@ -372,7 +371,7 @@ public class CommandLineApp {
                 // currently we only have a detector that uses spreadsheets to find table areas
                 DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
                 List<Rectangle> guesses = detector.detect(page);
-                List<Table> tables = new ArrayList<Table>();
+                List<Table> tables = new ArrayList<>();
 
                 for (Rectangle guessRect : guesses) {
                     Page guess = page.getArea(guessRect);
@@ -389,7 +388,7 @@ public class CommandLineApp {
 
         public List<Table> extractTablesSpreadsheet(Page page) {
             // TODO add useLineReturns
-            return (List<Table>) spreadsheetExtractor.extract(page);
+            return spreadsheetExtractor.extract(page);
         }
     }
 

@@ -187,7 +187,7 @@ public class TestBasicExtractor {
 
     @Test
     public void testVerticalRulingsPreventMergingOfColumns() throws IOException {
-        List<Ruling> rulings = new ArrayList<Ruling>();
+        List<Ruling> rulings = new ArrayList<>();
         Float[] rulingsVerticalPositions = {147f, 256f, 310f, 375f, 431f, 504f};
         for (int i = 0; i < 6; i++) {
             rulings.add(new Ruling(255.57f, rulingsVerticalPositions[i], 0, 398.76f - 255.57f));
@@ -326,7 +326,7 @@ public class TestBasicExtractor {
                 Charset.forName("utf-8"),
                 CSVFormat.DEFAULT);
 
-        List<Rectangle> rectangles = new ArrayList<Rectangle>();
+        List<Rectangle> rectangles = new ArrayList<>();
 
         for (CSVRecord record : parse) {
             rectangles.add(new Rectangle(Float.parseFloat(record.get(0)),

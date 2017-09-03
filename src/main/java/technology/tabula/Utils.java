@@ -105,10 +105,10 @@ public class Utils {
     }
 
     public static <T> List<List<T>> transpose(List<List<T>> table) {
-        List<List<T>> ret = new ArrayList<List<T>>();
+        List<List<T>> ret = new ArrayList<>();
         final int N = table.get(0).size();
         for (int i = 0; i < N; i++) {
-            List<T> col = new ArrayList<T>();
+            List<T> col = new ArrayList<>();
             for (List<T> row : table) {
                 col.add(row.get(i));
             }
@@ -160,7 +160,7 @@ public class Utils {
             return null;
         }
 
-        List<Integer> rv = new ArrayList<Integer>();
+        List<Integer> rv = new ArrayList<>();
 
         String[] ranges = pagesSpec.split(",");
         for (int i = 0; i < ranges.length; i++) {
@@ -188,8 +188,8 @@ public class Utils {
     public static void snapPoints(List<? extends Line2D.Float> rulings, float xThreshold, float yThreshold) {
 
         // collect points and keep a Line -> p1,p2 map
-        Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<Line2D.Float, Point2D[]>();
-        List<Point2D> points = new ArrayList<Point2D>();
+        Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<>();
+        List<Point2D> points = new ArrayList<>();
         for (Line2D.Float r : rulings) {
             Point2D p1 = r.getP1();
             Point2D p2 = r.getP2();
@@ -206,15 +206,15 @@ public class Utils {
             }
         });
 
-        List<List<Point2D>> groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{points.get(0)})));
+        List<List<Point2D>> groupedPoints = new ArrayList<>();
+        groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
 
         for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getX() - last.get(0).getX()) < xThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             } else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{p})));
+                groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{p})));
             }
         }
 
@@ -238,15 +238,15 @@ public class Utils {
             }
         });
 
-        groupedPoints = new ArrayList<List<Point2D>>();
-        groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{points.get(0)})));
+        groupedPoints = new ArrayList<>();
+        groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
 
         for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getY() - last.get(0).getY()) < yThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             } else {
-                groupedPoints.add(new ArrayList<Point2D>(Arrays.asList(new Point2D[]{p})));
+                groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{p})));
             }
         }
 

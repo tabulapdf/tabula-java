@@ -21,18 +21,18 @@ public class TestProjectionProfile {
 		
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
 		TextElement textElement2 = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
-		List<TextElement> textList = new ArrayList<TextElement>();
+		List<TextElement> textList = new ArrayList<>();
 		textList.add(textElement);
 		textList.add(textElement2);
 
 		Ruling ruling = new Ruling(0, 0, 10, 10);
-		List<Ruling> rulingList = new ArrayList<Ruling>();
+		List<Ruling> rulingList = new ArrayList<>();
 		rulingList.add(ruling);
 
 
 		page = new Page(0, 0, 1, 1, 0, 1, pdPage, textList, rulingList);
 		
-		List<Rectangle> rectangles = new ArrayList<Rectangle>();
+		List<Rectangle> rectangles = new ArrayList<>();
 		rectangles.add(new Rectangle(0f, 0f, 500f, 5f));
 		
 		pProfile = new ProjectionProfile(page, rectangles, 5, 5);
@@ -65,7 +65,7 @@ public class TestProjectionProfile {
 	@Test
 	public void testSmooth() {
 		float[] data = {0, 1, 2};
-		float[] rv = pProfile.smooth(data, 3);
+		float[] rv = ProjectionProfile.smooth(data, 3);
 
 		assertEquals(1f, rv[2], 1e-5);
 	}
@@ -73,7 +73,7 @@ public class TestProjectionProfile {
 	@Test
 	public void testFilter() {
 		float[] data = {0, 1, 2};
-		float[] rv = pProfile.filter(data, 3);
+		float[] rv = ProjectionProfile.filter(data, 3);
 
 		assertEquals(3f, rv[1], 1e-5);
 		}
@@ -81,7 +81,7 @@ public class TestProjectionProfile {
 	@Test
 	public void testGetAutocorrelation() {
 		float[] projection = {0, 1, 2};
-		float[] rv = pProfile.getAutocorrelation(projection);
+		float[] rv = ProjectionProfile.getAutocorrelation(projection);
 
 		assertEquals(0f, rv[0], 1e-5);
 		assertTrue(rv.length == 2);

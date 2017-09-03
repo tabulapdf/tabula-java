@@ -10,7 +10,7 @@ import java.util.List;
 public class TableWithRulingLines extends Table {
 
     List<Ruling> verticalRulings, horizontalRulings;
-    RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<Cell>();
+    RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
     
     public TableWithRulingLines() {
         super();
@@ -61,7 +61,7 @@ public class TableWithRulingLines extends Table {
     private static List<List<Cell>> rowsOfCells(List<Cell> cells) {
         Cell c;
         float lastTop;
-        List<List<Cell>> rv = new ArrayList<List<Cell>>();
+        List<List<Cell>> rv = new ArrayList<>();
         List<Cell> lastRow;
         
         if (cells.isEmpty()) {
@@ -78,7 +78,7 @@ public class TableWithRulingLines extends Table {
         
         Iterator<Cell> iter = cells.iterator();
         c = iter.next();
-        lastTop = (float) c.getTop();
+        lastTop = c.getTop();
         lastRow = new ArrayList<>();
         lastRow.add(c);
         rv.add(lastRow);
@@ -90,7 +90,7 @@ public class TableWithRulingLines extends Table {
                 rv.add(lastRow);
             }
             lastRow.add(c);
-            lastTop = (float) c.getTop();
+            lastTop = c.getTop();
         }
         return rv;
     }

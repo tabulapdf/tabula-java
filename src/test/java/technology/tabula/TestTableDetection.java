@@ -80,6 +80,7 @@ public class TestTableDetection {
                 w.write(gson.toJson(this));
                 w.close();
             } catch (Exception e) {
+                throw new Error(e);
             }
         }
 
@@ -108,7 +109,7 @@ public class TestTableDetection {
     public static Collection<Object[]> data() {
         String[] regionCodes = {"eu", "us"};
 
-        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        ArrayList<Object[]> data = new ArrayList<>();
 
         for (String regionCode : regionCodes) {
             String directoryName = "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-" + regionCode + "/";
@@ -224,7 +225,7 @@ public class TestTableDetection {
         // now compare
         System.out.println("Testing " + this.pdf.getName());
 
-        List<String> errors = new ArrayList<String>();
+        List<String> errors = new ArrayList<>();
         this.status.numExpectedTables = numExpectedTables;
         totalExpectedTables += numExpectedTables;
 
@@ -289,7 +290,7 @@ public class TestTableDetection {
     }
 
     private List<String> comparePages(Integer page, List<Rectangle> detected, List<Rectangle> expected) {
-        ArrayList<String> errors = new ArrayList<String>();
+        ArrayList<String> errors = new ArrayList<>();
 
         // go through the detected tables and try to match them with expected tables
         // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):

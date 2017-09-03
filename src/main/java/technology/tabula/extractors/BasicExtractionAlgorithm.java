@@ -26,9 +26,9 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     }
     
     public List<Table> extract(Page page, List<Float> verticalRulingPositions) {
-        List<Ruling> verticalRulings = new ArrayList<Ruling>(verticalRulingPositions.size());
+        List<Ruling> verticalRulings = new ArrayList<>(verticalRulingPositions.size());
         for (Float p: verticalRulingPositions) {
-            verticalRulings.add(new Ruling((float) page.getTop(), (float) p, 0.0f, (float) page.getHeight()));
+            verticalRulings.add(new Ruling(page.getTop(), p, 0.0f, (float) page.getHeight()));
         }
         this.verticalRulings = verticalRulings;
         return this.extract(page);
@@ -109,7 +109,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
      */
     public static List<java.lang.Float> columnPositions(List<Line> lines) {
 
-        List<Rectangle> regions = new ArrayList<Rectangle>();
+        List<Rectangle> regions = new ArrayList<>();
         for (TextChunk tc: lines.get(0).getTextElements()) {
             if (tc.isSameChar(Line.WHITE_SPACE_CHARS)) { 
                 continue; 
@@ -120,7 +120,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         for (Line l: lines.subList(1, lines.size())) {
-            List<TextChunk> lineTextElements = new ArrayList<TextChunk>();
+            List<TextChunk> lineTextElements = new ArrayList<>();
             for (TextChunk tc: l.getTextElements()) {
                 if (!tc.isSameChar(Line.WHITE_SPACE_CHARS)) { 
                     lineTextElements.add(tc);
@@ -129,7 +129,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             
             for (Rectangle cr: regions) {
 
-                List<TextChunk> overlaps = new ArrayList<TextChunk>();
+                List<TextChunk> overlaps = new ArrayList<>();
                 for (TextChunk te: lineTextElements) {
                     if (cr.horizontallyOverlaps(te)) {
                         overlaps.add(te);
@@ -152,7 +152,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         
         List<java.lang.Float> rv = new ArrayList<>();
         for (Rectangle r: regions) {
-            rv.add((float) r.getRight());
+            rv.add(r.getRight());
         }
         
         Collections.sort(rv);

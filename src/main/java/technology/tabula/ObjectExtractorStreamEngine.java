@@ -41,7 +41,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
         this.log = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
 
-        this.rulings = new ArrayList<Ruling>();
+        this.rulings = new ArrayList<>();
         this.pageTransform = null;
 
         // calculate page transform

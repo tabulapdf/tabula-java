@@ -11,14 +11,14 @@ import net.sf.jsi.rtree.RTree;
 class RectangleSpatialIndex<T extends Rectangle> {
     
     class SaveToListProcedure implements TIntProcedure {
-        private List<Integer> ids = new ArrayList<Integer>();
+        private List<Integer> ids = new ArrayList<>();
 
-        public boolean execute(int id) {
+        @Override public boolean execute(int id) {
           ids.add(id);
           return true;
         }
 
-        private List<Integer> getIds() {
+        List<Integer> getIds() {
           return ids;
         }
     }
@@ -30,7 +30,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
     public RectangleSpatialIndex() {
         si = new RTree();
         si.init(null);
-        rectangles = new ArrayList<T>();
+        rectangles = new ArrayList<>();
     }
     
     public void add(T te) {
@@ -48,7 +48,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
     public List<T> contains(Rectangle r) {
         SaveToListProcedure proc = new SaveToListProcedure();
         si.contains(rectangleToSpatialIndexRectangle(r), proc);
-        ArrayList<T> rv = new ArrayList<T>();
+        ArrayList<T> rv = new ArrayList<>();
         for (int i : proc.getIds()) {
             rv.add(rectangles.get(i));
         }
@@ -59,7 +59,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
     public List<T> intersects(Rectangle r) {
         SaveToListProcedure proc = new SaveToListProcedure();
         si.intersects(rectangleToSpatialIndexRectangle(r), proc);
-        ArrayList<T> rv = new ArrayList<T>();
+        ArrayList<T> rv = new ArrayList<>();
         for (int i : proc.getIds()) {
             rv.add(rectangles.get(i));
         }

@@ -108,7 +108,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         try {
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (IOException e) {
-            return new ArrayList<Rectangle>();
+            return new ArrayList<>();
         }
 
         List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
@@ -119,7 +119,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             removeTextDocument = this.removeText(pdfPage);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
-            return new ArrayList<Rectangle>();
+            return new ArrayList<>();
         } finally {
             if (removeTextDocument != null) {
                 try {
@@ -133,10 +133,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         List<Ruling> verticalRulings = this.getVerticalRulings(image);
 
-        List<Ruling> allEdges = new ArrayList<Ruling>(horizontalRulings);
+        List<Ruling> allEdges = new ArrayList<>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-        List<Rectangle> tableAreas = new ArrayList<Rectangle>();
+        List<Rectangle> tableAreas = new ArrayList<>();
 
         // if we found some edges, try to find some tables based on them
         if (allEdges.size() > 0) {
@@ -289,7 +289,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         } while (foundTable);
 
         // create a set of our current tables that will eliminate duplicate tables
-        Set<Rectangle> tableSet = new TreeSet<Rectangle>(new Comparator<Rectangle>() {
+        Set<Rectangle> tableSet = new TreeSet<>(new Comparator<Rectangle>() {
             @Override
             public int compare(Rectangle o1, Rectangle o2) {
                 if (o1.equals(o2)) {
@@ -317,7 +317,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         tableSet.addAll(tableAreas);
 
-        return new ArrayList<Rectangle>(tableSet);
+        return new ArrayList<>(tableSet);
     }
 
     private Rectangle getTableFromText(List<Line> lines,
@@ -534,21 +534,21 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
                 // first put this chunk into any edge buckets it belongs to
                 List<TextChunk> leftEdge = currLeftEdges.get(left);
                 if (leftEdge == null) {
-                    leftEdge = new ArrayList<TextChunk>();
+                    leftEdge = new ArrayList<>();
                     currLeftEdges.put(left, leftEdge);
                 }
                 leftEdge.add(text);
 
                 List<TextChunk> midEdge = currMidEdges.get(mid);
                 if (midEdge == null) {
-                    midEdge = new ArrayList<TextChunk>();
+                    midEdge = new ArrayList<>();
                     currMidEdges.put(mid, midEdge);
                 }
                 midEdge.add(text);
 
                 List<TextChunk> rightEdge = currRightEdges.get(right);
                 if (rightEdge == null) {
-                    rightEdge = new ArrayList<TextChunk>();
+                    rightEdge = new ArrayList<>();
                     currRightEdges.put(right, rightEdge);
                 }
                 rightEdge.add(text);
@@ -654,7 +654,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     }
 
     private List<Rectangle> getTableAreasFromCells(List<? extends Rectangle> cells) {
-        List<List<Rectangle>> cellGroups = new ArrayList<List<Rectangle>>();
+        List<List<Rectangle>> cellGroups = new ArrayList<>();
         for (Rectangle cell : cells) {
             boolean addedToGroup = false;
 
@@ -677,14 +677,14 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
             }
 
             if (!addedToGroup) {
-                ArrayList<Rectangle> cellGroup = new ArrayList<Rectangle>();
+                ArrayList<Rectangle> cellGroup = new ArrayList<>();
                 cellGroup.add(cell);
                 cellGroups.add(cellGroup);
             }
         }
 
         // create table areas based on cell group
-        List<Rectangle> tableAreas = new ArrayList<Rectangle>();
+        List<Rectangle> tableAreas = new ArrayList<>();
         for (List<Rectangle> cellGroup : cellGroups) {
             // less than four cells should not make a table
             if (cellGroup.size() < REQUIRED_CELLS_FOR_TABLE) {
@@ -713,7 +713,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         // get all horizontal edges, which we'll define as a change in grayscale colour
         // along a straight line of a certain length
-        ArrayList<Ruling> horizontalRulings = new ArrayList<Ruling>();
+        ArrayList<Ruling> horizontalRulings = new ArrayList<>();
 
         Raster r = image.getRaster();
         int width = r.getWidth();
@@ -776,7 +776,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         // get all vertical edges, which we'll define as a change in grayscale colour
         // along a straight line of a certain length
-        ArrayList<Ruling> verticalRulings = new ArrayList<Ruling>();
+        ArrayList<Ruling> verticalRulings = new ArrayList<>();
 
         Raster r = image.getRaster();
         int width = r.getWidth();
@@ -842,7 +842,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
         List<Object> tokens = parser.getTokens();
-        List<Object> newTokens = new ArrayList<Object>();
+        List<Object> newTokens = new ArrayList<>();
         for (Object token : tokens) {
             if (token instanceof Operator) {
                 Operator op = (Operator) token;

@@ -66,8 +66,8 @@ public class Page extends Rectangle {
                                   }}).height;
         }
         Page rv = new Page(
-                (float) area.getTop(),
-                (float) area.getLeft(),
+                area.getTop(),
+                area.getLeft(),
                 (float) area.getWidth(),
                 (float) area.getHeight(),
                 rotation,
@@ -155,14 +155,14 @@ public class Page extends Rectangle {
         }
         
         if (this.rulings == null || this.rulings.isEmpty()) {
-            this.verticalRulingLines = new ArrayList<Ruling>();
-            this.horizontalRulingLines = new ArrayList<Ruling>();
-            return new ArrayList<Ruling>();
+            this.verticalRulingLines = new ArrayList<>();
+            this.horizontalRulingLines = new ArrayList<>();
+            return new ArrayList<>();
         }
         
         Utils.snapPoints(this.rulings, this.minCharWidth, this.minCharHeight);
         
-        List<Ruling> vrs = new ArrayList<Ruling>();
+        List<Ruling> vrs = new ArrayList<>();
         for (Ruling vr: this.rulings) {
             if (vr.vertical()) {
                 vrs.add(vr);
@@ -170,7 +170,7 @@ public class Page extends Rectangle {
         }
         this.verticalRulingLines = Ruling.collapseOrientedRulings(vrs);
         
-        List<Ruling> hrs = new ArrayList<Ruling>(); 
+        List<Ruling> hrs = new ArrayList<>(); 
         for (Ruling hr: this.rulings) {
             if (hr.horizontal()) {
                 hrs.add(hr);
@@ -178,7 +178,7 @@ public class Page extends Rectangle {
         }
         this.horizontalRulingLines = Ruling.collapseOrientedRulings(hrs);
         
-        this.cleanRulings = new ArrayList<Ruling>(this.verticalRulingLines);
+        this.cleanRulings = new ArrayList<>(this.verticalRulingLines);
         this.cleanRulings.addAll(this.horizontalRulingLines);
         
         return this.cleanRulings;

@@ -297,7 +297,7 @@ public class Ruling extends Line2D.Float {
     }
     
     public static List<Ruling> cropRulingsToArea(List<Ruling> rulings, Rectangle2D area) {
-        ArrayList<Ruling> rv = new ArrayList<Ruling>();
+        ArrayList<Ruling> rv = new ArrayList<>();
         for (Ruling r : rulings) {
             if (r.intersects(area)) {
                 rv.add(r.intersect(area));
@@ -322,15 +322,15 @@ public class Ruling extends Line2D.Float {
             }
         }
         
-        List<SortObject> sos = new ArrayList<SortObject>();
+        List<SortObject> sos = new ArrayList<>();
         
-        TreeMap<Ruling, Boolean> tree = new TreeMap<Ruling, Boolean>(new Comparator<Ruling>() {
+        TreeMap<Ruling, Boolean> tree = new TreeMap<>(new Comparator<Ruling>() {
             @Override
             public int compare(Ruling o1, Ruling o2) {
                 return java.lang.Double.compare(o1.getTop(), o2.getTop());
             }});
         
-        TreeMap<Point2D, Ruling[]> rv = new TreeMap<Point2D, Ruling[]>(new Comparator<Point2D>() {
+        TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
             @Override
             public int compare(Point2D o1, Point2D o2) {
                 if (o1.getY() > o2.getY()) return  1;
@@ -409,7 +409,7 @@ public class Ruling extends Line2D.Float {
     }
     
     public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
-        ArrayList<Ruling> rv = new ArrayList<Ruling>();
+        ArrayList<Ruling> rv = new ArrayList<>();
         Collections.sort(lines, new Comparator<Ruling>() {
             @Override
             public int compare(Ruling a, Ruling b) {
