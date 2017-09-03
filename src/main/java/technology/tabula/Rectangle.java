@@ -57,7 +57,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
     }
 
     public float verticalOverlap(Rectangle other) {
-        return (float) Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
+        return Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
     }
 
     public boolean verticallyOverlaps(Rectangle other) {
@@ -65,7 +65,7 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
     }
 
     public float horizontalOverlap(Rectangle other) {
-        return (float) Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
+        return Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
     }
 
     public boolean horizontallyOverlaps(Rectangle other) {
@@ -74,19 +74,19 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
 
     public float verticalOverlapRatio(Rectangle other) {
         float rv = 0,
-              delta = (float) Math.min(this.getBottom() - this.getTop(), other.getBottom() - other.getTop());
+              delta = Math.min(this.getBottom() - this.getTop(), other.getBottom() - other.getTop());
 
         if (other.getTop() <= this.getTop() && this.getTop() <= other.getBottom() && other.getBottom() <= this.getBottom()) {
-            rv = (float) ((other.getBottom() - this.getTop()) / delta);
+            rv = (other.getBottom() - this.getTop()) / delta;
         }
         else if (this.getTop() <= other.getTop() && other.getTop() <= this.getBottom() && this.getBottom() <= other.getBottom()) {
-            rv = (float) ((this.getBottom() - other.getTop()) / delta);
+            rv = (this.getBottom() - other.getTop()) / delta;
         }
         else if (this.getTop() <= other.getTop() && other.getTop() <= other.getBottom() && other.getBottom() <= this.getBottom()) {
-            rv = (float) ((other.getBottom() - other.getTop()) / delta);
+            rv = (other.getBottom() - other.getTop()) / delta;
         }
         else if (other.getTop() <= this.getTop() && this.getTop() <= this.getBottom() && this.getBottom() <= other.getBottom()) {
-            rv = (float) ((this.getBottom() - this.getTop()) / delta);
+            rv = (this.getBottom() - this.getTop()) / delta;
         }
 
         return rv;
@@ -143,10 +143,10 @@ public class Rectangle extends Rectangle2D.Float implements Comparable<Rectangle
 
     public Point2D[] getPoints() {
         return new Point2D[] {
-                new Point2D.Float((float) this.getLeft(), (float) this.getTop()),
-                new Point2D.Float((float) this.getRight(), (float) this.getTop()),
-                new Point2D.Float((float) this.getRight(), (float) this.getBottom()),
-                new Point2D.Float((float) this.getLeft(), (float) this.getBottom())
+                new Point2D.Float(this.getLeft(), this.getTop()),
+                new Point2D.Float(this.getRight(), this.getTop()),
+                new Point2D.Float(this.getRight(), this.getBottom()),
+                new Point2D.Float(this.getLeft(), this.getBottom())
         };
     }
 

@@ -163,7 +163,7 @@ public class TestSpreadsheetExtractor {
                 Charset.forName("utf-8"),
                 CSVFormat.DEFAULT);
 
-        List<Cell> cells = new ArrayList<Cell>();
+        List<Cell> cells = new ArrayList<>();
 
         for (CSVRecord record : parse) {
             cells.add(new Cell(Float.parseFloat(record.get(0)),
@@ -173,10 +173,9 @@ public class TestSpreadsheetExtractor {
         }
 
 
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
         Collections.sort(expected);
-        List<Rectangle> foundRectangles = se.findSpreadsheetsFromCells(cells);
+        List<Rectangle> foundRectangles = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
         Collections.sort(foundRectangles);
         assertTrue(foundRectangles.equals(expected));
     }
@@ -198,12 +197,12 @@ public class TestSpreadsheetExtractor {
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells.json");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
-        List<? extends Table> tables = se.extract(page);
+        List<Table> tables = se.extract(page);
         assertEquals(2, tables.size());
 
 
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, (List<Table>) tables);
+        (new JSONWriter()).write(sb, tables);
         assertEquals(expectedJson, sb.toString());
 
     }
@@ -214,12 +213,12 @@ public class TestSpreadsheetExtractor {
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
-        List<? extends Table> tables = se.extract(page);
+        List<Table> tables = se.extract(page);
         assertEquals(2, tables.size());
 
 
         StringBuilder sb = new StringBuilder();
-        (new CSVWriter()).write(sb, (List<Table>) tables);
+        (new CSVWriter()).write(sb, tables);
         assertEquals(expectedCsv, sb.toString());
 
     }
@@ -354,7 +353,7 @@ public class TestSpreadsheetExtractor {
                 446.0f, 97.0f, 685.0f, 520.0f);
         page.getText();
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        Table table = bea.extract(page).get(0);
+        bea.extract(page).get(0);
     }
 
     @Test
@@ -364,7 +363,7 @@ public class TestSpreadsheetExtractor {
                 1,
                 68.08f, 16.44f, 680.85f, 597.84f);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page);
+        List<Table> tables = bea.extract(page);
         assertEquals(1, tables.size());
     }
 
@@ -373,7 +372,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf",
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page,
+        List<Table> tables = bea.extract(page,
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
         assertEquals(1, tables.size());
         Table table = tables.get(0);
@@ -404,7 +403,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf",
                 1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page,
+        List<Table> tables = bea.extract(page,
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
         assertEquals(1, tables.size());
         Table table = tables.get(0);
@@ -419,7 +418,7 @@ public class TestSpreadsheetExtractor {
                 1);
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
         }
@@ -431,7 +430,7 @@ public class TestSpreadsheetExtractor {
                 1);
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
         }
@@ -442,7 +441,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/arabic.pdf",
                 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<Table> tables = sea.extract(page);
         // assertEquals(1, tables.size());
         Table table = tables.get(0);
 
@@ -473,7 +472,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/mednine.pdf",
                 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<Table> tables = sea.extract(page);
         // assertEquals(1, tables.size());
         Table table = tables.get(0);
 
@@ -522,7 +521,7 @@ public class TestSpreadsheetExtractor {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
         
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<Table> tables = sea.extract(page);
         assertEquals(1, tables.size());
         Table table = tables.get(0);
         

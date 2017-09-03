@@ -31,7 +31,7 @@ public class TestWriters {
 
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/twotables.pdf", 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        return (List<Table>) sea.extract(page);
+        return sea.extract(page);
     }
 
     @Test

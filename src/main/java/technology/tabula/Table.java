@@ -57,7 +57,7 @@ public class Table extends Rectangle {
         }
         
         public List<RectangularTextContainer> getRow(int row) {
-            return new ArrayList<RectangularTextContainer>(this.subMap(new CellPosition(row, 0), new CellPosition(row, maxRow+1)).values());
+            return new ArrayList<>(this.subMap(new CellPosition(row, 0), new CellPosition(row, maxRow+1)).values());
         }
         
         @Override
@@ -110,9 +110,9 @@ public class Table extends Rectangle {
             return this.rows;
         }
         
-        this.rows = new ArrayList<List<RectangularTextContainer>>();
+        this.rows = new ArrayList<>();
         for (int i = 0; i <= this.cellContainer.maxRow; i++) {
-            List<RectangularTextContainer> lastRow = new ArrayList<RectangularTextContainer>(); 
+            List<RectangularTextContainer> lastRow = new ArrayList<>(); 
             this.rows.add(lastRow);
             for (int j = 0; j <= this.cellContainer.maxCol; j++) {
                 lastRow.add(this.cellContainer.containsKey(i, j) ? this.cellContainer.get(i, j) : TextChunk.EMPTY);
@@ -138,7 +138,7 @@ public class Table extends Rectangle {
     }
     
     public List<RectangularTextContainer> getCells() {
-        return (List<RectangularTextContainer>) new ArrayList<RectangularTextContainer>(this.cellContainer.values());
+        return new ArrayList<>(this.cellContainer.values());
     }
     
     

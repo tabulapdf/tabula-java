@@ -11,7 +11,7 @@ public class TestRectangleSpatialIndex {
 		
 		Rectangle r = new Rectangle(0, 0, 0, 0);
 		
-		RectangleSpatialIndex rSpatialIndex = new RectangleSpatialIndex<Rectangle>();
+		RectangleSpatialIndex<Rectangle> rSpatialIndex = new RectangleSpatialIndex<>();
 		rSpatialIndex.add(r);
 		
 		assertTrue(rSpatialIndex.intersects(r).size() > 0);

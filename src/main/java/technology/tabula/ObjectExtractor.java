@@ -9,7 +9,7 @@ public class ObjectExtractor {
 
     private final PDDocument pdfDocument;
 
-    public ObjectExtractor(PDDocument pdfDocument) throws IOException {
+    public ObjectExtractor(PDDocument pdfDocument) {
         this.pdfDocument = pdfDocument;
     }
 

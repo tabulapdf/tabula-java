@@ -80,17 +80,17 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
 
     
     @Override
-    public List<? extends Table> extract(Page page) {
+    public List<Table> extract(Page page) {
         return extract(page, page.getRulings());
     }
     
     /**
      * Extract a list of Table from page using rulings as separators
      */
-    public List<? extends Table> extract(Page page, List<Ruling> rulings) {
+    public List<Table> extract(Page page, List<Ruling> rulings) {
         // split rulings into horizontal and vertical
-        List<Ruling> horizontalR = new ArrayList<Ruling>(), 
-                verticalR = new ArrayList<Ruling>();
+        List<Ruling> horizontalR = new ArrayList<>(), 
+                verticalR = new ArrayList<>();
         
         for (Ruling r: rulings) {
             if (r.horizontal()) {
@@ -106,10 +106,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         List<Cell> cells = findCells(horizontalR, verticalR);
         List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
         
-        List<TableWithRulingLines> spreadsheets = new ArrayList<TableWithRulingLines>();
+        List<Table> spreadsheets = new ArrayList<>();
         for (Rectangle area: spreadsheetAreas) {
 
-            List<Cell> overlappingCells = new ArrayList<Cell>();
+            List<Cell> overlappingCells = new ArrayList<>();
             for (Cell c: cells) {
                 if (c.intersects(area)) {
 
@@ -118,13 +118,13 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 }
             }
 
-            List<Ruling> horizontalOverlappingRulings = new ArrayList<Ruling>();
+            List<Ruling> horizontalOverlappingRulings = new ArrayList<>();
             for (Ruling hr: horizontalR) {
                 if (area.intersectsLine(hr)) {
                     horizontalOverlappingRulings.add(hr);
                 }
             }
-            List<Ruling> verticalOverlappingRulings = new ArrayList<Ruling>();
+            List<Ruling> verticalOverlappingRulings = new ArrayList<>();
             for (Ruling vr: verticalR) {
                 if (area.intersectsLine(vr)) {
                     verticalOverlappingRulings.add(vr);
@@ -176,9 +176,9 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     }
     
     public static List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
-        List<Cell> cellsFound = new ArrayList<Cell>();
+        List<Cell> cellsFound = new ArrayList<>();
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
-        List<Point2D> intersectionPointsList = new ArrayList<Point2D>(intersectionPoints.keySet());
+        List<Point2D> intersectionPointsList = new ArrayList<>(intersectionPoints.keySet());
         Collections.sort(intersectionPointsList, POINT_COMPARATOR); 
         boolean doBreak = false;
         
@@ -188,9 +188,9 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             doBreak = false;
             
             // CrossingPointsDirectlyBelow( topLeft );
-            List<Point2D> xPoints = new ArrayList<Point2D>();
+            List<Point2D> xPoints = new ArrayList<>();
             // CrossingPointsDirectlyToTheRight( topLeft );
-            List<Point2D> yPoints = new ArrayList<Point2D>();
+            List<Point2D> yPoints = new ArrayList<>();
 
             for (Point2D p: intersectionPointsList.subList(i, intersectionPointsList.size())) {
                 if (p.getX() == topLeft.getX() && p.getY() > topLeft.getY()) {
@@ -234,13 +234,13 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     public static List<Rectangle> findSpreadsheetsFromCells(List<? extends Rectangle> cells) {
         // via: http://stackoverflow.com/questions/13746284/merging-multiple-adjacent-rectangles-into-one-polygon
-        List<Rectangle> rectangles = new ArrayList<Rectangle>();
-        Set<Point2D> pointSet = new HashSet<Point2D>();
-        Map<Point2D, Point2D> edgesH = new HashMap<Point2D, Point2D>();
-        Map<Point2D, Point2D> edgesV = new HashMap<Point2D, Point2D>();
+        List<Rectangle> rectangles = new ArrayList<>();
+        Set<Point2D> pointSet = new HashSet<>();
+        Map<Point2D, Point2D> edgesH = new HashMap<>();
+        Map<Point2D, Point2D> edgesV = new HashMap<>();
         int i = 0;
         
-        cells = new ArrayList<Rectangle>(new HashSet<Rectangle>(cells));
+        cells = new ArrayList<>(new HashSet<>(cells));
 
         Utils.sort(cells);
 
@@ -256,10 +256,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         // X first sort
-        List<Point2D> pointsSortX = new ArrayList<Point2D>(pointSet);
+        List<Point2D> pointsSortX = new ArrayList<>(pointSet);
         Collections.sort(pointsSortX, X_FIRST_POINT_COMPARATOR);
         // Y first sort
-        List<Point2D> pointsSortY = new ArrayList<Point2D>(pointSet);
+        List<Point2D> pointsSortY = new ArrayList<>(pointSet);
         Collections.sort(pointsSortY, POINT_COMPARATOR);
         
         while (i < pointSet.size()) {
@@ -282,10 +282,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         // Get all the polygons
-        List<List<PolygonVertex>> polygons = new ArrayList<List<PolygonVertex>>();
+        List<List<PolygonVertex>> polygons = new ArrayList<>();
         Point2D nextVertex;
         while (!edgesH.isEmpty()) {
-            ArrayList<PolygonVertex> polygon = new ArrayList<PolygonVertex>();
+            ArrayList<PolygonVertex> polygon = new ArrayList<>();
             Point2D first = edgesH.keySet().iterator().next();
             polygon.add(new PolygonVertex(first, Direction.HORIZONTAL));
             edgesH.remove(first);
@@ -357,7 +357,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             this.point = point;
         }
         
-        public boolean equals(Object other) {
+        @Override public boolean equals(Object other) {
             if (this == other) 
                 return true;
             if (!(other instanceof PolygonVertex))
@@ -365,11 +365,11 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             return this.point.equals(((PolygonVertex) other).point);
         }
         
-        public int hashCode() {
+        @Override public int hashCode() {
             return this.point.hashCode();
         }
         
-        public String toString() {
+        @Override public String toString() {
             return String.format("%s[point=%s,direction=%s]", this.getClass().getName(), this.point.toString(), this.direction.toString());
         }
     }

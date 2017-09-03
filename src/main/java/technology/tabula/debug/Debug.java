@@ -59,7 +59,7 @@ public class Debug {
 
     private static void debugRulings(Graphics2D g, Page page) {
         // draw detected lines
-        List<Ruling> rulings = new ArrayList<Ruling>(page.getHorizontalRulings());
+        List<Ruling> rulings = new ArrayList<>(page.getHorizontalRulings());
         rulings.addAll(page.getVerticalRulings());
         drawShapes(g, rulings);
     }
@@ -70,8 +70,8 @@ public class Debug {
         List<Float> columns = BasicExtractionAlgorithm.columnPositions(lines);
         int i = 0;
         for (float p : columns) {
-            Ruling r = new Ruling(new Point2D.Float(p, (float) page.getTop()),
-                    new Point2D.Float(p, (float) page.getBottom()));
+            Ruling r = new Ruling(new Point2D.Float(p, page.getTop()),
+                    new Point2D.Float(p, page.getBottom()));
             g.setColor(COLORS[(i++) % 5]);
             drawShape(g, r);
         }
@@ -171,7 +171,7 @@ public class Debug {
         g.setStroke(new BasicStroke(1f));
         float[] seps = profile.findVerticalSeparators(horizSmoothKernel * 2.5f);
         for (int i = 0; i < seps.length; i++) {
-            float x = (float) (page.getLeft() + seps[i]);
+            float x = page.getLeft() + seps[i];
             g.draw(new Line2D.Double(x, page.getTop(), x, page.getBottom()));
         }
 
@@ -199,7 +199,7 @@ public class Debug {
         g.setStroke(new BasicStroke(1.5f));
         seps = profile.findHorizontalSeparators(vertSmoothKernel);
         for (int i = 0; i < seps.length; i++) {
-            float y = (float) (page.getTop() + seps[i]);
+            float y = page.getTop() + seps[i];
             g.draw(new Line2D.Double(page.getLeft(), y, page.getRight(), y));
         }
 
@@ -225,7 +225,7 @@ public class Debug {
             page = page.getArea(area);
         }
 
-        PDPage p = (PDPage) document.getPage(pageNumber);
+        PDPage p = document.getPage(pageNumber);
 
         BufferedImage image = Utils.pageConvertToImage(p, 72, ImageType.RGB);
 
@@ -276,7 +276,6 @@ public class Debug {
         ImageIO.write(image, "jpg", new File(outPath));
     }
 
-    @SuppressWarnings("static-access")
     private static Options buildOptions() {
         Options o = new Options();
 

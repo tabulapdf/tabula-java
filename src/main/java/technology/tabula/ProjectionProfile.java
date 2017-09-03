@@ -73,7 +73,7 @@ public class ProjectionProfile {
     public float[] findVerticalSeparators(float minColumnWidth) {
         boolean foundNarrower = false;
 
-        List<Integer> verticalSeparators = new ArrayList<Integer>();
+        List<Integer> verticalSeparators = new ArrayList<>();
         for (Ruling r: area.getVerticalRulings()) {
             if (r.length() / this.textBounds.getHeight() >= 0.95) {
                 verticalSeparators.add(toFixed(r.getPosition() - this.areaLeft));
@@ -167,7 +167,7 @@ public class ProjectionProfile {
                         + kernelSize / 2, data.length); j++) {
                     s += data[j];
                 }
-                rv[i] = (float) Math.floor(s / (float) kernelSize);
+                rv[i] = (float) Math.floor(s / kernelSize);
             }
         }
         return rv;
@@ -213,7 +213,7 @@ public class ProjectionProfile {
     }
     
     private static double toDouble(int value) {
-        return (double) value / Math.pow(10, DECIMAL_PLACES);
+        return value / Math.pow(10, DECIMAL_PLACES);
     }
     
 }

@@ -1,6 +1,5 @@
 package technology.tabula;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,7 @@ public class TestTextElement {
 	
 	
 	@Test
-	public void createTextElement() throws IOException {
+	public void createTextElement() {
 		
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f);
 		
@@ -31,7 +30,7 @@ public class TestTextElement {
 	}
 	
 	@Test
-	public void createTextElementWithDirection() throws IOException {
+	public void createTextElementWithDirection() {
 		
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f);
 		
@@ -52,7 +51,7 @@ public class TestTextElement {
 	@Test
 	public void mergeFourElementsIntoFourWords() {
 		
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(20f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
 		elements.add(new TextElement(40f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
@@ -60,7 +59,7 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		
-		List<TextChunk> expectedWords = new ArrayList<TextChunk>();
+		List<TextChunk> expectedWords = new ArrayList<>();
 		expectedWords.add(new TextChunk(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f)));
 		expectedWords.add(new TextChunk(new TextElement(20f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f)));
 		expectedWords.add(new TextChunk(new TextElement(40f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f)));
@@ -73,7 +72,7 @@ public class TestTextElement {
 	@Test
 	public void mergeFourElementsIntoOneWord() {
 		
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
 		elements.add(new TextElement(0f, 35f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
@@ -81,7 +80,7 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		
-		List<TextChunk> expectedWords = new ArrayList<TextChunk>();
+		List<TextChunk> expectedWords = new ArrayList<>();
 		TextChunk textChunk = new TextChunk(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		textChunk.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
 		textChunk.add(new TextElement(0f, 35f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
@@ -99,7 +98,7 @@ public class TestTextElement {
 	   * it was called with. Discussion here: https://github.com/tabulapdf/tabula-java/issues/78
 	   */
 
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
 		elements.add(new TextElement(0f, 35f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
@@ -113,7 +112,7 @@ public class TestTextElement {
 	@Test
 	public void mergeElementsWithSkippingRules() {
 		
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 17f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
@@ -123,7 +122,7 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		
-		List<TextChunk> expectedWords = new ArrayList<TextChunk>();
+		List<TextChunk> expectedWords = new ArrayList<>();
 		TextChunk textChunk = new TextChunk(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		textChunk.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
 		textChunk.add(new TextElement(0f, 35f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f));
@@ -137,7 +136,7 @@ public class TestTextElement {
 	@Test
 	public void mergeTenElementsIntoTwoWords() {
 		
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		elements.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		elements.add(new TextElement(0f, 20f, 10f, 20f, PDType1Font.HELVETICA, 1f, "L", 1f, 6f));
@@ -150,7 +149,7 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		
-		List<TextChunk> expectedWords = new ArrayList<TextChunk>();
+		List<TextChunk> expectedWords = new ArrayList<>();
 		TextChunk textChunk = new TextChunk(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		textChunk.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		textChunk.add(new TextElement(0f, 20f, 10f, 20f, PDType1Font.HELVETICA, 1f, "L", 1f, 6f));
@@ -172,7 +171,7 @@ public class TestTextElement {
 	@Test
 	public void mergeTenElementsIntoTwoLines() {
 		
-		List<TextElement> elements = new ArrayList<TextElement>();
+		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		elements.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		elements.add(new TextElement(0f, 20f, 10f, 20f, PDType1Font.HELVETICA, 1f, "L", 1f, 6f));
@@ -185,7 +184,7 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		
-		List<TextChunk> expectedWords = new ArrayList<TextChunk>();
+		List<TextChunk> expectedWords = new ArrayList<>();
 		TextChunk textChunk = new TextChunk(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		textChunk.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		textChunk.add(new TextElement(0f, 20f, 10f, 20f, PDType1Font.HELVETICA, 1f, "L", 1f, 6f));

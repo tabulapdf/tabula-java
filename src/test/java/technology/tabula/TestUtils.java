@@ -82,7 +82,7 @@ public class TestUtils {
 
     @Test
     public void testQuickSortEmptyList() {
-    	List<Integer> numbers = new ArrayList<Integer>();
+    	List<Integer> numbers = new ArrayList<>();
     	QuickSort.sort(numbers);
 
     	assertEquals(Collections.emptyList(), numbers);
@@ -107,8 +107,8 @@ public class TestUtils {
     @Test
     public void testQuickSortLongList() {
 
-    	List<Integer> numbers = new ArrayList<Integer>();
-    	List<Integer> expectedNumbers = new ArrayList<Integer>();
+    	List<Integer> numbers = new ArrayList<>();
+    	List<Integer> expectedNumbers = new ArrayList<>();
 
     	for(int i = 0; i <= 12000; i++){
     		numbers.add(12000 - i);

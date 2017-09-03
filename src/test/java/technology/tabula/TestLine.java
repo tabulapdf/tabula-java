@@ -16,7 +16,7 @@ public class TestLine {
 		
 		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
-		List<TextChunk> tList = new ArrayList<TextChunk>();
+		List<TextChunk> tList = new ArrayList<>();
 		tList.add(tChunk);
 		line.setTextElements(tList);
 		

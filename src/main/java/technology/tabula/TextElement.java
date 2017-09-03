@@ -30,7 +30,7 @@ public class TextElement extends Rectangle implements HasText {
         this.dir = dir;
     }
 
-    public String getText() {
+    @Override public String getText() {
         return text;
     }
 
@@ -50,7 +50,7 @@ public class TextElement extends Rectangle implements HasText {
         return fontSize;
     }
 
-    public String toString() {
+    @Override public String toString() {
         StringBuilder sb = new StringBuilder();
         String s = super.toString();
         sb.append(s.substring(0, s.length() - 1));
@@ -110,7 +110,7 @@ public class TextElement extends Rectangle implements HasText {
      */
     public static List<TextChunk> mergeWords(List<TextElement> textElements, List<Ruling> verticalRulings) {
 
-        List<TextChunk> textChunks = new ArrayList<TextChunk>();
+        List<TextChunk> textChunks = new ArrayList<>();
 
         if (textElements.isEmpty()) {
             return textChunks;
@@ -120,15 +120,15 @@ public class TextElement extends Rectangle implements HasText {
         // other things depend on `textElements` and it can sometimes lead to the first textElement in textElement
         // not appearing in the final output because it's been removed here.
         // https://github.com/tabulapdf/tabula-java/issues/78
-        List<TextElement> copyOfTextElements = new ArrayList<TextElement>(textElements);
+        List<TextElement> copyOfTextElements = new ArrayList<>(textElements);
         textChunks.add(new TextChunk(copyOfTextElements.remove(0)));
         TextChunk firstTC = textChunks.get(0);
 
         float previousAveCharWidth = (float) firstTC.getWidth();
-        float endOfLastTextX = (float) firstTC.getRight();
-        float maxYForLine = (float) firstTC.getBottom();
+        float endOfLastTextX = firstTC.getRight();
+        float maxYForLine = firstTC.getBottom();
         float maxHeightForLine = (float) firstTC.getHeight();
-        float minYTopForLine = (float) firstTC.getTop();
+        float minYTopForLine = firstTC.getTop();
         float lastWordSpacing = -1;
         float wordSpacing, deltaSpace, averageCharWidth, deltaCharWidth;
         float expectedStartOfNextWordX, dist;
@@ -202,7 +202,7 @@ public class TextElement extends Rectangle implements HasText {
 
             // new line?
             sameLine = true;
-            if (!Utils.overlap((float) chr.getBottom(), chr.height, maxYForLine, maxHeightForLine)) {
+            if (!Utils.overlap(chr.getBottom(), chr.height, maxYForLine, maxHeightForLine)) {
                 endOfLastTextX = -1;
                 expectedStartOfNextWordX = -java.lang.Float.MAX_VALUE;
                 maxYForLine = -java.lang.Float.MAX_VALUE;
@@ -211,7 +211,7 @@ public class TextElement extends Rectangle implements HasText {
                 sameLine = false;
             }
 
-            endOfLastTextX = (float) chr.getRight();
+            endOfLastTextX = chr.getRight();
 
             // should we add a space?
             if (!acrossVerticalRuling &&
@@ -219,9 +219,9 @@ public class TextElement extends Rectangle implements HasText {
                     expectedStartOfNextWordX < chr.getLeft() &&
                     !prevChar.getText().endsWith(" ")) {
 
-                sp = new TextElement((float) prevChar.getTop(),
-                        (float) prevChar.getLeft(),
-                        (float) (expectedStartOfNextWordX - prevChar.getLeft()),
+                sp = new TextElement(prevChar.getTop(),
+                        prevChar.getLeft(),
+                        expectedStartOfNextWordX - prevChar.getLeft(),
                         (float) prevChar.getHeight(),
                         prevChar.getFont(),
                         prevChar.getFontSize(),
@@ -233,11 +233,11 @@ public class TextElement extends Rectangle implements HasText {
                 sp = null;
             }
 
-            maxYForLine = (float) Math.max(chr.getBottom(), maxYForLine);
+            maxYForLine = Math.max(chr.getBottom(), maxYForLine);
             maxHeightForLine = (float) Math.max(maxHeightForLine, chr.getHeight());
-            minYTopForLine = (float) Math.min(minYTopForLine, chr.getTop());
+            minYTopForLine = Math.min(minYTopForLine, chr.getTop());
 
-            dist = (float) (chr.getLeft() - (sp != null ? sp.getRight() : prevChar.getRight()));
+            dist = chr.getLeft() - (sp != null ? sp.getRight() : prevChar.getRight());
 
             if (!acrossVerticalRuling &&
                     sameLine &&
@@ -252,7 +252,7 @@ public class TextElement extends Rectangle implements HasText {
         }
 
 
-        List<TextChunk> textChunksSeparatedByDirectionality = new ArrayList<TextChunk>();
+        List<TextChunk> textChunksSeparatedByDirectionality = new ArrayList<>();
         // count up characters by directionality
         for (TextChunk chunk : textChunks) {
             // choose the dominant direction

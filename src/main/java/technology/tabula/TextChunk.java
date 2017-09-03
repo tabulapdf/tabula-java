@@ -10,7 +10,7 @@ import java.text.Normalizer;
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> implements HasText {
     public static final TextChunk EMPTY = new TextChunk(0, 0, 0, 0);
-    List<TextElement> textElements = new ArrayList<TextElement>();
+    List<TextElement> textElements = new ArrayList<>();
 
     public TextChunk(float top, float left, float width, float height) {
         super(top, left, width, height);
@@ -37,7 +37,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
     private static HashMap<Byte, DirectionalityOptions> directionalities;
 
     static {
-        directionalities = new HashMap<Byte, DirectionalityOptions>();
+        directionalities = new HashMap<>();
         // BCT = bidirectional character type
         directionalities.put(java.lang.Character.DIRECTIONALITY_ARABIC_NUMBER, DirectionalityOptions.LTR);               // Weak BCT    "AN" in the Unicode specification.
         directionalities.put(java.lang.Character.DIRECTIONALITY_BOUNDARY_NEUTRAL, DirectionalityOptions.NONE);            // Weak BCT    "BN" in the Unicode specification.
@@ -73,8 +73,8 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
             throw new IllegalArgumentException();
         }
 
-        ArrayList<ArrayList<TextElement>> chunks = new ArrayList<ArrayList<TextElement>>();
-        ArrayList<TextElement> buff = new ArrayList<TextElement>();
+        ArrayList<ArrayList<TextElement>> chunks = new ArrayList<>();
+        ArrayList<TextElement> buff = new ArrayList<>();
         DirectionalityOptions buffDirectionality = DirectionalityOptions.NONE; // the directionality of the characters in buff;
 
         for (TextElement te : this.getTextElements()) {
@@ -107,7 +107,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
                     // and start a new one
                     buffDirectionality = directionalities.get(Character.getDirectionality(te.getText().charAt(0)));
-                    buff = new ArrayList<TextElement>();
+                    buff = new ArrayList<>();
                     buff.add(te);
                 }
             }
@@ -116,7 +116,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
             Collections.reverse(buff);
         }
         chunks.add(buff);
-        ArrayList<TextElement> everything = new ArrayList<TextElement>();
+        ArrayList<TextElement> everything = new ArrayList<>();
         if (!isLtrDominant) {
             Collections.reverse(chunks);
         }
@@ -126,7 +126,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return new TextChunk(everything);
     }
 
-    public int isLtrDominant() {
+    @Override public int isLtrDominant() {
         int ltrCnt = 0;
         int rtlCnt = 0;
         for (int i = 0; i < this.getTextElements().size(); i++) {
@@ -159,17 +159,17 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         this.merge(textElement);
     }
 
-    public void add(List<TextElement> textElements) {
-        for (TextElement te : textElements) {
+    public void add(List<TextElement> elements) {
+        for (TextElement te : elements) {
             this.add(te);
         }
     }
 
-    public List<TextElement> getTextElements() {
+    @Override public List<TextElement> getTextElements() {
         return textElements;
     }
 
-    public String getText() {
+    @Override public String getText() {
         if (this.textElements.size() == 0) {
             return "";
         }
@@ -231,7 +231,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         Character currentChar, lastChar = null;
         int subSequenceLength = 0, subSequenceStart = 0;
         TextChunk[] t;
-        List<TextChunk> rv = new ArrayList<TextChunk>();
+        List<TextChunk> rv = new ArrayList<>();
 
         for (int i = 0; i < this.getTextElements().size(); i++) {
             TextElement textElement = this.getTextElements().get(i);
@@ -331,7 +331,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
     }
 
     public static List<Line> groupByLines(List<TextChunk> textChunks) {
-        List<Line> lines = new ArrayList<Line>();
+        List<Line> lines = new ArrayList<>();
 
         if (textChunks.size() == 0) {
             return lines;
@@ -360,7 +360,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
             lines.remove(lines.size() - 1);
         }
 
-        List<Line> rv = new ArrayList<Line>(lines.size());
+        List<Line> rv = new ArrayList<>(lines.size());
 
         for (Line line : lines) {
             rv.add(Line.removeRepeatedCharacters(line, ' ', 3));
