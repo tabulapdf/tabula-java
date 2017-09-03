@@ -97,7 +97,7 @@ public class TestRectangle {
 		toSortList.add(first);
 		toSortList.add(fourth);
 
-		Collections.sort(toSortList);
+		Collections.sort(toSortList, Rectangle.ILL_DEFINED_ORDER);
 
 		assertEquals(expectedList, toSortList);
 	}
@@ -281,8 +281,8 @@ public class TestRectangle {
 		Rectangle c = new Rectangle(0,2,2,2);
 		List<Rectangle> l1 = new ArrayList<>(Arrays.asList(b, a, c));
 		List<Rectangle> l2 = new ArrayList<>(Arrays.asList(c, b, a));
-		QuickSort.sort(l1);
-		QuickSort.sort(l2);
+		QuickSort.sort(l1, Rectangle.ILL_DEFINED_ORDER);
+		QuickSort.sort(l2, Rectangle.ILL_DEFINED_ORDER);
 		assertEquals(l1.get(0), l2.get(0));
 		assertEquals(l1.get(1), l2.get(1));
 		assertEquals(l1.get(2), l2.get(2));

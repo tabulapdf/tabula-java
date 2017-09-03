@@ -134,7 +134,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this);
             spreadsheets.add(t);
         }
-        Utils.sort(spreadsheets);
+        Utils.sort(spreadsheets, Rectangle.ILL_DEFINED_ORDER);
         return spreadsheets;
     }
     
@@ -238,7 +238,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         cells = new ArrayList<>(new HashSet<>(cells));
 
-        Utils.sort(cells);
+        Utils.sort(cells, Rectangle.ILL_DEFINED_ORDER);
 
         for (Rectangle cell: cells) {
             for(Point2D pt: cell.getPoints()) {

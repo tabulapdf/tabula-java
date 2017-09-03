@@ -45,7 +45,7 @@ public final class QuickSort {
 	/**
 	 * Sorts the given list using the given comparator.
 	 */
-	public static <T> void sort(List<T> list, Comparator<T> comparator) {
+	public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
 		if (list instanceof RandomAccess) {
 			quicksort(list, comparator);
 		} else {
@@ -56,7 +56,7 @@ public final class QuickSort {
 		}
 	}
 
-	private static <T> void quicksort(List<T> list, Comparator<T> cmp) {
+	private static <T> void quicksort(List<T> list, Comparator<? super T> cmp) {
 		Stack<Integer> stack = new Stack<>();
 		stack.push(0);
 		stack.push(list.size());
@@ -76,7 +76,7 @@ public final class QuickSort {
 		}
 	}
 
-	private static <T> int partition(List<T> list, Comparator<T> cmp, int p, int start, int end) {
+	private static <T> int partition(List<T> list, Comparator<? super T> cmp, int p, int start, int end) {
 		int l = start;
 		int h = end - 2;
 		T piv = list.get(p);

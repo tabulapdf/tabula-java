@@ -333,12 +333,12 @@ public class TestBasicExtractor {
 
 
         //List<Rectangle> rectangles = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
-        Utils.sort(rectangles);
+        Utils.sort(rectangles, Rectangle.ILL_DEFINED_ORDER);
 
         for (int i = 0; i < (rectangles.size() - 1); i++) {
             Rectangle rectangle = rectangles.get(i);
             Rectangle nextRectangle = rectangles.get(i + 1);
-
+            
             assertTrue(rectangle.compareTo(nextRectangle) < 0);
         }
     }
