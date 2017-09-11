@@ -1,6 +1,6 @@
 package technology.tabula;
 
-public class TestDebug {
+public class DebugTest {
 
     private final static String PATH = "src/test/resources/technology/tabula/spanning_cells.pdf";
         
@@ -8,7 +8,7 @@ public class TestDebug {
 //    public void test() throws IOException {
 //        File outFile = new File(new File(System.getProperty("java.io.tmpdir")), "/rendered_page.jpg");
 //        Debug.renderPage(PATH, outFile.getAbsolutePath(), 0, null, true, false, false, false, false, false, false, false, false, false);
-//        assertTrue(outFile.exists());
+//        assertThat(outFile.exists()).isTrue();
 //        System.out.println(outFile.getAbsolutePath());
 //    }
 

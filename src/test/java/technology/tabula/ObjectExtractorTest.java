@@ -1,16 +1,17 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
-public class TestObjectExtractor {
+public class ObjectExtractorTest {
 
     /*@Test(expected=IOException.class)
     public void testWrongPasswordRaisesException() throws IOException {
@@ -24,6 +25,7 @@ public class TestObjectExtractor {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         oe.extract().next();
+        fail("IOException");
     }
 
     @Test
@@ -36,7 +38,7 @@ public class TestObjectExtractor {
             i++;
             pi.next();
         }
-        assertEquals(2, i);
+        assertThat(i).isEqualTo(2);
     }
     
 
@@ -49,7 +51,7 @@ public class TestObjectExtractor {
         while (pi.hasNext()) {
             pages.add(pi.next());
         }
-        assertEquals(1, pages.size());
+        assertThat(pages).hasSize(1);
     }
 
 
@@ -59,9 +61,9 @@ public class TestObjectExtractor {
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         PageIterator pi = oe.extract();
 
-        assertTrue(pi.hasNext());
-        assertNotNull(pi.next());
-        assertFalse(pi.hasNext());
+        assertThat(pi.hasNext()).isTrue();
+        assertThat(pi.next()).isNotNull();
+        assertThat(pi.hasNext()).isFalse();
 
     }
 
@@ -75,55 +77,59 @@ public class TestObjectExtractor {
         List<Ruling> rulings = page.getRulings();
 
         for (Ruling r: rulings) {
-            assertTrue(page.contains(r.getBounds()));
+            assertThat(page.contains(r.getBounds())).isTrue();
         }
     }
 
     @Test
     public void testDontThrowNPEInShfill() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/labor.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        PageIterator pi = oe.extract();
-        assertTrue(pi.hasNext());
-        try {
-            Page p = pi.next();
-            assertNotNull(p);
-        } catch (NullPointerException e) {
-            fail("NPE in ObjectExtractor " + e.toString());
+
+        try (PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/labor.pdf"))) {
+            ObjectExtractor oe = new ObjectExtractor(pdf_document);
+            PageIterator pi = oe.extract();
+            assertThat(pi.hasNext()).isTrue();
+            try {
+                Page p = pi.next();
+                assertThat(p).isNotNull();
+            } catch (NullPointerException e) {
+                fail("NPE in ObjectExtractor " + e.toString());
+            }
         }
     }
 
     @Test
     public void testExtractOnePage() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"));
-        assertEquals(2, pdf_document.getNumberOfPages());
+        try (PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"))) {
 
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        Page page = oe.extract(2);
+            assertThat(pdf_document.getNumberOfPages()).isEqualTo(2);
 
-        assertNotNull(page);
+            ObjectExtractor oe = new ObjectExtractor(pdf_document);
+            Page page = oe.extract(2);
 
+            assertThat(page).isNotNull();
+        }
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testExtractWrongPageNumber() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"));
-        assertEquals(2, pdf_document.getNumberOfPages());
+        try (PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"))) {
+            assertThat(pdf_document.getNumberOfPages()).isEqualTo(2);
 
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        oe.extract(3);
-
+            ObjectExtractor oe = new ObjectExtractor(pdf_document);
+            oe.extract(3);
+        }
     }
 
     @Test
     public void testTextElementsContainedInPage() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/cs-en-us-pbms.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        try (PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/cs-en-us-pbms.pdf"))) {
+            ObjectExtractor oe = new ObjectExtractor(pdf_document);
 
-        Page page = oe.extractPage(1);
+            Page page = oe.extractPage(1);
 
-        for (TextElement te: page.getText()) {
-            assertTrue(page.contains(te));
+            for (TextElement te : page.getText()) {
+                assertThat(page.contains(te)).isTrue();
+            }
         }
     }
     
@@ -134,12 +140,11 @@ public class TestObjectExtractor {
         ObjectExtractor oe = new ObjectExtractor(pdf_document, null, false, false);
         PageIterator pi = oe.extract();
        
-        assertTrue(pi.hasNext());
+        assertThat(pi.hasNext()).isTrue();
         Page page = pi.next();
-        assertNotNull(page);
-        assertEquals(0, page.getRulings().size());
-        assertFalse(pi.hasNext());
+        assertThat(page).isNotNull();
+        assertThat(page.getRulings()).isEmpty();
+        assertThat(pi.hasNext()).isFalse();
     }
     */
-
 }

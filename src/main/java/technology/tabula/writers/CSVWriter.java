@@ -23,10 +23,21 @@ public class CSVWriter implements Writer {
 //        super();
 //        this.useLineReturns = useLineReturns;
 //    }
-    
+
+    public static String writeString(Table table) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        return sb.toString();
+    }
+    public static String writeString(List<? extends Table> tables) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, tables);
+        return sb.toString();
+    }
+
     void createWriter(Appendable out) {
         try {
-            this.printer = new CSVPrinter(out, CSVFormat.EXCEL);
+            printer = new CSVPrinter(out, CSVFormat.EXCEL);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -35,23 +46,21 @@ public class CSVWriter implements Writer {
     
     @Override
     public void write(Appendable out, Table table) throws IOException {
-        this.createWriter(out);
+        createWriter(out);
         for (List<RectangularTextContainer> row: table.getRows()) {
-            List<String> cells = new ArrayList<String>(row.size());
+            List<String> cells = new ArrayList<>(row.size());
             for (RectangularTextContainer tc: row) {
                 cells.add(tc.getText());
             }
-            this.printer.printRecord(cells);
+            printer.printRecord(cells);
         }
         printer.flush();
     }
 
 	@Override
-	public void write(Appendable out, List<Table> tables) throws IOException {
+	public void write(Appendable out, List<? extends Table> tables) throws IOException {
 		for (Table table : tables) {
 			write(out, table);
 		}
-		
 	}
-
 }

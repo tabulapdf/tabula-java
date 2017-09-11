@@ -51,7 +51,7 @@ public class JSONWriter implements Writer {
         out.append(gson.toJson(table, Table.class));
     }
 
-    public void write(Appendable out, List<Table> tables) throws IOException {
+    public void write(Appendable out, List<? extends Table> tables) throws IOException {
 
         JsonArray array = new JsonArray();
         for (Table table : tables) {

@@ -35,7 +35,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
         double curTop = this.textElements.get(0).getTop();
         for (TextChunk tc: this.textElements) {
             if (useLineReturns && tc.getTop() > curTop) {
-                sb.append('\r');
+                sb.append(System.lineSeparator());
             }
             sb.append(tc.getText());
             curTop = tc.getTop();

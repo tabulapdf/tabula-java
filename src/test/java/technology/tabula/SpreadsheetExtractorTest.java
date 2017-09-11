@@ -1,29 +1,25 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Test;
+import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.writers.CSVWriter;
+import technology.tabula.writers.JSONWriter;
 
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.assertj.core.util.Arrays.array;
+import static technology.tabula.UtilsForTesting.*;
 
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
-import technology.tabula.writers.CSVWriter;
-import technology.tabula.writers.JSONWriter;
-
-public class TestSpreadsheetExtractor {
+public class SpreadsheetExtractorTest {
 
 
     public static final Rectangle[] EXPECTED_RECTANGLES = {
@@ -66,29 +62,25 @@ public class TestSpreadsheetExtractor {
             new Cell(70.0f, 70.0f, 156.0f, 4.0f),
             new Cell(74.0f, 70.0f, 156.0f, 6.0f)};
 
-    private static final Ruling[][] SINGLE_CELL_RULINGS = {
-            {
-                    new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(380.73438f, 185.66929f)),
-                    new Ruling(new Point2D.Float(151.653545f, 314.64567f), new Point2D.Float(380.73438f, 314.64567f))
-            },
-            {
-                    new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 314.64567f)),
-                    new Ruling(new Point2D.Float(380.73438f, 185.66929f), new Point2D.Float(380.73438f, 314.64567f))
+    private static final Ruling[][] SINGLE_CELL_RULINGS = { {
+                new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(380.73438f, 185.66929f)),
+                new Ruling(new Point2D.Float(151.653545f, 314.64567f), new Point2D.Float(380.73438f, 314.64567f))
+            }, {
+                new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 314.64567f)),
+                new Ruling(new Point2D.Float(380.73438f, 185.66929f), new Point2D.Float(380.73438f, 314.64567f))
             }
     };
 
-    private static final Ruling[][] TWO_SINGLE_CELL_RULINGS = {
-            {
-                    new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(287.4074f, 185.66929f)),
-                    new Ruling(new Point2D.Float(151.653545f, 262.101f), new Point2D.Float(287.4074f, 262.101f)),
-                    new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(368.1948f, 280.62992f)),
-                    new Ruling(new Point2D.Float(232.44095f, 357.06164f), new Point2D.Float(368.1948f, 357.06164f))
-            },
-            {
-                    new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 262.101f)),
-                    new Ruling(new Point2D.Float(287.4074f, 185.66929f), new Point2D.Float(287.4074f, 262.101f)),
-                    new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(232.44095f, 357.06164f)),
-                    new Ruling(new Point2D.Float(368.1948f, 280.62992f), new Point2D.Float(368.1948f, 357.06164f))
+    private static final Ruling[][] TWO_SINGLE_CELL_RULINGS = { {
+                new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(287.4074f, 185.66929f)),
+                new Ruling(new Point2D.Float(151.653545f, 262.101f), new Point2D.Float(287.4074f, 262.101f)),
+                new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(368.1948f, 280.62992f)),
+                new Ruling(new Point2D.Float(232.44095f, 357.06164f), new Point2D.Float(368.1948f, 357.06164f))
+            }, {
+                new Ruling(new Point2D.Float(151.653545f, 185.66929f), new Point2D.Float(151.653545f, 262.101f)),
+                new Ruling(new Point2D.Float(287.4074f, 185.66929f), new Point2D.Float(287.4074f, 262.101f)),
+                new Ruling(new Point2D.Float(232.44095f, 280.62992f), new Point2D.Float(232.44095f, 357.06164f)),
+                new Ruling(new Point2D.Float(368.1948f, 280.62992f), new Point2D.Float(368.1948f, 357.06164f))
             }
     };
 
@@ -119,7 +111,6 @@ public class TestSpreadsheetExtractor {
             new Ruling(new Point2D.Float(51.796982f, 333.0f), new Point2D.Float(560.20312f, 333.0f)),
             new Ruling(new Point2D.Float(51.797f, 366.0f), new Point2D.Float(560.20312f, 366.0f)),
 
-
             new Ruling(new Point2D.Float(52.0f, 181.0f), new Point2D.Float(51.797f, 366.0f)),
             new Ruling(new Point2D.Float(208.62891f, 181.0f), new Point2D.Float(208.62891f, 366.0f)),
             new Ruling(new Point2D.Float(357.11328f, 180.0f), new Point2D.Float(357.0f, 366.0f)),
@@ -132,38 +123,37 @@ public class TestSpreadsheetExtractor {
         Collections.sort(cells);
         List<Cell> expected = Arrays.asList(EXPECTED_CELLS);
         Collections.sort(expected);
-        assertTrue(cells.equals(expected));
+
+        assertThat(cells).isEqualTo(expected);
     }
 
     @Test
     public void testDetectSingleCell() {
-        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
-                Arrays.asList(SINGLE_CELL_RULINGS[1]));
-        assertEquals(1, cells.size());
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]), Arrays.asList(SINGLE_CELL_RULINGS[1]));
+        assertThat(cells).hasSize(1);
         Cell cell = cells.get(0);
-        assertTrue(Utils.feq(151.65355, cell.getLeft()));
-        assertTrue(Utils.feq(185.6693, cell.getTop()));
-        assertTrue(Utils.feq(229.08083, cell.getWidth()));
-        assertTrue(Utils.feq(128.97636, cell.getHeight()));
+
+        assertThat(cell.getLeft()).isCloseTo(151.65355f, within(0.01f));
+        assertThat(cell.getTop()).isCloseTo(185.6693f, within(0.01f));
+        assertThat(cell.getWidth()).isCloseTo(229.08083, within(0.01d));
+        assertThat(cell.getHeight()).isCloseTo(128.97636, within(0.01d));
     }
 
     @Test
     public void testDetectTwoSingleCells() {
-        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(TWO_SINGLE_CELL_RULINGS[0]),
-                Arrays.asList(TWO_SINGLE_CELL_RULINGS[1]));
-        assertEquals(2, cells.size());
+        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(TWO_SINGLE_CELL_RULINGS[0]), Arrays.asList(TWO_SINGLE_CELL_RULINGS[1]));
+        assertThat(cells).hasSize(2);
         // should not overlap
-        assertFalse(cells.get(0).intersects(cells.get(1)));
+        assertThat(cells.get(0).intersects(cells.get(1))).isFalse();
     }
 
     @Test
     public void testFindSpreadsheetsFromCells() throws IOException {
 
-        CSVParser parse = org.apache.commons.csv.CSVParser.parse(new File("src/test/resources/technology/tabula/csv/TestSpreadsheetExtractor-CELLS.csv"),
-                Charset.forName("utf-8"),
-                CSVFormat.DEFAULT);
+        CSVParser parse = CSVParser.parse(new File("src/test/resources/technology/tabula/csv/SpreadsheetExtractorTest-CELLS.csv"),
+                Charset.forName("utf-8"), CSVFormat.DEFAULT);
 
-        List<Cell> cells = new ArrayList<Cell>();
+        List<Cell> cells = new ArrayList<>();
 
         for (CSVRecord record : parse) {
             cells.add(new Cell(Float.parseFloat(record.get(0)),
@@ -172,21 +162,17 @@ public class TestSpreadsheetExtractor {
                     Float.parseFloat(record.get(3))));
         }
 
-
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
         Collections.sort(expected);
-        List<Rectangle> foundRectangles = se.findSpreadsheetsFromCells(cells);
+        List<? extends Rectangle> foundRectangles = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
         Collections.sort(foundRectangles);
-        assertTrue(foundRectangles.equals(expected));
+        assertThat(foundRectangles.equals(expected)).isTrue();
     }
 
     // TODO Add assertions
     @Test
     public void testSpreadsheetExtraction() throws IOException {
-        Page page = UtilsForTesting
-                .getAreaFromFirstPage(
-                        "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
+        Page page = getAreaFromFirstPage("src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
 
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
@@ -194,47 +180,42 @@ public class TestSpreadsheetExtractor {
 
     @Test
     public void testSpanningCells() throws IOException {
-        Page page = UtilsForTesting
-                .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
-        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells.json");
+        Page page = getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedJson = UtilsForTesting.loadTextFile("src/test/resources/technology/tabula/json/spanning_cells.json");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
-        assertEquals(2, tables.size());
-
+        assertThat(tables).hasSize(2);
 
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, (List<Table>) tables);
-        assertEquals(expectedJson, sb.toString());
+        (new JSONWriter()).write(sb, tables);
+        assertThat(sb.toString()).isEqualTo(expectedJson);
 
     }
 
     @Test
     public void testSpanningCellsToCsv() throws IOException {
-        Page page = UtilsForTesting
-                .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
+        Page page = getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
+        String expectedCsv = loadNormalizedCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
-        assertEquals(2, tables.size());
-
+        assertThat(tables).hasSize(2);
 
         StringBuilder sb = new StringBuilder();
-        (new CSVWriter()).write(sb, (List<Table>) tables);
-        assertEquals(expectedCsv, sb.toString());
-
+        (new CSVWriter()).write(sb, tables);
+        assertThat(sb.toString()).isEqualTo(expectedCsv);
     }
 
     @Test
     public void testIncompleteGrid() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
+        Page page = getPage("src/test/resources/technology/tabula/china.pdf", 1);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
-        assertEquals(2, tables.size());
+        assertThat(tables).hasSize(2);
     }
 
     @Test
     public void testNaturalOrderOfRectanglesDoesNotBreakContract() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
+        Page page = getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
 
@@ -242,52 +223,59 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
 
         String result = sb.toString();
-        String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
+        String expected = "Project,Agency,Institution\r\n" +
+                "Nanotechnology and its publics,NSF,Pennsylvania State University\r\n" +
+                "\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n" +
+                "\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n" +
+                "\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\n" +
+                "Database and innovation timeline for nanotechnology,NSF,UCLA\r\n" +
+                "Social and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n" +
+                "\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n" +
+                "\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n" +
+                "\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
 
-        assertEquals(expected, result);
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
     public void testMergeLinesCloseToEachOther() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/20.pdf", 1);
+        Page page = getPage("src/test/resources/technology/tabula/20.pdf", 1);
         List<Ruling> rulings = page.getVerticalRulings();
         float[] expectedRulings = new float[]{105.549774f, 107.52332f, 160.58167f, 377.1792f, 434.95804f, 488.21783f};
         for (int i = 0; i < rulings.size(); i++) {
-            assertEquals(expectedRulings[i], rulings.get(i).getLeft(), 0.1);
+            assertThat(rulings.get(i).getLeft()).isCloseTo(expectedRulings[i], within(0.1f));
         }
-        assertEquals(6, rulings.size());
-
-
+        assertThat(rulings).hasSize(6);
     }
 
     @Test
     public void testSpreadsheetWithNoBoundingFrameShouldBeSpreadsheet() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf", 1,
-                150.56f, 58.9f, 654.7f, 536.12f);
+        Page page = getAreaFromPage("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
+                1,150.56f, 58.9f, 654.7f, 536.12f);
 
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        String expectedCsv = loadNormalizedCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
 
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         boolean isTabular = se.isTabular(page);
-        assertTrue(isTabular);
+        assertThat(isTabular).isTrue();
         List<? extends Table> tables = se.extract(page);
-        StringBuilder sb = new StringBuilder();
-        (new CSVWriter()).write(sb, tables.get(0));
+        String s = CSVWriter.writeString(tables.get(0));
 
-        assertEquals(expectedCsv, sb.toString());
+        for (int i = 0; i < expectedCsv.length(); i++) {
+            assertThat(s.charAt(i)).as("check char at [%s]", i).isEqualTo(expectedCsv.charAt(i));
+        }
+        assertThat(s).isEqualTo(expectedCsv);
 
     }
 
     @Test
     public void testExtractSpreadsheetWithinAnArea() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/technology/tabula/puertos1.pdf",
-                1,
+        Page page = getAreaFromPage("src/test/resources/technology/tabula/puertos1.pdf", 1,
                 273.9035714285714f, 30.32142857142857f, 554.8821428571429f, 546.7964285714286f);
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         Table table = tables.get(0);
-        assertEquals(15, table.getRows().size());
+        assertThat(table.getRows()).hasSize(15);
 
         String expected = "\"\",TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM,M.U$S,TM\n" +
                 "Peces vivos,1,25,1,23,2,38,1,37,2,67,2,89,1\n" +
@@ -327,135 +315,126 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
         String result = sb.toString();
 
-        List<CSVRecord> parsedExpected = org.apache.commons.csv.CSVParser.parse(expected, CSVFormat.EXCEL).getRecords();
-        List<CSVRecord> parsedResult = org.apache.commons.csv.CSVParser.parse(result, CSVFormat.EXCEL).getRecords();
+        List<CSVRecord> parsedExpected = CSVParser.parse(expected, CSVFormat.EXCEL).getRecords();
+        List<CSVRecord> parsedResult = CSVParser.parse(result, CSVFormat.EXCEL).getRecords();
 
-        assertEquals(parsedResult.size(), parsedExpected.size());
+        assertThat(parsedExpected).hasSize(parsedResult.size());
         for (int i = 0; i < parsedResult.size(); i++) {
-            assertEquals(parsedResult.get(i).size(), parsedExpected.get(i).size());
+            assertThat(parsedExpected.get(i)).hasSize(parsedResult.get(i).size());
         }
-
+        // TODO check
+        assertThat(parsedResult).isEqualTo (array(parsedExpected));
     }
 
     @Test
     public void testAlmostIntersectingRulingsShouldIntersect() {
         Ruling v = new Ruling(new Point2D.Float(555.960876f, 271.569641f), new Point2D.Float(555.960876f, 786.899902f));
         Ruling h = new Ruling(new Point2D.Float(25.620499f, 786.899902f), new Point2D.Float(555.960754f, 786.899902f));
-        Map<Point2D, Ruling[]> m = Ruling.findIntersections(Arrays.asList(new Ruling[]{h}), Arrays.asList(new Ruling[]{v}));
-        assertEquals(m.values().size(), 1);
+        Map<Point2D, Ruling[]> m = Ruling.findIntersections(Collections.singletonList(h), Collections.singletonList(v));
+
+        assertThat(m.values()).hasSize(1);
     }
 
     // TODO add assertions
     @Test
     public void testDontRaiseSortException() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/technology/tabula/us-017.pdf",
-                2,
-                446.0f, 97.0f, 685.0f, 520.0f);
-        page.getText();
+        Page page = getAreaFromPage("src/test/resources/technology/tabula/us-017.pdf", 2, 446.0f, 97.0f, 685.0f, 520.0f);
+
+        assertThat(page.getText()).isNotNull();
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+
+        assertThat(table).isNotNull();
     }
 
     @Test
     public void testShouldDetectASingleSpreadsheet() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage(
-                "src/test/resources/technology/tabula/offense.pdf",
-                1,
-                68.08f, 16.44f, 680.85f, 597.84f);
+        Page page = getAreaFromPage("src/test/resources/technology/tabula/offense.pdf", 1, 68.08f, 16.44f, 680.85f, 597.84f);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page);
-        assertEquals(1, tables.size());
+        List<? extends Table> tables = bea.extract(page);
+        assertThat(tables).hasSize(1);
     }
 
     @Test
     public void testExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/us-007.pdf",1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page,
-                Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
-        assertEquals(1, tables.size());
+        List<? extends Table> tables = bea.extract(page, Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
+        assertThat(tables).hasSize(1);
         Table table = tables.get(0);
 
-        assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
-        assertEquals("One Withholding\rAllowance", table.getRows().get(0).get(1).getText());
-        assertEquals("Weekly", table.getRows().get(1).get(0).getText());
-        assertEquals("$71.15", table.getRows().get(1).get(1).getText());
-        assertEquals("Biweekly", table.getRows().get(2).get(0).getText());
-        assertEquals("142.31", table.getRows().get(2).get(1).getText());
-        assertEquals("Semimonthly", table.getRows().get(3).get(0).getText());
-        assertEquals("154.17", table.getRows().get(3).get(1).getText());
-        assertEquals("Monthly", table.getRows().get(4).get(0).getText());
-        assertEquals("308.33", table.getRows().get(4).get(1).getText());
-        assertEquals("Quarterly", table.getRows().get(5).get(0).getText());
-        assertEquals("925.00", table.getRows().get(5).get(1).getText());
-        assertEquals("Semiannually", table.getRows().get(6).get(0).getText());
-        assertEquals("1,850.00", table.getRows().get(6).get(1).getText());
-        assertEquals("Annually", table.getRows().get(7).get(0).getText());
-        assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
-        assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
-        assertEquals("14.23", table.getRows().get(8).get(1).getText());
+        assertThat(table.getRows().get(0).get(0).getText()).isEqualTo("Payroll Period");
+        assertThat(table.getRows().get(0).get(1).getText()).isEqualTo("One Withholding\rAllowance");
+        assertThat(table.getRows().get(1).get(0).getText()).isEqualTo("Weekly");
+        assertThat(table.getRows().get(1).get(1).getText()).isEqualTo("$71.15");
+        assertThat(table.getRows().get(2).get(0).getText()).isEqualTo("Biweekly");
+        assertThat(table.getRows().get(2).get(1).getText()).isEqualTo("142.31");
+        assertThat(table.getRows().get(3).get(0).getText()).isEqualTo("Semimonthly");
+        assertThat(table.getRows().get(3).get(1).getText()).isEqualTo("154.17");
+        assertThat(table.getRows().get(4).get(0).getText()).isEqualTo("Monthly");
+        assertThat(table.getRows().get(4).get(1).getText()).isEqualTo("308.33");
+        assertThat(table.getRows().get(5).get(0).getText()).isEqualTo("Quarterly");
+        assertThat(table.getRows().get(5).get(1).getText()).isEqualTo("925.00");
+        assertThat(table.getRows().get(6).get(0).getText()).isEqualTo("Semiannually");
+        assertThat(table.getRows().get(6).get(1).getText()).isEqualTo("1,850.00");
+        assertThat(table.getRows().get(7).get(0).getText()).isEqualTo("Annually");
+        assertThat(table.getRows().get(7).get(1).getText()).isEqualTo("3,700.00");
+        assertThat(table.getRows().get(8).get(0).getText()).isEqualTo("Daily or Miscellaneous\r(each day of the payroll period)");
+        assertThat(table.getRows().get(8).get(1).getText()).isEqualTo("14.23");
 
     }
 
     @Test
     public void testAnotherExtractTableWithExternallyDefinedRulings() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/us-024.pdf",1);
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) bea.extract(page,
-                Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
-        assertEquals(1, tables.size());
+        List<? extends Table> tables = bea.extract(page, Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
+        assertThat(tables).hasSize(1);
         Table table = tables.get(0);
 
-        assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
-        assertEquals("6.6", table.getRows().get(6).get(2).getText());
+        assertThat(table.getRows().get(4).get(0).getText()).isEqualTo("Total Supply");
+        assertThat(table.getRows().get(6).get(2).getText()).isEqualTo("6.6");
     }
 
     @Test
     public void testSpreadsheetsSortedByTopAndRight() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf", 1);
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<? extends Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
-            assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
+            assertThat(tables.get(i - 1).getTop()).isLessThanOrEqualTo(tables.get(i).getTop());
         }
     }
 
     @Test
     public void testDontStackOverflowQuicksort() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/failing_sort.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/failing_sort.pdf", 1);
 
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
+        List<? extends Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
-            assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
+            assertThat(tables.get(i - 1).getTop()).isLessThanOrEqualTo(tables.get(i).getTop());
         }
     }
 
     @Test
     public void testRTL() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/arabic.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/arabic.pdf", 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
-        // assertEquals(1, tables.size());
+        List<? extends Table> tables = sea.extract(page);
+        // assertThat(tables).hasSize(1);
         Table table = tables.get(0);
 
-
-        assertEquals("اسمي سلطان", table.getRows().get(1).get(1).getText());
-        assertEquals("من اين انت؟", table.getRows().get(2).get(1).getText());
-        assertEquals("1234", table.getRows().get(3).get(0).getText());
-        assertEquals("هل انت شباك؟", table.getRows().get(4).get(0).getText());
-        assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(2).get(0).getText()); // conjoined lam-alif gets missed
-        assertEquals("اسمي Jeremy في الانجليزية", table.getRows().get(4).get(1).getText()); // conjoined lam-alif gets missed
-        assertEquals("عندي 47 قطط", table.getRows().get(3).get(1).getText()); // the real right answer is 47.
-        assertEquals("Jeremy is جرمي in Arabic", table.getRows().get(5).get(0).getText()); // the real right answer is 47.
-        assertEquals("مرحباً", table.getRows().get(1).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+        assertThat(table.getRows().get(1).get(1).getText()).isEqualTo("اسمي سلطان");
+        assertThat(table.getRows().get(2).get(1).getText()).isEqualTo("من اين انت؟");
+        assertThat(table.getRows().get(3).get(0).getText()).isEqualTo("1234");
+        assertThat(table.getRows().get(4).get(0).getText()).isEqualTo("هل انت شباك؟");
+        assertThat(table.getRows().get(2).get(0).getText()).isEqualTo("انا من ولاية كارولينا الشمال"); // conjoined lam-alif gets missed
+        assertThat(table.getRows().get(4).get(1).getText()).isEqualTo("اسمي Jeremy في الانجليزية"); // conjoined lam-alif gets missed
+        assertThat(table.getRows().get(3).get(1).getText()).isEqualTo("عندي 47 قطط"); // the real right answer is 47.
+        assertThat(table.getRows().get(5).get(0).getText()).isEqualTo("Jeremy is جرمي in Arabic"); // the real right answer is 47.
+        assertThat(table.getRows().get(1).get(0).getText()).isEqualTo("مرحباً"); // really ought to be ً, but this is forgiveable for now
 
         // there is one remaining problems that are not yet addressed
         // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
@@ -463,33 +442,30 @@ public class TestSpreadsheetExtractor {
 
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
-        // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-
+        // assertThat(table.getRows().get(0).get(0).getText()).isEqualTo("مرحباً"); // really ought to be ً, but this is forgiveable for now
     }
-
 
     @Test
     public void testRealLifeRTL() throws IOException {
-        Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/mednine.pdf",
-                1);
+        Page page = getPage("src/test/resources/technology/tabula/mednine.pdf", 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
-        // assertEquals(1, tables.size());
+        List<? extends Table> tables = sea.extract(page);
+        // assertThat(tables).hasSize(1);
         Table table = tables.get(0);
 
-        assertEquals("الانتخابات التشريعية  2014", table.getRows().get(0).get(0).getText()); // the doubled spaces might be a bug in my implementation.
-        assertEquals("ورقة كشف نتائج دائرة مدنين", table.getRows().get(1).get(0).getText());
-        assertEquals("426", table.getRows().get(4).get(0).getText());
-        assertEquals("63", table.getRows().get(4).get(1).getText());
-        assertEquals("43", table.getRows().get(4).get(2).getText());
-        assertEquals("56", table.getRows().get(4).get(3).getText());
-        assertEquals("58", table.getRows().get(4).get(4).getText());
-        assertEquals("49", table.getRows().get(4).get(5).getText());
-        assertEquals("55", table.getRows().get(4).get(6).getText());
-        assertEquals("33", table.getRows().get(4).get(7).getText());
-        assertEquals("32", table.getRows().get(4).get(8).getText());
-        assertEquals("37", table.getRows().get(4).get(9).getText());
-        assertEquals("قائمة من أجل تحقيق سلطة الشعب", table.getRows().get(4).get(10).getText());
+        assertThat(table.getRows().get(0).get(0).getText()).isEqualTo("الانتخابات التشريعية  2014"); // the doubled spaces might be a bug in my implementation.
+        assertThat(table.getRows().get(1).get(0).getText()).isEqualTo("ورقة كشف نتائج دائرة مدنين");
+        assertThat(table.getRows().get(4).get(0).getText()).isEqualTo("426");
+        assertThat(table.getRows().get(4).get(1).getText()).isEqualTo("63");
+        assertThat(table.getRows().get(4).get(2).getText()).isEqualTo("43");
+        assertThat(table.getRows().get(4).get(3).getText()).isEqualTo("56");
+        assertThat(table.getRows().get(4).get(4).getText()).isEqualTo("58");
+        assertThat(table.getRows().get(4).get(5).getText()).isEqualTo("49");
+        assertThat(table.getRows().get(4).get(6).getText()).isEqualTo("55");
+        assertThat(table.getRows().get(4).get(7).getText()).isEqualTo("33");
+        assertThat(table.getRows().get(4).get(8).getText()).isEqualTo("32");
+        assertThat(table.getRows().get(4).get(9).getText()).isEqualTo("37");
+        assertThat(table.getRows().get(4).get(10).getText()).isEqualTo("قائمة من أجل تحقيق سلطة الشعب");
 
         // there is one remaining problems that are not yet addressed
         // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
@@ -497,39 +473,33 @@ public class TestSpreadsheetExtractor {
 
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
-        // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-
+        // assertThat(table.getRows().get(0).get(0).getText()).isEqualTo("مرحباً"); // really ought to be ً, but this is forgiveable for now
     }
 
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
 
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf",
-                106.01f, 48.09f, 227.31f, 551.89f);
+        Page page = getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 106.01f, 48.09f, 227.31f, 551.89f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
-        assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
-
+        assertThat(table.getRows().get(8).get(1).getText()).isEqualTo("REGIONAL PULMONARY & SLEEP\rMEDICINE");
     }
-    
+
     @Test
     public void testSpreadsheetExtractionIssue656() throws IOException {
-        Page page = UtilsForTesting
-                .getAreaFromFirstPage(
-                        "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
+        Page page = getAreaFromFirstPage("src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                         56.925f,24.255f,549.945f,786.555f);
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
-        
+        String expectedCsv = loadNormalizedCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
+
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-        List<Table> tables = (List<Table>) sea.extract(page);
-        assertEquals(1, tables.size());
+        List<? extends Table> tables = sea.extract(page);
+        assertThat(tables).hasSize(1);
         Table table = tables.get(0);
-        
+
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         String result = sb.toString();
-        assertEquals(expectedCsv, result);
-    }    
-
+        assertThat(result).isEqualTo(expectedCsv);
+    }
 }
