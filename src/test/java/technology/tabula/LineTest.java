@@ -1,14 +1,15 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-public class TestLine {
+public class LineTest {
 
 	@Test
 	public void testSetTextElements() {
@@ -16,12 +17,11 @@ public class TestLine {
 		
 		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
-		List<TextChunk> tList = new ArrayList<TextChunk>();
+		List<TextChunk> tList = new ArrayList<>();
 		tList.add(tChunk);
 		line.setTextElements(tList);
 		
-		assertEquals("test", line.getTextElements().get(0).getText());
-		
+		assertThat(line.getTextElements().get(0).getText()).isEqualTo("test");
 	}
 
 	@Test
@@ -32,8 +32,8 @@ public class TestLine {
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(3, tChunk);
 		
-		assertEquals("test", line.getTextElements().get(3).getText());
-		}
+		assertThat(line.getTextElements().get(3).getText()).isEqualTo("test");
+	}
 	
 	@Test
 	public void testLessThanAddTextChunkIntTextChunk() {
@@ -44,8 +44,8 @@ public class TestLine {
 		line.addTextChunk(0, tChunk);
 		line.addTextChunk(0, tChunk);
 		
-		assertEquals("testtest", line.getTextElements().get(0).getText());
-		}
+		assertThat(line.getTextElements().get(0).getText()).isEqualTo("testtest");
+	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void testErrorAddTextChunkIntTextChunk() {
@@ -54,7 +54,8 @@ public class TestLine {
 		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(-1, tChunk);
-		}
+		fail("Illegal chunk");
+	}
 	
 	@Test
 	public void testToString() {
@@ -65,7 +66,7 @@ public class TestLine {
 		line.addTextChunk(0, tChunk);
 		line.addTextChunk(0, tChunk);
 		
-		assertEquals("technology.tabula.Line[x=0.0,y=0.0,w=0.0,h=0.0,bottom=0.000000,right=0.000000,chunks='testtest', ]", line.toString());
+		assertThat(line.toString()).isEqualTo("technology.tabula.Line[x=0.0,y=0.0,w=0.0,h=0.0,bottom=0.000000,right=0.000000,chunks='testtest', ]");
 	}
 
 }

@@ -1,5 +1,19 @@
 package technology.tabula;
 
+import com.google.gson.Gson;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -8,27 +22,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.*;
-
-import com.google.gson.Gson;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import static org.assertj.core.api.Assertions.assertThat;
+import static technology.tabula.UtilsForTesting.loadTextFile;
 
 /**
  * Created by matt on 2015-12-14.
  */
 @RunWith(Parameterized.class)
-public class TestTableDetection {
+public class TableDetectionTest {
 
     private static int numTests = 0;
     private static int numPassingTests = 0;
@@ -62,7 +63,7 @@ public class TestTableDetection {
             TestStatus status;
 
             try {
-                String json = UtilsForTesting.loadJson(jsonFilename(pdfFilename));
+                String json = loadTextFile(jsonFilename(pdfFilename));
                 status = new Gson().fromJson(json, TestStatus.class);
                 status.pdfFilename = pdfFilename;
             } catch (IOException ioe) {
@@ -79,7 +80,7 @@ public class TestTableDetection {
                 Gson gson = new Gson();
                 w.write(gson.toJson(this));
                 w.close();
-            } catch (Exception e) {
+            } catch (Exception ignore) {
             }
         }
 
@@ -96,7 +97,7 @@ public class TestTableDetection {
     public static void disableLogging() {
         Logger pdfboxLogger = Logger.getLogger("org.apache.pdfbox");
         defaultLogLevel = pdfboxLogger.getLevel();
-        pdfboxLogger.setLevel(Level.OFF);
+        pdfboxLogger.setLevel(Level.WARNING);
     }
 
     @AfterClass
@@ -108,7 +109,7 @@ public class TestTableDetection {
     public static Collection<Object[]> data() {
         String[] regionCodes = {"eu", "us"};
 
-        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        List<Object[]> data = new ArrayList<>();
 
         for (String regionCode : regionCodes) {
             String directoryName = "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-" + regionCode + "/";
@@ -121,8 +122,10 @@ public class TestTableDetection {
                 }
             });
 
-            for (File pdf : pdfs) {
-                data.add(new Object[] {pdf});
+            if (pdfs!= null) {
+                for (File pdf : pdfs) {
+                    data.add(new Object[]{pdf});
+                }
             }
         }
 
@@ -136,14 +139,14 @@ public class TestTableDetection {
     private int numCorrectlyDetectedTables = 0;
     private int numErroneouslyDetectedTables = 0;
 
-    public TestTableDetection(File pdf) {
+    public TableDetectionTest(File pdf) {
         this.pdf = pdf;
         this.status = TestStatus.load(pdf.getAbsolutePath());
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             this.builder = factory.newDocumentBuilder();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
         }
     }
 
@@ -161,15 +164,15 @@ public class TestTableDetection {
         numTests++;
 
         // xml parsing stuff for ground truth
-        Document regionDocument = this.builder.parse(this.pdf.getAbsolutePath().replace(".pdf", "-reg.xml"));
+        Document regionDocument = builder.parse(pdf.getAbsolutePath().replace(".pdf", "-reg.xml"));
         NodeList tables = regionDocument.getElementsByTagName("table");
 
         // tabula extractors
-        PDDocument pdfDocument = PDDocument.load(this.pdf);
+        PDDocument pdfDocument = PDDocument.load(pdf);
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
         // parse expected tables from the ground truth dataset
-        Map<Integer, List<Rectangle>> expectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> expectedTables = new HashMap<>();
 
         int numExpectedTables = 0;
 
@@ -207,7 +210,7 @@ public class TestTableDetection {
         }
 
         // now find tables detected by tabula-java
-        Map<Integer, List<Rectangle>> detectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> detectedTables = new HashMap<>();
 
         // the algorithm we're going to be testing
         NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
@@ -216,16 +219,17 @@ public class TestTableDetection {
         while (pages.hasNext()) {
             Page page = pages.next();
             List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
-            if (tablesOnPage.size() > 0) {
-                detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
+            if (!tablesOnPage.isEmpty()) {
+                detectedTables.put(page.getPageNumber(), tablesOnPage);
             }
         }
 
         // now compare
-        System.out.println("Testing " + this.pdf.getName());
+        System.out.println();
+        System.out.println("Testing " + pdf.getName());
 
-        List<String> errors = new ArrayList<String>();
-        this.status.numExpectedTables = numExpectedTables;
+        List<String> errors = new ArrayList<>();
+        status.numExpectedTables = numExpectedTables;
         totalExpectedTables += numExpectedTables;
 
         for (Integer page : expectedTables.keySet()) {
@@ -237,7 +241,7 @@ public class TestTableDetection {
                 continue;
             }
 
-            errors.addAll(this.comparePages(page, detectedPageTables, expectedPageTables));
+            errors.addAll(comparePages(page, detectedPageTables, expectedPageTables));
 
             detectedTables.remove(page);
         }
@@ -247,11 +251,11 @@ public class TestTableDetection {
             List<Rectangle> detectedPageTables = detectedTables.get(page);
             errors.add("Page " + page.toString() + ": " + detectedPageTables.size() + " tables detected where there are none");
 
-            this.numErroneouslyDetectedTables += detectedPageTables.size();
+            numErroneouslyDetectedTables += detectedPageTables.size();
             totalErroneouslyDetectedTables += detectedPageTables.size();
         }
 
-        boolean failed = errors.size() > 0;
+        boolean failed = !errors.isEmpty();
 
         if (failed) {
             System.out.println("==== CURRENT TEST ERRORS ====");
@@ -262,6 +266,7 @@ public class TestTableDetection {
             numPassingTests++;
         }
 
+        System.out.println();
         System.out.println("==== CUMULATIVE TEST STATISTICS ====");
 
         System.out.println(numPassingTests + " out of " + numTests + " currently passing");
@@ -269,27 +274,29 @@ public class TestTableDetection {
         System.out.println(totalErroneouslyDetectedTables + " tables incorrectly detected");
 
 
-        if(this.status.isFirstRun()) {
+        if(status.isFirstRun()) {
             // make the baseline
-            this.status.expectedFailure = failed;
-            this.status.numCorrectlyDetectedTables = this.numCorrectlyDetectedTables;
-            this.status.numErroneouslyDetectedTables = this.numErroneouslyDetectedTables;
-            this.status.save();
+            status.expectedFailure = failed;
+            status.numCorrectlyDetectedTables = numCorrectlyDetectedTables;
+            status.numErroneouslyDetectedTables = numErroneouslyDetectedTables;
+            status.save();
         } else {
             // compare to baseline
-            if (this.status.expectedFailure) {
+            if (status.expectedFailure) {
                 // make sure the failure didn't get worse
-                assertTrue("This test is an expected failure, but it now detects even fewer tables.", this.numCorrectlyDetectedTables >= this.status.numCorrectlyDetectedTables);
-                assertTrue("This test is an expected failure, but it now detects more bad tables.", this.numErroneouslyDetectedTables <= this.status.numErroneouslyDetectedTables);
-                assertTrue("This test used to fail but now it passes! Hooray! Please update the test's JSON file accordingly.", failed);
+                assertThat(numCorrectlyDetectedTables).isGreaterThanOrEqualTo(status.numCorrectlyDetectedTables)
+                        .as("This test is an expected failure, but it now detects even fewer tables.");
+                assertThat(numErroneouslyDetectedTables).isLessThanOrEqualTo(status.numErroneouslyDetectedTables)
+                        .as("This test is an expected failure, but it now detects more bad tables.");
+                assertThat(failed).as("This test used to fail but now it passes! Hooray! Please update the test's JSON file accordingly.").isTrue();
             } else {
-                assertFalse("Table detection failed. Please see the error messages for more information.", failed);
+                assertThat(failed).as("Table detection failed. Please see the error messages for more information.").isFalse();
             }
         }
     }
 
     private List<String> comparePages(Integer page, List<Rectangle> detected, List<Rectangle> expected) {
-        ArrayList<String> errors = new ArrayList<String>();
+        List<String> errors = new ArrayList<>();
 
         // go through the detected tables and try to match them with expected tables
         // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):

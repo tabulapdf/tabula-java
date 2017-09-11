@@ -1,19 +1,20 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestProjectionProfile {
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
+public class ProjectionProfileTest {
 	
-	ProjectionProfile pProfile;
-	Page page;
+	private ProjectionProfile pProfile;
+	private Page page;
 
 	@Before
 	public void setUpProjectionProfile() {
@@ -26,9 +27,8 @@ public class TestProjectionProfile {
 		textList.add(textElement2);
 
 		Ruling ruling = new Ruling(0, 0, 10, 10);
-		List<Ruling> rulingList = new ArrayList<Ruling>();
+		List<Ruling> rulingList = new ArrayList<>();
 		rulingList.add(ruling);
-
 
 		page = new Page(0, 0, 1, 1, 0, 1, pdPage, textList, rulingList);
 		
@@ -41,50 +41,50 @@ public class TestProjectionProfile {
 	@Test
 	public void testGetVerticalProjection() {
 		float[] projection = pProfile.getVerticalProjection();
-		assertTrue(projection.length == 10);
+		assertThat(projection).hasSize(10);
 		}
 
 	@Test
 	public void testGetHorizontalProjection() {
 		float[] projection = pProfile.getHorizontalProjection();
-		assertTrue(projection.length == 10);
+		assertThat(projection).hasSize(10);
 	}
 
 	@Test
 	public void testFindVerticalSeparators() {
 		float[] seperators = pProfile.findVerticalSeparators(page.getText().size() * 2.5f);
-		assertTrue(seperators.length == 0);
+		assertThat(seperators).isEmpty();
 	}
 
 	@Test
 	public void testFindHorizontalSeparators() {
 		float[] seperators = pProfile.findHorizontalSeparators(page.getText().size() * 2.5f);
-		assertTrue(seperators.length == 0);
+		assertThat(seperators).isEmpty();
 	}
 
 	@Test
 	public void testSmooth() {
 		float[] data = {0, 1, 2};
-		float[] rv = pProfile.smooth(data, 3);
+		float[] rv = ProjectionProfile.smooth(data, 3);
 
-		assertEquals(1f, rv[2], 1e-5);
+		assertThat(rv[2]).isCloseTo(1f, within(1e-5f));
 	}
 
 	@Test
 	public void testFilter() {
 		float[] data = {0, 1, 2};
-		float[] rv = pProfile.filter(data, 3);
+		float[] rv = ProjectionProfile.filter(data, 3);
 
-		assertEquals(3f, rv[1], 1e-5);
+		assertThat(rv[1]).isCloseTo(3f, within(1e-5f));
 		}
 
 	@Test
 	public void testGetAutocorrelation() {
 		float[] projection = {0, 1, 2};
-		float[] rv = pProfile.getAutocorrelation(projection);
+		float[] rv = ProjectionProfile.getAutocorrelation(projection);
 
-		assertEquals(0f, rv[0], 1e-5);
-		assertTrue(rv.length == 2);
+		assertThat(rv[0]).isCloseTo(0f, within(1e-5f));
+		assertThat(rv).hasSize(2);
 
 	}
 
@@ -93,7 +93,7 @@ public class TestProjectionProfile {
 //		float[]
 //		float[] projection = pProfile.getFirstDeriv(new float[]{0.0, 0.0)
 //		System.out.println(Arrays.toString(projection));    
-//		assertEquals(10, projection[0], 1e-15);
+//		assertThat(projection[0]).isCloseTo(10, within(1e-15));
 		}
 
 }

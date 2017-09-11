@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 import technology.tabula.extractors.ExtractionAlgorithm;
 
-@SuppressWarnings("serial")
 public class Table extends Rectangle {
     
     class CellPosition implements Comparable<CellPosition> {
@@ -57,7 +56,7 @@ public class Table extends Rectangle {
         }
         
         public List<RectangularTextContainer> getRow(int row) {
-            return new ArrayList<RectangularTextContainer>(this.subMap(new CellPosition(row, 0), new CellPosition(row, maxRow+1)).values());
+            return new ArrayList<>(this.subMap(new CellPosition(row, 0), new CellPosition(row, maxRow+1)).values());
         }
         
         @Override
