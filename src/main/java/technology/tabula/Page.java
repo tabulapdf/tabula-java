@@ -121,8 +121,7 @@ public class Page extends Rectangle {
         return this.getText(new Rectangle(top, left, right - left, bottom - top));
     }
 
-    /** @deprecated with no replacement  */
-    @Deprecated public Integer getRotation() {
+    public Integer getRotation() {
         return rotation;
     }
 
