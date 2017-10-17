@@ -2,7 +2,9 @@ package technology.tabula;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -35,6 +37,10 @@ public class UtilsForTesting {
     }
 
     public static String[][] tableToArrayOfRows(Table table) {
+        return tableToArrayOfRows(table, false);
+    }
+
+    public static String[][] tableToArrayOfRows(Table table, boolean addSpanNote) {
         List<List<RectangularTextContainer>> tableRows = table.getRows();
 
         int maxColCount = 0;
@@ -50,10 +56,32 @@ public class UtilsForTesting {
         
         String[][] rv = new String[tableRows.size()][maxColCount];
 
+        Map<Cell, Integer> spanGroups = new HashMap<>();
+        int spanGroupCounter = 1;
         for (int i = 0; i < tableRows.size(); i++) {
             List<RectangularTextContainer> row = tableRows.get(i);
             for (int j = 0; j < row.size(); j++) {
-                rv[i][j] = table.getCell(i, j).getText();
+                RectangularTextContainer container = table.getCell(i, j);
+
+                String groupIdText = "";
+                if (addSpanNote && container instanceof Cell) {
+                    Cell cell = (Cell) container;
+                    int groupId = 0;
+                    if (cell.isSpanning()) {
+                        if (spanGroups.containsKey(cell)){
+                            groupId = spanGroups.get(cell);
+                        } else {
+                            groupId = spanGroupCounter++;
+                            spanGroups.put(cell, groupId);
+                        }
+                    }
+
+                    groupIdText = "[" + groupId + "]";
+                } else if (addSpanNote) {
+                    groupIdText = "[0]";
+                }
+
+                rv[i][j] = groupIdText + container.getText();
             }
         }
 
