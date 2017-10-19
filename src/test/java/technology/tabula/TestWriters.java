@@ -1,20 +1,19 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.junit.Test;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import org.junit.Test;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestWriters {
 
@@ -131,6 +130,52 @@ public class TestWriters {
         (new CSVWriter()).write(sb, table);
         String s = sb.toString();
         assertEquals(expectedCsv, s);
+    }
+
+    private Table getTableWithColAndRowSpans() throws IOException {
+        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/table_with_col_and_row_spans.pdf", 68.08515F, 69.2013F, 152.16846F, 526.07874F);
+        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        return bea.extract(page).get(0);
+    }
+
+    @Test
+    public void testCSVSpanCells() throws IOException {
+        String expectedCsvFilled = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/table_with_col_and_row_spans_filled.csv");
+        String expectedCsvDefault = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/table_with_col_and_row_spans_default.csv");
+        Table table = getTableWithColAndRowSpans();
+
+        StringBuilder sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        String s = sb.toString();
+
+        assertEquals(expectedCsvDefault, s);
+
+        table.setFillSpanCells(true);
+        sb = new StringBuilder();
+        (new CSVWriter()).write(sb, table);
+        s = sb.toString();
+
+        assertEquals(expectedCsvFilled, s);
+    }
+
+    @Test
+    public void testJSONFillSpanCells() throws IOException {
+        String expectedJsonFilled = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/table_with_col_and_row_spans_filled.json");
+        String expectedJsonDefault = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/table_with_col_and_row_spans_default.json");
+        Table table = getTableWithColAndRowSpans();
+
+        StringBuilder sb = new StringBuilder();
+        (new JSONWriter()).write(sb, table);
+        String s = sb.toString();
+
+        assertEquals(expectedJsonDefault, s);
+
+        table.setFillSpanCells(true);
+        sb = new StringBuilder();
+        (new JSONWriter()).write(sb, table);
+        s = sb.toString();
+
+        assertEquals(expectedJsonFilled, s);
     }
 
 }

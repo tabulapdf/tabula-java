@@ -1,6 +1,5 @@
 package technology.tabula;
 
-import java.awt.geom.Point2D;
 import java.util.*;
 
 import technology.tabula.extractors.ExtractionAlgorithm;
@@ -35,14 +34,19 @@ public class TableWithRulingLines extends Table {
 
         // sometimes there are multiple vertical rulings who are basically the same because the are on top of each other caused by row spans
         List<java.lang.Float> leftValuesOfVerticalRulings = unionLeftValuesOfVerticalRulings();
-        leftValuesOfVerticalRulings.add(1000000.0F);
         List<java.lang.Float> topValuesOfHorizontalRulings = unionTopValuesOfHorizontalRulings();
+
+        // add rulings at the end of the table that the last row and column are always added
+        leftValuesOfVerticalRulings.add(1000000.0F);
         topValuesOfHorizontalRulings.add(1000000.0F);
 
 
         List<List<Cell>> rowsOfCells = rowsOfCells(cells);
         Iterator<List<Cell>> rowIterator = rowsOfCells.iterator();
 
+        int spanGroupCounter = 1;
+
+        // iterating through each horizontal ruling
         for (int rowId = 0; rowId < topValuesOfHorizontalRulings.size(); rowId++) {
             Cell currentCell = null;
             Iterator<Cell> colIterator = null;
@@ -54,9 +58,12 @@ public class TableWithRulingLines extends Table {
             }
             Cell lastSuccessfulRowCell = null;
 
+            // iterating through each vertical ruling
             for (int colId = 0; colId < leftValuesOfVerticalRulings.size(); colId++) {
                 Cell cellToAdd = null;
                 boolean newCellFound = false;
+
+                // check if the current cell was found and is left of the current vertical ruling
                 if (currentCell != null && currentCell.getLeft() < leftValuesOfVerticalRulings.get(colId)) {
                     if (colId == 0) {
                         noBorders = true;
@@ -64,21 +71,19 @@ public class TableWithRulingLines extends Table {
                     cellToAdd = currentCell;
                     newCellFound = true;
                 } else {
-                    // possible cell span
+                    // detected possible cell span
                     if (lastSuccessfulRowCell != null) {
-                        // check if the cell is really spaning over the current vertical ruling
+                        // check if the cell is really spanning over the current vertical ruling
                         if (leftValuesOfVerticalRulings.get(colId) <= lastSuccessfulRowCell.getRight()) {
                             cellToAdd = lastSuccessfulRowCell;
-                            cellToAdd.setSpanning(true);
                         }
                     }
 
                     if (rowId > 0) {
                         Cell upperCell = lastSuccessfulColCells.get(colId);
-                        // check if the cell is really spaning over the current horizontal ruling
+                        // check if the cell is really spanning over the current horizontal ruling
                         if (upperCell != null && topValuesOfHorizontalRulings.get(rowId) < upperCell.getBottom()) {
                             cellToAdd = upperCell;
-                            cellToAdd.setSpanning(true);
                         }
                     }
                 }
@@ -87,18 +92,23 @@ public class TableWithRulingLines extends Table {
                     if (noBorders) {
                         this.add(cellToAdd, rowId, colId);
                     } else {
+                        // prevent an empty column at the beginning of a table with border rulings
                         this.add(cellToAdd, rowId, colId - 1);
                     }
 
                     lastSuccessfulRowCell = cellToAdd;
                     lastSuccessfulColCells.put(colId, cellToAdd);
 
+                    // if a spanning cell was added, the iterator shall not be continued
                     if (newCellFound) {
-                        if (colIterator != null && colIterator.hasNext()) {
+                        if (colIterator.hasNext()) {
                             currentCell = colIterator.next();
                         } else {
                             currentCell = null;
                         }
+                    } else if (!cellToAdd.isSpanning()) {
+                        cellToAdd.setSpanGroupId(spanGroupCounter++);
+                        cellToAdd.setSpanning(true);
                     }
                 }
             }

@@ -19,6 +19,14 @@ public class TestCell {
 	}
 
 	@Test
+	public void testGetSpanningId() {
+		Cell cell = new Cell(0, 0, 0, 0);
+		assertEquals(0, cell.getSpanGroupId());
+		cell.setSpanGroupId(2);
+		assertEquals(2, cell.getSpanGroupId());
+	}
+
+	@Test
 	public void testIsPlaceholder() {
 		Cell cell = new Cell(0, 0, 0, 0);
 		assertFalse(cell.isPlaceholder());

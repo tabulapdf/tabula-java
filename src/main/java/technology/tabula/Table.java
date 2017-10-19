@@ -23,11 +23,16 @@ public class Table extends Rectangle {
 
 	private int rowCount = 0;
 	private int colCount = 0;
+	private boolean fillSpanCells = false;
 
 	/* visible for testing */ final TreeMap<CellPosition, RectangularTextContainer> cells = new TreeMap<>();
 
 	public int getRowCount() { return rowCount; }
 	public int getColCount() { return colCount; }
+	public boolean isFillSpanCells() { return fillSpanCells; }
+	public void setFillSpanCells(boolean fillSpanCells) {
+		this.fillSpanCells = fillSpanCells;
+	}
 
 	public String getExtractionMethod() { return extractionMethod; }
 

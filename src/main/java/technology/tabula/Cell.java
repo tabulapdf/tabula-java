@@ -23,6 +23,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 	}
 
 	private boolean spanning;
+	private int spanGroupId = 0;
 	private boolean placeholder;
 	private List<TextChunk> textElements;
 
@@ -54,6 +55,14 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 
 	public void setSpanning(boolean spanning) {
 		this.spanning = spanning;
+	}
+
+	public void setSpanGroupId(int spanGroupId) {
+		this.spanGroupId = spanGroupId;
+	}
+
+	public int getSpanGroupId() {
+		return this.spanGroupId;
 	}
 
 	public boolean isPlaceholder() {

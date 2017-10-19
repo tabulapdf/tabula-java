@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import technology.tabula.Cell;
 import technology.tabula.RectangularTextContainer;
 
 public final class RectangularTextContainerSerializer implements JsonSerializer<RectangularTextContainer<?>> {
@@ -25,6 +26,13 @@ public final class RectangularTextContainerSerializer implements JsonSerializer<
 		result.addProperty("width",  src.getWidth());
 		result.addProperty("height", src.getHeight());
 		result.addProperty("text",   src.getText());
+
+		if (src instanceof Cell) {
+			Cell cell = (Cell)src;
+			result.addProperty("spanGroupId", cell.getSpanGroupId());
+		} else {
+			result.addProperty("spanGroupId", 0);
+		}
 		return result;
 	}
 
