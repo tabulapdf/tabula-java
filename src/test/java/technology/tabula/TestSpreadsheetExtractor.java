@@ -446,15 +446,15 @@ public class TestSpreadsheetExtractor {
         Table table = tables.get(0);
 
 
-        assertEquals("اسمي سلطان", table.getRows().get(1).get(1).getText());
-        assertEquals("من اين انت؟", table.getRows().get(2).get(1).getText());
-        assertEquals("1234", table.getRows().get(3).get(0).getText());
-        assertEquals("هل انت شباك؟", table.getRows().get(4).get(0).getText());
-        assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(2).get(0).getText()); // conjoined lam-alif gets missed
-        assertEquals("اسمي Jeremy في الانجليزية", table.getRows().get(4).get(1).getText()); // conjoined lam-alif gets missed
-        assertEquals("عندي 47 قطط", table.getRows().get(3).get(1).getText()); // the real right answer is 47.
-        assertEquals("Jeremy is جرمي in Arabic", table.getRows().get(5).get(0).getText()); // the real right answer is 47.
-        assertEquals("مرحباً", table.getRows().get(1).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+        assertEquals("اسمي سلطان", table.getRows().get(1).get(2).getText());
+        assertEquals("من اين انت؟", table.getRows().get(2).get(2).getText());
+        assertEquals("1234", table.getRows().get(3).get(1).getText());
+        assertEquals("هل انت شباك؟", table.getRows().get(4).get(1).getText());
+        assertEquals("انا من ولاية كارولينا الشمال", table.getRows().get(2).get(1).getText()); // conjoined lam-alif gets missed
+        assertEquals("اسمي Jeremy في الانجليزية", table.getRows().get(4).get(2).getText()); // conjoined lam-alif gets missed
+        assertEquals("عندي 47 قطط", table.getRows().get(3).get(2).getText()); // the real right answer is 47.
+        assertEquals("Jeremy is جرمي in Arabic", table.getRows().get(5).get(1).getText()); // the real right answer is 47.
+        assertEquals("مرحباً", table.getRows().get(1).get(1).getText()); // really ought to be ً, but this is forgiveable for now
 
         // there is one remaining problems that are not yet addressed
         // - diacritics (e.g. Arabic's tanwinً and probably Hebrew nekudot) are put in the wrong place.
