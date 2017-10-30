@@ -11,7 +11,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 
+import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
+import technology.tabula.PageIterator;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
@@ -71,16 +73,30 @@ public class RegexSearch {
 
 	
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
-		
-		Iterator<PDPage> pageIter = document.getPages().iterator();
-		
-		while(pageIter.hasNext()) {
-			
-		}
-		
-		
-		return null;
+	
+	String docAsText = documentToString(document);
+	
+	
+	
 	}
+	
+	private String documentToString(PDDocument document) {
+	ObjectExtractor oe = new ObjectExtractor(document);	
+	PageIterator pageIter= oe.extract();
+	
+	String text = "";
+	
+	while(pageIter.hasNext()) {
+		for(TextElement element : pageIter.next().getText()) {
+			text += element.getText();
+		}
+	}
+	
+	return text;
+	
+	}
+
+	
 	
 	public List<Rectangle> detect(Page page, String[] regexList) throws ParseException {
 		// check if page object is null
