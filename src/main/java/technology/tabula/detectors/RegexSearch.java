@@ -1,10 +1,10 @@
 package technology.tabula.detectors;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,11 +12,10 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
 
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
-import technology.tabula.PageIterator;
+
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
@@ -146,25 +145,10 @@ public class RegexSearch {
 	}	
 	
 	
-	
-	
-	}
-	
-	private String pageToString(PDDocument document) {
-	ObjectExtractor oe = new ObjectExtractor(document);	
-	PageIterator pageIter= oe.extract();
-	
-	String text = "";
-	
-	while(pageIter.hasNext()) {
-		for(TextElement element : pageIter.next().getText()) {
-			text += element.getText();
-		}
-	}
-	
-	return text;
+	return null;
 	
 	}
+	
 
 	
 	
