@@ -2,10 +2,14 @@ package technology.tabula.detectors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+
+
 import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
@@ -27,8 +31,7 @@ public class RegexSearch {
 	Pattern _regexBeforeTable;
 	Pattern _regexAfterTable;
 	
-	HashMap<Integer, ArrayList<TableArea>> _tableAreas;
-	
+	ArrayList<MatchingArea> _matchingAreas;
 	
 	
 	public RegexSearch(String regexBeforeTable, String regexAfterTable, PDDocument document) {
@@ -36,18 +39,46 @@ public class RegexSearch {
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 		
-		_tableAreas = tablesAreasDetected(document);
-		
-	}
-	
-	private class TableArea{
-		
-		
+		_matchingAreas = detectMatchingAreas(document);
 		
 	}
 	
 	
-	private ArrayList<TableArea> tablesAreasDetected(PDDocument document) {
+	
+	
+	private class MatchingArea extends HashMap<Integer,ArrayList<Rectangle>>{
+
+		/**
+		 * UID
+		 */
+		private static final long serialVersionUID = 1L;
+		
+	}
+		
+		
+	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
+		
+        ArrayList<Rectangle> allMatchingAreas = new ArrayList<Rectangle>();
+		
+		for( MatchingArea matchingArea : _matchingAreas) {
+			allMatchingAreas.addAll(matchingArea.get(pageNumber));
+		}
+		
+		 return allMatchingAreas;
+		
+	}
+	
+
+	
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
+		
+		Iterator<PDPage> pageIter = document.getPages().iterator();
+		
+		while(pageIter.hasNext()) {
+			
+		}
+		
+		
 		return null;
 	}
 	

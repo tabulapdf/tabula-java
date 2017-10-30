@@ -55,24 +55,38 @@ public class TestRegexSearch {
 		try {
 			//Upload 1 page of PDF containing a single table
 			
-	//		PDDocument document = PDDocument.load(new File("src/test/resources/technology/tabula/eu-002.pdf"));
+			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
 			
-			Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
+	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
 			
-			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]");
+			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]",PDDocument.load(singleTable));
 
-			
+/*			
 			//Extract text
 			String output="";
+			Integer i = 1;
 			for( TextElement text : data.getText()) {
-			   output+=text.getText();
+				String t = ((i++%100)==0)? "\n" : "";
+			   output+=text.getText()+t;
 			}
 			System.out.println(output);
+*/			
 			
+			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
+					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
+					" and Production of Presentation and planing materials evaluation Knowledge and awareness of different" + 
+					" cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and" + 
+					" abilities 0,3416 0,3369 0,4303 Acquaintance of special knowledge 0,2569 0,2909 0,3557 Self competence" + 
+					" 0,3791 0,3320 0,4617 * Significance p = 0,000 ";
 			
-			String expectedTableContent = "";
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+				extractedTableContent += data.getText(tableArea);
+			}
 			
-			assertTrue(expectedTableContent.equals(data.getText(s)));
+			System.out.println(extractedTableContent);
+			
+//			assertTrue(expectedTableContent.equals(extractedTableContent));
 			
 		} 
 		catch (Exception e) {
