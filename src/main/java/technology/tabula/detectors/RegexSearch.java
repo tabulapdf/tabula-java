@@ -1,16 +1,56 @@
 package technology.tabula.detectors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.regex.Pattern;
 import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
+/*
+ * RegexSearch
+ * 
+ *    TODO: Small blurb about this
+ *    
+ *    TODO: Large blurb about this
+ *    
+ *    10/29/2017 REM; created.
+ */
+
+
 public class RegexSearch {
 
+	Pattern _regexBeforeTable;
+	Pattern _regexAfterTable;
+	
+	HashMap<Integer, ArrayList<TableArea>> _tableAreas;
+	
+	
+	
+	public RegexSearch(String regexBeforeTable, String regexAfterTable, PDDocument document) {
+		
+		_regexBeforeTable = Pattern.compile(regexBeforeTable);
+		_regexAfterTable = Pattern.compile(regexAfterTable);
+		
+		_tableAreas = tablesAreasDetected(document);
+		
+	}
+	
+	private class TableArea{
+		
+		
+		
+	}
+	
+	
+	private ArrayList<TableArea> tablesAreasDetected(PDDocument document) {
+		return null;
+	}
+	
 	public List<Rectangle> detect(Page page, String[] regexList) throws ParseException {
 		// check if page object is null
 		if(page == null) return new ArrayList<Rectangle>(); // return empty arraylist
