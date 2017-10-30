@@ -30,12 +30,17 @@ import technology.tabula.TextElement;
 
 public class RegexSearch {
 
+	
 	Pattern _regexBeforeTable;
 	Pattern _regexAfterTable;
 	
 	ArrayList<MatchingArea> _matchingAreas;
 	
-	
+	/*
+	 * @param regexBeforeTable The text pattern that occurs in the document directly before the table that is to be extracted
+	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
+	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
+	 */
 	public RegexSearch(String regexBeforeTable, String regexAfterTable, PDDocument document) {
 		
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
@@ -47,17 +52,18 @@ public class RegexSearch {
 	
 	
 	
+    /*
+     * This class maps on a per-page basis the areas of the PDF document that fall between text matching the
+     * user-provided regex.
+     */
+	private class MatchingArea extends HashMap<Integer,ArrayList<Rectangle>> {}
+		
 	
-	private class MatchingArea extends HashMap<Integer,ArrayList<Rectangle>>{
-
-		/**
-		 * UID
-		 */
-		private static final long serialVersionUID = 1L;
 		
-	}
-		
-		
+	/*
+	 * @param pageNumber The one-based index into the document
+	 * @return ArrayList<Rectangle> The values stored in _matchingAreas for a given page	
+	 */
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
 		
         ArrayList<Rectangle> allMatchingAreas = new ArrayList<Rectangle>();
@@ -71,16 +77,34 @@ public class RegexSearch {
 	}
 	
 
+	/*
+	 * @param document The name of the document for which regex has been applied
+	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
+	 * that matches the user-provided regex
+	 */
 	
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
 	
-	String docAsText = documentToString(document);
+		
+	//Converting the document to text
+	ObjectExtractor oe = new ObjectExtractor(document);
 	
+	Integer totalPages = document.getNumberOfPages();
+	
+	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
+		Page page = oe.extract(currentPage);
+		
+		String pageAsText ="";
+		
+		for(TextElement element : page.getText()) {
+			
+		}
+	}	
 	
 	
 	}
 	
-	private String documentToString(PDDocument document) {
+	private String pageToString(PDDocument document) {
 	ObjectExtractor oe = new ObjectExtractor(document);	
 	PageIterator pageIter= oe.extract();
 	

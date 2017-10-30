@@ -27,7 +27,7 @@ import technology.tabula.detectors.RegexSearch;
 public class TestRegexSearch {
 
 	
-	private static RegexSearch _REGEXSEARCH;
+	
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -46,11 +46,49 @@ public class TestRegexSearch {
 	public void tearDown() throws Exception {
 	}
 
+	@Test
 	/**
-	 * Test if RegexSearch class will find a single instance of a table on a single page document
+	 * Test if RegexSearch class will NOT find a single instance of a table on a single page document when given incorrect regex
+	 */
+	public void testSimpleTableDetectNonMatchingRegex() {
+		try {
+			//Upload 1 page of PDF containing a single table
+			
+			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
+			
+	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
+			
+			RegexSearch regexSearch = new RegexSearch("WRONG","WRONG",PDDocument.load(singleTable));
+	
+			
+			String expectedTableContent = "";
+			
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+				extractedTableContent += data.getText(tableArea);
+			}
+			
+			System.out.println(extractedTableContent);
+			
+//			assertTrue(expectedTableContent.equals(extractedTableContent));
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		
+		fail("Test not fully implemented yet");
+		
+		
+	}
+	
+	/**
+	 * Test if RegexSearch class will find a single instance of a table on a single page document when given the correct regex
 	 */
 	@Test
-	public void testPatternMatching() {
+	public void testSimpleTableDetectMatchingRegex() {
 			
 		try {
 			//Upload 1 page of PDF containing a single table
@@ -60,17 +98,7 @@ public class TestRegexSearch {
 	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
 			
 			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]",PDDocument.load(singleTable));
-
-/*			
-			//Extract text
-			String output="";
-			Integer i = 1;
-			for( TextElement text : data.getText()) {
-				String t = ((i++%100)==0)? "\n" : "";
-			   output+=text.getText()+t;
-			}
-			System.out.println(output);
-*/			
+	
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
