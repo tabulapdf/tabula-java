@@ -1,9 +1,12 @@
 package technology.tabula.detectors;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -34,6 +37,7 @@ public class RegexSearch {
 	Pattern _regexBeforeTable;
 	Pattern _regexAfterTable;
 	
+	
 	ArrayList<MatchingArea> _matchingAreas;
 	
 	/*
@@ -45,6 +49,7 @@ public class RegexSearch {
 		
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
+		
 		
 		_matchingAreas = detectMatchingAreas(document);
 		
@@ -84,22 +89,63 @@ public class RegexSearch {
 	 */
 	
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
-	
+	    /*
+	     * Local class to retain information about a potential matching area while
+	     * iterating over the document. This may be overkill...
+	     */
+		final class DetectionStatus{
+			
+			DetectionStatus(Integer pageBeginMatch, Point2D.Float pageBeginCoord) {
+				_pageBeginMatch = pageBeginMatch;
+				_pageBeginCoord = pageBeginCoord;
+				_pageEndMatch = null;
+				_pageEndCoord = null;
+			}
+			Integer _pageBeginMatch;
+			Integer _pageEndMatch;
+			Point2D.Float _pageBeginCoord;
+			Point2D.Float _pageEndCoord;
+		}	
 		
-	//Converting the document to text
+		
 	ObjectExtractor oe = new ObjectExtractor(document);
-	
 	Integer totalPages = document.getNumberOfPages();
 	
 	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
-		Page page = oe.extract(currentPage);
 		
+		/*
+		 * Convert each page to text
+		 */
+		Page page = oe.extract(currentPage);
+		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText();
 		String pageAsText ="";
 		
-		for(TextElement element : page.getText()) {
-			
+		for(TextElement element : pageTextElements ) {
+			pageAsText += element.getText();
 		}
+		
+		Integer startMatchingAt = 0;
+		Matcher beforeTableMatches = _regexBeforeTable.matcher(pageAsText);
+		Matcher afterTableMatches  = _regexAfterTable.matcher(pageAsText);
+		
+		if(beforeTableMatches.find(startMatchingAt)) {
+			
+			Point2D.Float coords = new Point2D.Float(pageTextElements.get(beforeTableMatches.start()).x,pageTextElements.get(beforeTableMatches.start()).y);
+			DetectionStatus potentialTable = new DetectionStatus(currentPage,coords);
+			//TODO:need to figure out how to use potentialTable to control program flow
+			pageTextElements.get(beforeTableMatches.start());
+			startMatchingAt = beforeTableMatches.end();
+			if(afterTableMatches.find(startMatchingAt)) {
+				
+			}
+			else {
+				startMatchingAt = 0;
+			}
+		}		
+		
 	}	
+	
+	
 	
 	
 	}
