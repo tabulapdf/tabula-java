@@ -4,7 +4,7 @@ import java.awt.geom.Point2D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,15 +54,12 @@ public class RegexSearch {
 		
 	}
 	
-	
-	
     /*
      * This class maps on a per-page basis the areas of the PDF document that fall between text matching the
      * user-provided regex.
      */
-	private class MatchingArea extends HashMap<Integer,ArrayList<Rectangle>> {}
+	private class MatchingArea extends HashMap<Integer,LinkedList<Rectangle>> {}
 		
-	
 		
 	/*
 	 * @param pageNumber The one-based index into the document
@@ -76,44 +73,50 @@ public class RegexSearch {
 			allMatchingAreas.addAll(matchingArea.get(pageNumber));
 		}
 		
-		 return allMatchingAreas;
-		
+		 return allMatchingAreas;	
 	}
 	
-
+	
+	  /*
+     * Inner class to retain information about a potential matching area while
+     * iterating over the document and performing calculations to determine the rectangular 
+     * area coordinates for matching areas. This may be overkill...
+     */
+	private final class DetectionData{
+		
+		DetectionData(){
+			_pageBeginMatch = _pageEndMatch = null;
+			_pageBeginCoord = _pageEndCoord = null;
+		}
+		
+		Integer       _pageBeginMatch;
+		Integer       _pageEndMatch;
+		Point2D.Float _pageBeginCoord;
+		Point2D.Float _pageEndCoord;
+	}	
+	
 	/*
+	 * detectMatchingAreas: Detects the subsections of the document occurring 
+	 *                      between the user-specified regexes. 
+	 * 
 	 * @param document The name of the document for which regex has been applied
 	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
 	 * that matches the user-provided regex
 	 */
 	
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
-	    /*
-	     * Local class to retain information about a potential matching area while
-	     * iterating over the document. This may be overkill...
-	     */
-		final class DetectionStatus{
-			
-			DetectionStatus(Integer pageBeginMatch, Point2D.Float pageBeginCoord) {
-				_pageBeginMatch = pageBeginMatch;
-				_pageBeginCoord = pageBeginCoord;
-				_pageEndMatch = null;
-				_pageEndCoord = null;
-			}
-			Integer _pageBeginMatch;
-			Integer _pageEndMatch;
-			Point2D.Float _pageBeginCoord;
-			Point2D.Float _pageEndCoord;
-		}	
-		
-		
+	  
 	ObjectExtractor oe = new ObjectExtractor(document);
 	Integer totalPages = document.getNumberOfPages();
+	
+	LinkedList<DetectionData> potentialMatches = new LinkedList<DetectionData>();
+	potentialMatches.add(new DetectionData());
+	
 	
 	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
 		
 		/*
-		 * Convert each page to text
+		 * Convert PDF page to text
 		 */
 		Page page = oe.extract(currentPage);
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText();
@@ -123,35 +126,128 @@ public class RegexSearch {
 			pageAsText += element.getText();
 		}
 		
+	
+		/*
+		 * Find each table on each page + tables which span multiple pages
+		 */
+		
 		Integer startMatchingAt = 0;
 		Matcher beforeTableMatches = _regexBeforeTable.matcher(pageAsText);
 		Matcher afterTableMatches  = _regexAfterTable.matcher(pageAsText);
 		
-		if(beforeTableMatches.find(startMatchingAt)) {
+		while( beforeTableMatches.find(startMatchingAt) || afterTableMatches.find(startMatchingAt)) {
 			
-			Point2D.Float coords = new Point2D.Float(pageTextElements.get(beforeTableMatches.start()).x,pageTextElements.get(beforeTableMatches.start()).y);
-			DetectionStatus potentialTable = new DetectionStatus(currentPage,coords);
-			//TODO:need to figure out how to use potentialTable to control program flow
-			pageTextElements.get(beforeTableMatches.start());
-			startMatchingAt = beforeTableMatches.end();
-			if(afterTableMatches.find(startMatchingAt)) {
-				
-			}
-			else {
-				startMatchingAt = 0;
-			}
-		}		
-		
+		   if(potentialMatches.getLast()._pageBeginMatch==null && beforeTableMatches.find(startMatchingAt)) {
+			
+			   
+			   Point2D.Float coords = new Point2D.Float(pageTextElements.get(beforeTableMatches.start()).x,
+				   	                                    pageTextElements.get(beforeTableMatches.start()).y + 
+				   	                                    pageTextElements.get(beforeTableMatches.start()).height);
+			
+			   potentialMatches.getLast()._pageBeginCoord=coords;
+			   potentialMatches.getLast()._pageBeginMatch=currentPage;
+			
+			   startMatchingAt = beforeTableMatches.end();
+		   }
+		   else if(potentialMatches.getLast()._pageEndMatch==null && afterTableMatches.find(startMatchingAt)) {
+			
+			   
+			   Point2D.Float coords = new Point2D.Float(pageTextElements.get(afterTableMatches.start()).x,
+                                                        pageTextElements.get(afterTableMatches.start()).y);
+			
+			   potentialMatches.getLast()._pageEndCoord = coords;
+			   potentialMatches.getLast()._pageEndMatch = currentPage;
+	
+			   startMatchingAt = afterTableMatches.end();
+			 
+			   potentialMatches.add(new DetectionData()); //To reset algorithm for detection of another table
+			  
+		   }		
+		}
 	}	
 	
+	/*
+	 * Remove the last potential match if its data is incomplete
+	 */
+	DetectionData lastPotMatch = potentialMatches.getLast();
 	
-	return null;
+	if(lastPotMatch._pageBeginMatch==null || lastPotMatch._pageEndMatch==null) {
+		potentialMatches.removeLast();
+	}
+	
+	return calculateMatchingAreas(potentialMatches,document);
 	
 	}
 	
 
 	
+	/*
+	 * calculateMatchingAreas: Determines the rectangular coordinates of the document sections
+	 *                         matching the user-specified regex(_regexBeforeTable,_regexAfterTable)
+	 * 
+	 * @param foundMatches A list of DetectionData values
+	 * @return ArrayList<MatchingArea> A Hashmap 
+	 */
+	private ArrayList<MatchingArea> calculateMatchingAreas(LinkedList<DetectionData> foundMatches, PDDocument document) {
+		
+		ArrayList<MatchingArea> matchingAreas = new ArrayList<MatchingArea>();
+		
+		ObjectExtractor oe = new ObjectExtractor(document);
 	
+		
+		while(foundMatches.isEmpty() == false) {
+			DetectionData foundTable = foundMatches.pop();
+			
+            if(foundTable._pageBeginMatch == foundTable._pageEndMatch) {
+            
+            	float width = oe.extract(foundTable._pageBeginMatch).width;
+            	float height = foundTable._pageEndCoord.y-foundTable._pageBeginCoord.y;
+            	
+            	LinkedList<Rectangle> tableArea = new LinkedList<Rectangle>();
+            	tableArea.add( new Rectangle(foundTable._pageBeginCoord.y,foundTable._pageBeginCoord.x,width,height));
+            	
+            	MatchingArea matchingArea = new MatchingArea();
+            	matchingArea.put(foundTable._pageBeginMatch, tableArea);
+            
+            	matchingAreas.add(matchingArea);
+            
+			}
+            else {
+            	System.out.println("Table spans multiple pages, TODO: add support for this");
+            }
+			
+		}
+		
+		
+		return matchingAreas;
+	}
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
 	public List<Rectangle> detect(Page page, String[] regexList) throws ParseException {
 		// check if page object is null
 		if(page == null) return new ArrayList<Rectangle>(); // return empty arraylist
