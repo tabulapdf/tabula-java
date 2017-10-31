@@ -99,7 +99,14 @@ public class TestRegexSearch {
 			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
 			
 	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
+	        
+	        String dataAsText="";
+	        
+	        for(TextElement element : data.getText()) {
+	        	dataAsText += element.getText();
+	        }
 			
+	        
 			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]",PDDocument.load(singleTable));
 	
 			
@@ -108,21 +115,22 @@ public class TestRegexSearch {
 					" and Production of Presentation and planing materials evaluation Knowledge and awareness of different" + 
 					" cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and" + 
 					" abilities 0,3416 0,3369 0,4303 Acquaintance of special knowledge 0,2569 0,2909 0,3557 Self competence" + 
-					" 0,3791 0,3320 0,4617 * Significance p = 0,000 ";
+					" 0,3791 0,3320 0,4617 * Significance p = 0,000  ";
+			
+			expectedTableContent.trim();
 			
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
 				
-				System.out.println(tableArea.toString());
 				
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
 				}
+				extractedTableContent.trim();
 			}
 			
-			System.out.println(extractedTableContent);
-			
-//			assertTrue(expectedTableContent.equals(extractedTableContent));
+
+			assertTrue(expectedTableContent.equals(extractedTableContent));
 			
 		} 
 		catch (Exception e) {
@@ -131,7 +139,7 @@ public class TestRegexSearch {
 			fail("Error in test case");
 		}
 		
-		fail("Test not fully implemented yet");
+		//fail("Test not fully implemented yet");
 		
 		
 	}
