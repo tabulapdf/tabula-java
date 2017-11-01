@@ -46,34 +46,28 @@ public class TestRegexSearch {
 	public void tearDown() throws Exception {
 	}
 
-//	@Test
+	@Test
 	/**
-	 * Test if RegexSearch class will NOT find a single instance of a table on a single page document when given incorrect regex
+	 * Test if RegexSearch class will NOT generate false positives 
+	 * (find a table area when one does not exist for the regex supplied)
 	 */
-/*
+
 	public void testSimpleTableDetectNonMatchingRegex() {
 		try {
-			//Upload 1 page of PDF containing a single table
-			
-			
+			//Upload 1 page of PDF containing a single table	
 			
 			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
 			
 	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
 			
 			RegexSearch regexSearch = new RegexSearch("WRONG","WRONG",PDDocument.load(singleTable));
-	
-			
-			String expectedTableContent = "";
 			
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
 				extractedTableContent += data.getText(tableArea);
 			}
-			
-			System.out.println(extractedTableContent);
-			
-//			assertTrue(expectedTableContent.equals(extractedTableContent));
+				
+		    assertTrue(extractedTableContent.isEmpty() );
 			
 		} 
 		catch (Exception e) {
@@ -82,11 +76,11 @@ public class TestRegexSearch {
 			fail("Error in test case");
 		}
 		
-		fail("Test not fully implemented yet");
+		
 		
 		
 	}
-*/	
+	
 	/**
 	 * Test if RegexSearch class will find a single instance of a table on a single page document when given the correct regex
 	 */
@@ -94,21 +88,18 @@ public class TestRegexSearch {
 	public void testSimpleTableDetectMatchingRegex() {
 			
 		try {
+			
+			
 			//Upload 1 page of PDF containing a single table
 			
-			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
+			String basicDoc = "src/test/resources/technology/tabula/eu-002.pdf";
 			
-	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
-	        
-	        String dataAsText="";
-	        
-	        for(TextElement element : data.getText()) {
-	        	dataAsText += element.getText();
-	        }
+			File singleTable = new File(basicDoc);
 			
+	        Page data = UtilsForTesting.getPage(basicDoc, 1);
 	        
+
 			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]",PDDocument.load(singleTable));
-	
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -129,8 +120,7 @@ public class TestRegexSearch {
 				extractedTableContent.trim();
 			}
 			
-
-			assertTrue(expectedTableContent.equals(extractedTableContent));
+			assertTrue("Simple table was not detected",expectedTableContent.equals(extractedTableContent));
 			
 		} 
 		catch (Exception e) {
@@ -138,10 +128,5 @@ public class TestRegexSearch {
 			e.printStackTrace();
 			fail("Error in test case");
 		}
-		
-		//fail("Test not fully implemented yet");
-		
-		
 	}
-
 }
