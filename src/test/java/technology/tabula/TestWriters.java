@@ -2,7 +2,6 @@ package technology.tabula;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.junit.Test;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
