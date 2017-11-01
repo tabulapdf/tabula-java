@@ -55,8 +55,8 @@ public class RegexSearch {
 	}
 	
     /*
-     * This class maps on a per-page basis the areas of the PDF document that fall between text matching the
-     * user-provided regex.
+     * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
+     * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
      */
 	private class MatchingArea extends HashMap<Integer,LinkedList<Rectangle>> {}
 		
@@ -204,7 +204,7 @@ public class RegexSearch {
             	float height = foundTable._pageEndCoord.y-foundTable._pageBeginCoord.y;
             	
             	LinkedList<Rectangle> tableArea = new LinkedList<Rectangle>();
-            	tableArea.add( new Rectangle(foundTable._pageBeginCoord.y,foundTable._pageBeginCoord.x,width,height));
+            	tableArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,width,height)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
             	
             	MatchingArea matchingArea = new MatchingArea();
             	matchingArea.put(foundTable._pageBeginMatch, tableArea);
@@ -213,7 +213,44 @@ public class RegexSearch {
             
 			}
             else {
-            	System.out.println("Table spans multiple pages, TODO: add support for this");
+            	
+            	MatchingArea matchingArea = new MatchingArea();
+            	
+            	/*
+            	 * Create sub-area for table from directly below the pattern-before-table content to the end of the page
+            	 */
+            	Page currentPage =  oe.extract(foundTable._pageBeginMatch);
+            	LinkedList<Rectangle> tableSubArea = new LinkedList<Rectangle>();
+            	tableSubArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
+            			                        currentPage.height-foundTable._pageBeginCoord.y)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
+            	
+            	matchingArea.put(foundTable._pageBeginMatch, tableSubArea);
+            	
+            	/*
+            	 * Create sub-areas for table that span the entire page
+            	 */
+            	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch; iter++) {
+            		currentPage = oe.extract(iter);
+            		
+            		tableSubArea = new LinkedList<Rectangle>();
+            		tableSubArea.add(new Rectangle(0,0,currentPage.width,currentPage.height));
+            		
+            		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
+            		
+            	}
+                
+            	/*
+            	 * Create sub-areas for table from the top of the page to directly before the pattern-after-table content 
+            	 */
+            	
+            	currentPage = oe.extract(foundTable._pageEndMatch);
+                tableSubArea = new LinkedList<Rectangle>();
+                tableSubArea.add(new Rectangle(0,0,currentPage.width,foundTable._pageEndCoord.y));
+                   
+
+                matchingArea.put(currentPage.getPageNumber(), tableSubArea);
+                matchingAreas.add(matchingArea);
+            	
             }
 			
 		}

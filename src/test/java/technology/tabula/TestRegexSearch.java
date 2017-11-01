@@ -3,8 +3,8 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,8 +27,6 @@ import technology.tabula.detectors.RegexSearch;
 public class TestRegexSearch {
 
 	
-	
-	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
@@ -40,6 +38,7 @@ public class TestRegexSearch {
 
 	@Before
 	public void setUp() throws Exception {
+	
 	}
 
 	@After
@@ -47,20 +46,79 @@ public class TestRegexSearch {
 	}
 
 	@Test
+	/*
+	 * Test if table spanning multiple pages is correctly detected
+	 */
+	public void testMultiPageTableDetectMatchingRegex() {
+		
+		String docName = "src/test/resources/technology/tabula/sydney_disclosure_contract.pdf";
+		File multiPageTable = new File(docName);
+		
+		
+		try {
+				
+			Integer numDataPages = 2;
+			
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+			
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(docName, iter));
+			}
+			
+			RegexSearch regexSearch = new RegexSearch("9\\.","10\\.",PDDocument.load(multiPageTable));
+			
+			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
+			//to facilitate future regression testing
+			String expectedTableContent = "tendering and a summary of the criteria against which the various "+
+					                      "tenders were assessed: Open Tender  Tender evaluation criteria "+
+					                      "included: - The schedule of prices - Compliance with technical "+
+					                      "specifications/Technical assessment - Operational Plan including "+
+					                      "maintenance procedures  1  - Transition in/out plans - Demonstrated "+
+					                      "experience in works and services of a similar nature and quality - "+
+					                      "Adequate resources and personnel to fulfil requirements of the contract "+
+					                      "including subcontractors - Data Management Procedures and reporting capabilities - "+
+					                      "Proposed installation plan including Pedestrian & Traffic Management - "+
+					                      "Environmental Management  - Work Health & Safety - Financial and commercial trading integrity/insurances  ";
+			
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+
+			assertTrue(extractedTableContent.trim().equals(expectedTableContent.trim()));
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+	}
+	
+	@Test
 	/**
 	 * Test if RegexSearch class will NOT generate false positives 
 	 * (find a table area when one does not exist for the regex supplied)
 	 */
 
 	public void testSimpleTableDetectNonMatchingRegex() {
+		
+		
 		try {
 			//Upload 1 page of PDF containing a single table	
 			
-			File singleTable = new File("src/test/resources/technology/tabula/eu-002.pdf");
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
 			
-	        Page data = UtilsForTesting.getPage("src/test/resources/technology/tabula/eu-002.pdf", 1);
+			File singleTable = new File(basicDocName);
 			
-			RegexSearch regexSearch = new RegexSearch("WRONG","WRONG",PDDocument.load(singleTable));
+	        Page data = UtilsForTesting.getPage(basicDocName, 1);
+			
+	        PDDocument docInQuestion = PDDocument.load(singleTable);
+			RegexSearch regexSearch = new RegexSearch("WRONG","WRONG",docInQuestion);
 			
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
@@ -75,10 +133,6 @@ public class TestRegexSearch {
 			e.printStackTrace();
 			fail("Error in test case");
 		}
-		
-		
-		
-		
 	}
 	
 	/**
@@ -86,17 +140,18 @@ public class TestRegexSearch {
 	 */
 	@Test
 	public void testSimpleTableDetectMatchingRegex() {
-			
+		
+		PDDocument docInQuestion = new PDDocument();
+		
 		try {
-			
 			
 			//Upload 1 page of PDF containing a single table
 			
-			String basicDoc = "src/test/resources/technology/tabula/eu-002.pdf";
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
 			
-			File singleTable = new File(basicDoc);
+			File singleTable = new File(basicDocName);
 			
-	        Page data = UtilsForTesting.getPage(basicDoc, 1);
+	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 	        
 
 			RegexSearch regexSearch = new RegexSearch("Table [0-9]","Table [0-9]",PDDocument.load(singleTable));
@@ -128,5 +183,16 @@ public class TestRegexSearch {
 			e.printStackTrace();
 			fail("Error in test case");
 		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
 	}
 }
