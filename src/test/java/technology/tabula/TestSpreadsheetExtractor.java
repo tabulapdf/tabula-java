@@ -3,6 +3,8 @@ package technology.tabula;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static technology.tabula.UtilsForTesting.normalizeNewLine;
+import static technology.tabula.UtilsForTesting.normalizeNewLine2;
 
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -241,9 +243,18 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
 
         String result = sb.toString();
-        String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
+        String expected = "Project,Agency,Institution\r\n" +
+                "Nanotechnology and its publics,NSF,Pennsylvania State University\r\n" +
+                "\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n" +
+                "\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n" +
+                "\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\n" +
+                "Database and innovation timeline for nanotechnology,NSF,UCLA\r\n" +
+                "Social and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n" +
+                "\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n" +
+                "\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n" +
+                "\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
 
-        assertEquals(expected, result);
+        assertEquals(normalizeNewLine2(expected), normalizeNewLine2(result));
     }
 
     @Test
@@ -378,7 +389,7 @@ public class TestSpreadsheetExtractor {
         Table table = tables.get(0);
 
         assertEquals("Payroll Period", table.getRows().get(0).get(0).getText());
-        assertEquals("One Withholding\rAllowance", table.getRows().get(0).get(1).getText());
+        assertEquals(normalizeNewLine2("One Withholding\rAllowance"), normalizeNewLine2(table.getRows().get(0).get(1).getText()));
         assertEquals("Weekly", table.getRows().get(1).get(0).getText());
         assertEquals("$71.15", table.getRows().get(1).get(1).getText());
         assertEquals("Biweekly", table.getRows().get(2).get(0).getText());
@@ -393,7 +404,7 @@ public class TestSpreadsheetExtractor {
         assertEquals("1,850.00", table.getRows().get(6).get(1).getText());
         assertEquals("Annually", table.getRows().get(7).get(0).getText());
         assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
-        assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
+        assertEquals(normalizeNewLine2("Daily or Miscellaneous\r(each day of the payroll period)"), normalizeNewLine2(table.getRows().get(8).get(0).getText()));
         assertEquals("14.23", table.getRows().get(8).get(1).getText());
 
     }
@@ -508,7 +519,7 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
-        assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
+        assertEquals(normalizeNewLine2("REGIONAL PULMONARY & SLEEP\rMEDICINE"), normalizeNewLine2(table.getRows().get(8).get(1).getText()));
 
     }
     

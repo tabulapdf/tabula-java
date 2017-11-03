@@ -62,7 +62,7 @@ public class UtilsForTesting {
 
     public static String loadJson(String path) throws IOException {
  
-	    	StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 	    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))) {
 	        String line = null;
 	        while ((line = reader.readLine()) != null) {
@@ -70,7 +70,7 @@ public class UtilsForTesting {
 	        }
 	    }
 
-        return stringBuilder.toString();
+        return normalizeNewLine(stringBuilder.toString());
 
     }
 
@@ -83,10 +83,13 @@ public class UtilsForTesting {
         printer.printRecords(parse);
         printer.close();
 
-        String csv = out.toString().replaceAll("(?<!\r)\n", "\r");
-        return csv;
-
+        return normalizeNewLine(out.toString());
     }
 
-
+    static String normalizeNewLine(String input) {
+        return input.replaceAll("(?<!\r)\n", "\r");
+    }
+    static String normalizeNewLine2(String input) {
+        return input.replaceAll("\r\n", "\r");
+    }
 }
