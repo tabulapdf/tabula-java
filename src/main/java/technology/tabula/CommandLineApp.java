@@ -26,6 +26,18 @@ import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
 import technology.tabula.writers.Writer;
 
+/*
+  *** Want to batch processes multiple files (can already do that)
+      BUT we need to implement REGEX functionality into command line
+      That involves REGEX implementation, also GRAPHICAL VALIDATION -
+      GRAPHICAL VALIDATION is pop-up window
+
+  *** Also make a LOG FILE (TEXT ONLY FOR NOW) after processing
+      Should say which files were processed, which weren't
+      If not processed, should say why it wasn't processed
+      Should say what specifically was successfully processed
+
+*/
 
 public class CommandLineApp {
 
@@ -268,7 +280,7 @@ public class CommandLineApp {
         o.addOption("v", "version", false, "Print version and exit.");
         o.addOption("h", "help", false, "Print this help text.");
         o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
-        o.addOption("r", "spreadsheet", false, "[Deprecated in favor of -l/--lattice] Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("r", "regex", false, "Apply regular expressions (regexes) to highlight portions of the page to analyze.");
         o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
         o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
         o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
