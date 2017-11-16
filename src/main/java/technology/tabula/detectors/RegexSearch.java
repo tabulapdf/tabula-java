@@ -22,9 +22,9 @@ import technology.tabula.TextElement;
 /*
  * RegexSearch
  * 
- *    TODO: Small blurb about this
+ *    TODO: Small blurb about this class
  *    
- *    TODO: Large blurb about this or whatever...
+ *    TODO: Large blurb about this class
  *    10/29/2017 REM; created.
  */
 
