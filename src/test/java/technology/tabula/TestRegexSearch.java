@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -338,7 +337,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
         
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]",true,"Table [0-9]",false,PDDocument.load(singleTable));
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]",true,"Table [0-9]",true,PDDocument.load(singleTable));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 

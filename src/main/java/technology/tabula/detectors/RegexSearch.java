@@ -159,6 +159,7 @@ public class RegexSearch {
 			   Point2D.Float coords = new Point2D.Float(pageTextElements.get(afterTableMatches.start()).x,
                                                         pageTextElements.get(afterTableMatches.start()).y +
                                                         ((_includeRegexAfterTable) ? pageTextElements.get(afterTableMatches.start()).height : 0 ));
+			   
 			
 			   potentialMatches.getLast()._pageEndCoord = coords;
 			   potentialMatches.getLast()._pageEndMatch = currentPage;
