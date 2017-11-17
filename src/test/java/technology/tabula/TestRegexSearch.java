@@ -65,7 +65,7 @@ public class TestRegexSearch {
 				dataPages.add(UtilsForTesting.getPage(docName, iter));
 			}
 			
-			RegexSearch regexSearch = new RegexSearch("9\\.",false,"10\\.",false,PDDocument.load(multiPageTable));
+			RegexSearch regexSearch = new RegexSearch("9\\.","false","10\\.","false",PDDocument.load(multiPageTable));
 			
 			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
 			//to facilitate future regression testing
@@ -118,7 +118,7 @@ public class TestRegexSearch {
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 			
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
-			RegexSearch regexSearch = new RegexSearch("WRONG",false,"WRONG",false,docInQuestion);
+			RegexSearch regexSearch = new RegexSearch("WRONG","false","WRONG","false",docInQuestion);
 			
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
@@ -154,7 +154,7 @@ public class TestRegexSearch {
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 	        
 
-			RegexSearch regexSearch = new RegexSearch("Table [0-9]",false,"Table [0-9]",false,PDDocument.load(singleTable));
+			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","false",PDDocument.load(singleTable));
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -215,7 +215,7 @@ public void testIncludePatternAfterOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
         
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]",false,"Table [0-9]",true,PDDocument.load(singleTable));
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","true",PDDocument.load(singleTable));
 		
 		String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -275,7 +275,7 @@ public void testIncludePatternBeforeOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
         
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]",true,"Table [0-9]",false,PDDocument.load(singleTable));
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true","Table [0-9]","false",PDDocument.load(singleTable));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -337,7 +337,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
         
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]",true,"Table [0-9]",true,PDDocument.load(singleTable));
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true","Table [0-9]","true",PDDocument.load(singleTable));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 

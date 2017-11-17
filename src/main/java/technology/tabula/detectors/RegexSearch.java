@@ -45,14 +45,14 @@ public class RegexSearch {
 	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
 	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
 	 */
-	public RegexSearch(String regexBeforeTable, Boolean includeRegexBeforeTable, String regexAfterTable, 
-			           Boolean includeRegexAfterTable, PDDocument document) {
+	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable, 
+			           String includeRegexAfterTable, PDDocument document) {
 		
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 		
-	   _includeRegexBeforeTable = includeRegexBeforeTable;
-	   _includeRegexAfterTable = includeRegexAfterTable;
+	   _includeRegexBeforeTable = Boolean.valueOf(includeRegexBeforeTable);
+	   _includeRegexAfterTable = Boolean.valueOf(includeRegexAfterTable);
 		
 		_matchingAreas = detectMatchingAreas(document);
 		
