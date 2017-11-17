@@ -35,19 +35,24 @@ public class RegexSearch {
 	Pattern _regexBeforeTable;
 	Pattern _regexAfterTable;
 	
-	
 	ArrayList<MatchingArea> _matchingAreas;
+	
+	Boolean _includeRegexBeforeTable;
+	Boolean _includeRegexAfterTable;
 	
 	/*
 	 * @param regexBeforeTable The text pattern that occurs in the document directly before the table that is to be extracted
 	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
 	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
 	 */
-	public RegexSearch(String regexBeforeTable, String regexAfterTable, PDDocument document) {
+	public RegexSearch(String regexBeforeTable, Boolean includeRegexBeforeTable, String regexAfterTable, 
+			           Boolean includeRegexAfterTable, PDDocument document) {
 		
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 		
+	   _includeRegexBeforeTable = includeRegexBeforeTable;
+	   _includeRegexAfterTable = includeRegexAfterTable;
 		
 		_matchingAreas = detectMatchingAreas(document);
 		
@@ -138,11 +143,11 @@ public class RegexSearch {
 			
 		   if(potentialMatches.getLast()._pageBeginMatch==null && beforeTableMatches.find(startMatchingAt)) {
 			
-			   
 			   Point2D.Float coords = new Point2D.Float(pageTextElements.get(beforeTableMatches.start()).x,
 				   	                                    pageTextElements.get(beforeTableMatches.start()).y + 
-				   	                                    pageTextElements.get(beforeTableMatches.start()).height);
-			
+				   	                                    ((_includeRegexBeforeTable) ? 0 : pageTextElements.get(beforeTableMatches.start()).height));
+				   	                                    
+			   
 			   potentialMatches.getLast()._pageBeginCoord=coords;
 			   potentialMatches.getLast()._pageBeginMatch=currentPage;
 			
@@ -152,7 +157,8 @@ public class RegexSearch {
 			
 			   
 			   Point2D.Float coords = new Point2D.Float(pageTextElements.get(afterTableMatches.start()).x,
-                                                        pageTextElements.get(afterTableMatches.start()).y);
+                                                        pageTextElements.get(afterTableMatches.start()).y +
+                                                        ((_includeRegexAfterTable) ? pageTextElements.get(afterTableMatches.start()).height : 0 ));
 			
 			   potentialMatches.getLast()._pageEndCoord = coords;
 			   potentialMatches.getLast()._pageEndMatch = currentPage;
