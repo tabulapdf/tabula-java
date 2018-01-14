@@ -5,17 +5,12 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
-
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
-
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
@@ -31,14 +26,15 @@ import technology.tabula.TextElement;
 
 public class RegexSearch {
 
+	private static final Integer INIT=0;
+
+	private Pattern _regexBeforeTable;
+	private Pattern _regexAfterTable;
 	
-	Pattern _regexBeforeTable;
-	Pattern _regexAfterTable;
+	private ArrayList<MatchingArea> _matchingAreas;
 	
-	ArrayList<MatchingArea> _matchingAreas;
-	
-	Boolean _includeRegexBeforeTable;
-	Boolean _includeRegexAfterTable;
+	private Boolean _includeRegexBeforeTable;
+	private Boolean _includeRegexAfterTable;
 	
 	/*
 	 * @param regexBeforeTable The text pattern that occurs in the document directly before the table that is to be extracted
@@ -70,7 +66,7 @@ public class RegexSearch {
 	 */
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
 		
-        ArrayList<Rectangle> allMatchingAreas = new ArrayList<Rectangle>();
+        ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
 		
 		for( MatchingArea matchingArea : _matchingAreas) {
 			allMatchingAreas.addAll(matchingArea.get(pageNumber));
@@ -86,16 +82,18 @@ public class RegexSearch {
      * area coordinates for matching areas. This may be overkill...
      */
 	private final class DetectionData{
-		
 		DetectionData(){
-			_pageBeginMatch = _pageEndMatch = null;
-			_pageBeginCoord = _pageEndCoord = null;
+			_pageBeginMatch = new AtomicInteger(INIT);
+			_pageEndMatch = new AtomicInteger(INIT);
+			_pageBeginCoord = new Point2D.Float();
+			_pageEndCoord= new Point2D.Float();
 		}
 		
-		Integer       _pageBeginMatch;
-		Integer       _pageEndMatch;
-		Point2D.Float _pageBeginCoord;
-		Point2D.Float _pageEndCoord;
+		AtomicInteger       _pageBeginMatch;
+		AtomicInteger       _pageEndMatch;
+		Point2D.Float       _pageBeginCoord;
+		Point2D.Float       _pageEndCoord;
+
 	}	
 	
 	/*
@@ -108,11 +106,12 @@ public class RegexSearch {
 	 */
 	
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
-	  
+
+
 	ObjectExtractor oe = new ObjectExtractor(document);
 	Integer totalPages = document.getNumberOfPages();
 	
-	LinkedList<DetectionData> potentialMatches = new LinkedList<DetectionData>();
+	LinkedList<DetectionData> potentialMatches = new LinkedList<>();
 	potentialMatches.add(new DetectionData());
 
 	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
@@ -122,70 +121,108 @@ public class RegexSearch {
 		 */
 		Page page = oe.extract(currentPage);
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText();
-		String pageAsText ="";
-		
+		StringBuilder pageAsText = new StringBuilder();
+
+
 		for(TextElement element : pageTextElements ) {
-			pageAsText += element.getText();
+			pageAsText.append(element.getText());
 		}
 
 		/*
 		 * Find each table on each page + tables which span multiple pages
 		 */
-		
+
 		Integer startMatchingAt = 0;
 		Matcher beforeTableMatches = _regexBeforeTable.matcher(pageAsText);
 		Matcher afterTableMatches  = _regexAfterTable.matcher(pageAsText);
 		
 		while( beforeTableMatches.find(startMatchingAt) || afterTableMatches.find(startMatchingAt)) {
-			
-		   if(potentialMatches.getLast()._pageBeginMatch==null && beforeTableMatches.find(startMatchingAt)) {
 
-		       Float xCoordinate = pageTextElements.get(beforeTableMatches.start()).x;
-		       Float yCoordinate = pageTextElements.get(beforeTableMatches.start()).y;
-		       yCoordinate += (_includeRegexBeforeTable) ? 0 : pageTextElements.get(beforeTableMatches.start()).height;
-			   Point2D.Float coordinates = new Point2D.Float(xCoordinate,yCoordinate);
-				   	                                    
-			   
-			   potentialMatches.getLast()._pageBeginCoord=coordinates;
-			   potentialMatches.getLast()._pageBeginMatch=currentPage;
-			
-			   startMatchingAt = beforeTableMatches.end();
-		   }
-		   else if(potentialMatches.getLast()._pageEndMatch==null && afterTableMatches.find(startMatchingAt)) {
-			
+			DetectionData tableUnderDetection;
+			DetectionData lastTableUnderDetection=potentialMatches.getLast();
 
-		       Float xCoordinate = pageTextElements.get(afterTableMatches.start()).x;
-		       Float yCoordinate = pageTextElements.get(afterTableMatches.start()).y;
-		       yCoordinate += (_includeRegexAfterTable) ? pageTextElements.get(afterTableMatches.start()).height : 0;
+			if((lastTableUnderDetection._pageBeginMatch.get()==INIT) || (lastTableUnderDetection._pageEndMatch.get()==INIT)){
+			   tableUnderDetection = lastTableUnderDetection;
+			}
+            else{
+				tableUnderDetection = new DetectionData();
+				potentialMatches.add(tableUnderDetection);
+			}
 
-			   Point2D.Float coordinates = new Point2D.Float(xCoordinate,yCoordinate);
-			
-			   potentialMatches.getLast()._pageEndCoord = coordinates;
-			   potentialMatches.getLast()._pageEndMatch = currentPage;
-	
-			   startMatchingAt = afterTableMatches.end();
-			 
-			   potentialMatches.add(new DetectionData()); //To reset algorithm for detection of another table
-			  
-		   }		
+			Integer beforeTableMatchLoc = (beforeTableMatches.find(startMatchingAt)) ? beforeTableMatches.start() : null;
+			Integer afterTableMatchLoc = (afterTableMatches.find(startMatchingAt))? afterTableMatches.start() : null;
+
+			Matcher firstMatchEncountered;
+            Boolean inclusionCheckCalculateOffset;
+			AtomicInteger pageToFind;
+			Point2D.Float coordsToFind;
+
+			Boolean bothMatchesEncountered = (beforeTableMatchLoc!=null) && (afterTableMatchLoc!=null);
+			if(bothMatchesEncountered){
+				//
+				// In the instance the Table Beginning Pattern and Table End Pattern both match a given text element,
+				// the element chosen is dependent on what is currently in the tableUnderDetection
+				//
+				if(beforeTableMatchLoc.equals(afterTableMatchLoc)){
+					Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch==null;
+					firstMatchEncountered = (beginNotFoundYet) ? beforeTableMatches : afterTableMatches;
+
+					//
+					//    Table Beginning  <------ |Offset
+					//      Content                          (To include beginning, no offset added: coords on top-left)
+					//      Content
+ 					//      Content                         (To include end, offset added)
+					//    Table End        <------ |Offset
+
+					//                                                    No offset for inclusion       Offset needed for inclusion
+                    inclusionCheckCalculateOffset = (beginNotFoundYet) ? (!_includeRegexBeforeTable)  :   _includeRegexAfterTable ;
+					pageToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
+					coordsToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+
+				}
+				else{
+					Boolean beginLocFoundFirst = beforeTableMatchLoc<afterTableMatchLoc;
+					firstMatchEncountered = (beginLocFoundFirst)? beforeTableMatches : afterTableMatches;
+					inclusionCheckCalculateOffset = (beginLocFoundFirst) ? (!_includeRegexBeforeTable) : _includeRegexAfterTable;
+					pageToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
+					coordsToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+				}
+			}
+			else{
+				Boolean beginLocNotFound = (beforeTableMatchLoc==null);
+				firstMatchEncountered = (beginLocNotFound) ? afterTableMatches : beforeTableMatches;
+				inclusionCheckCalculateOffset = (beginLocNotFound) ? _includeRegexAfterTable : (!_includeRegexBeforeTable);
+				pageToFind = (beginLocNotFound) ? tableUnderDetection._pageEndMatch : tableUnderDetection._pageBeginMatch;
+				coordsToFind = (beginLocNotFound) ? tableUnderDetection._pageEndCoord : tableUnderDetection._pageBeginCoord;
+			}
+
+			Integer firstMatchIndex = firstMatchEncountered.start();
+
+			Float xCoordinate = pageTextElements.get(firstMatchIndex).x;
+			Float yCoordinate = pageTextElements.get(firstMatchIndex).y;
+			Float offset = (inclusionCheckCalculateOffset)? pageTextElements.get(firstMatchIndex).height : 0;
+			yCoordinate += offset;
+			coordsToFind.setLocation(xCoordinate,yCoordinate);
+
+			pageToFind.set(currentPage);
+
+            startMatchingAt = firstMatchEncountered.end();
 		}
 	}	
-	
+
 	/*
 	 * Remove the last potential match if its data is incomplete
 	 */
 	DetectionData lastPotMatch = potentialMatches.getLast();
 	
-	if(lastPotMatch._pageBeginMatch==null || lastPotMatch._pageEndMatch==null) {
+	if((lastPotMatch._pageBeginMatch.get()==INIT) || (lastPotMatch._pageEndMatch.get()==INIT)) {
 		potentialMatches.removeLast();
 	}
 	
 	return calculateMatchingAreas(potentialMatches,document);
 	
 	}
-	
 
-	
 	/*
 	 * calculateMatchingAreas: Determines the rectangular coordinates of the document sections
 	 *                         matching the user-specified regex(_regexBeforeTable,_regexAfterTable)
@@ -195,24 +232,25 @@ public class RegexSearch {
 	 */
 	private ArrayList<MatchingArea> calculateMatchingAreas(LinkedList<DetectionData> foundMatches, PDDocument document) {
 		
-		ArrayList<MatchingArea> matchingAreas = new ArrayList<MatchingArea>();
+		ArrayList<MatchingArea> matchingAreas = new ArrayList<>();
 		
 		ObjectExtractor oe = new ObjectExtractor(document);
-	
+
 		
-		while(foundMatches.isEmpty() == false) {
+		while(!foundMatches.isEmpty()) {
+
 			DetectionData foundTable = foundMatches.pop();
-			
-            if(foundTable._pageBeginMatch == foundTable._pageEndMatch) {
+
+            if(foundTable._pageBeginMatch.get() == foundTable._pageEndMatch.get()) {
             
-            	float width = oe.extract(foundTable._pageBeginMatch).width;
+            	float width = oe.extract(foundTable._pageBeginMatch.get()).width;
             	float height = foundTable._pageEndCoord.y-foundTable._pageBeginCoord.y;
             	
-            	LinkedList<Rectangle> tableArea = new LinkedList<Rectangle>();
+            	LinkedList<Rectangle> tableArea = new LinkedList<>();
             	tableArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,width,height)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
             	
             	MatchingArea matchingArea = new MatchingArea();
-            	matchingArea.put(foundTable._pageBeginMatch, tableArea);
+            	matchingArea.put(foundTable._pageBeginMatch.get(), tableArea);
             
             	matchingAreas.add(matchingArea);
             
@@ -220,24 +258,23 @@ public class RegexSearch {
             else {
             	
             	MatchingArea matchingArea = new MatchingArea();
-            	
             	/*
             	 * Create sub-area for table from directly below the pattern-before-table content to the end of the page
             	 */
-            	Page currentPage =  oe.extract(foundTable._pageBeginMatch);
-            	LinkedList<Rectangle> tableSubArea = new LinkedList<Rectangle>();
+            	Page currentPage =  oe.extract(foundTable._pageBeginMatch.get());
+            	LinkedList<Rectangle> tableSubArea = new LinkedList<>();
+
             	tableSubArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
             			                        currentPage.height-foundTable._pageBeginCoord.y)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
             	
-            	matchingArea.put(foundTable._pageBeginMatch, tableSubArea);
+            	matchingArea.put(foundTable._pageBeginMatch.get(), tableSubArea);
             	
             	/*
             	 * Create sub-areas for table that span the entire page
             	 */
-            	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch; iter++) {
+            	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
-            		
-            		tableSubArea = new LinkedList<Rectangle>();
+            		tableSubArea = new LinkedList<>();
             		tableSubArea.add(new Rectangle(0,0,currentPage.width,currentPage.height));
             		
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
@@ -248,14 +285,12 @@ public class RegexSearch {
             	 * Create sub-areas for table from the top of the page to directly before the pattern-after-table content 
             	 */
             	
-            	currentPage = oe.extract(foundTable._pageEndMatch);
-                tableSubArea = new LinkedList<Rectangle>();
+            	currentPage = oe.extract(foundTable._pageEndMatch.get());
+                tableSubArea = new LinkedList<>();
                 tableSubArea.add(new Rectangle(0,0,currentPage.width,foundTable._pageEndCoord.y));
-                   
 
                 matchingArea.put(currentPage.getPageNumber(), tableSubArea);
                 matchingAreas.add(matchingArea);
-            	
             }
 		}
 		return matchingAreas;
