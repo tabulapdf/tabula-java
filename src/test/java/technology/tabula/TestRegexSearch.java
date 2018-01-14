@@ -106,7 +106,7 @@ public class TestRegexSearch {
 	 */
 
 	public void testSimpleTableDetectNonMatchingRegex() {
-		
+
 		
 		try {
 			//Upload 1 page of PDF containing a single table	
@@ -114,7 +114,8 @@ public class TestRegexSearch {
 			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
 			
 			File singleTable = new File(basicDocName);
-			
+
+
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 			
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
@@ -140,9 +141,7 @@ public class TestRegexSearch {
 	 */
 	@Test
 	public void testSimpleTableDetectMatchingRegex() {
-		
-		PDDocument docInQuestion = new PDDocument();
-		
+
 		try {
 			
 			//Upload 1 page of PDF containing a single table
@@ -150,11 +149,12 @@ public class TestRegexSearch {
 			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
 			
 			File singleTable = new File(basicDocName);
-			
-	        Page data = UtilsForTesting.getPage(basicDocName, 1);
-	        
 
-			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","false",PDDocument.load(singleTable));
+	        Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+	        PDDocument docInQuestion = PDDocument.load(singleTable);
+
+			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","false",docInQuestion);
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -167,14 +167,14 @@ public class TestRegexSearch {
 			
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
-				
-				
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
 				}
 				extractedTableContent.trim();
 			}
-			
+
+			System.out.println("Extracted Table Content:" + extractedTableContent);
+
 			assertTrue("Simple table was not detected",expectedTableContent.equals(extractedTableContent));
 			
 		} 
@@ -183,17 +183,6 @@ public class TestRegexSearch {
 			e.printStackTrace();
 			fail("Error in test case");
 		}
-		finally {
-			if(docInQuestion!=null) {
-				try {
-					docInQuestion.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
 	}
 
 /**

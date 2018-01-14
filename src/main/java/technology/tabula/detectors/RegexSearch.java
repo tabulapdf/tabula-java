@@ -163,8 +163,8 @@ public class RegexSearch {
 				// In the instance the Table Beginning Pattern and Table End Pattern both match a given text element,
 				// the element chosen is dependent on what is currently in the tableUnderDetection
 				//
-				if(beforeTableMatchLoc.equals(afterTableMatchLoc)){
-					Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch==null;
+				if(beforeTableMatchLoc.intValue() == afterTableMatchLoc.intValue()){
+					Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch.get()==INIT;
 					firstMatchEncountered = (beginNotFoundYet) ? beforeTableMatches : afterTableMatches;
 
 					//
@@ -181,6 +181,7 @@ public class RegexSearch {
 
 				}
 				else{
+
 					Boolean beginLocFoundFirst = beforeTableMatchLoc<afterTableMatchLoc;
 					firstMatchEncountered = (beginLocFoundFirst)? beforeTableMatches : afterTableMatches;
 					inclusionCheckCalculateOffset = (beginLocFoundFirst) ? (!_includeRegexBeforeTable) : _includeRegexAfterTable;
