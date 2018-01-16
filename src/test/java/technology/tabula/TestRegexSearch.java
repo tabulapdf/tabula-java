@@ -308,7 +308,8 @@ public void testIncludePatternBeforeOption() {
 }
 
 /**
- * Test if RegexSearch class will include the line containing patternAfter when requested 
+ * Test if RegexSearch class will include the line containing patternBefore
+ * and patternAfter when requested for a simple match (1 match area detected)
  */
 @Test
 public void testIncludePatternBeforeAndPatternAfterOption() {
@@ -369,9 +370,93 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 	
 }
 
+	/**
+	 * Test if RegexSearch class will include the line containing patternBefore
+	 * and patternAfter when requested
+	 */
+	@Test
+	public void testIncludePatternBeforeAndPatternAfterForMultipleMatches() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge","true","Social","true",PDDocument.load(singleTable));
+
+			String expectedTableContent = "Knowledge and awareness of different " +
+					"cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and " +
+					"abilities 0,3416 0,3369 0,4303"+
+			        "Knowledge and awareness of different cultures -0,1651 -0,2742 -0,1618 Foreign language competence "+
+			        "-0,0857 -0,1804 -0,1337 Social skills and abilities -0,1237 -0,2328 -0,1473Knowledge/appreciation of "+
+			        "school system and -0,1505 -0,1636 -0,1349 education in the partner countries Foreign language competence "+
+			        "-0,0545 -0,0997 -0,0519 Social skills and personal commitment -0,2558 -0,2235 -0,1302";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			System.out.println("Expected Content is listed first:");
+			System.out.println(expectedTableContent);
+			System.out.println(extractedTableContent);
+
+
+			assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
+
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+
+
 
 	/**
-	 * Test if RegexSearch class will include the line containing patternAfter when requested
+	 * Test if RegexSearch class will ignore tables which do not have a defined beginning.
+	 *   Example:
+	 *     Pattern Before: x
+	 *     Pattern After: y
+	 *     Content: x
+	 *                1
+	 *                2
+	 *              y
+	 *              b
+	 *                3
+	 *                4
+	 *              y
+	 *
+	 *      (Only 1 table area should be detected)
 	 */
 	@Test
 	public void testMatchWithNoBeginPatternFound() {
