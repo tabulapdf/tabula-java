@@ -369,4 +369,71 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 	
 }
 
+
+	/**
+	 * Test if RegexSearch class will include the line containing patternAfter when requested
+	 */
+	@Test
+	public void testMatchWithNoBeginPatternFound() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+
+			RegexSearch regexSearch = new RegexSearch("Correlations","true","Knowledge","true",PDDocument.load(singleTable));
+
+
+			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities " +
+					                      "and the perceived  impacts on pupils (Pearsons correlation coefficient*)   "+
+			                              "Involvement of pupils in  Preperation and Production of Presentation and planing " +
+					                      "materials evaluation Knowledge and awareness of different cultures 0,2885 0,3974 0,3904"+
+					                      "Correlations between the difficulties encounters and the perceived impacts on pupils, "+
+			                              "teachers and the school as a whole (Pearsons correlation coefficient*)   " +
+					                      "Difficulties encountered with respect to  Lack of interest/ Lack of interest "+
+					                      "of Lack of interest of  acceptance from pupils parents Impacts on participating "+
+					                      "pupils colleagues Knowledge and awareness of different cultures -0,1651 -0,2742 -0,1618";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
+
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
 }
