@@ -406,7 +406,6 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
 
-
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
 				}

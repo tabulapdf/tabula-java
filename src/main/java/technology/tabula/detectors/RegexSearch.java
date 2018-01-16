@@ -294,6 +294,7 @@ public class RegexSearch {
                 matchingAreas.add(matchingArea);
             }
 		}
+
 		return matchingAreas;
 	}
 }
