@@ -94,8 +94,19 @@ public class RegexSearch {
 		Point2D.Float       _pageBeginCoord;
 		Point2D.Float       _pageEndCoord;
 
-	}	
-	
+	}
+
+	static final class SignOfOffset{
+		public static final double POSITIVE_NO_BUFFER = 1;
+        public static final double POSITIVE_WITH_BUFFER = 1.5;
+        public static final double NEGATIVE_BUFFER = -.5;
+    //    public static final double NEGATIVE_NO_BUFFER = -1;
+    //    public static final double NEGATIVE_WITH_BUFFER = -1.5;
+        public static final int NONE = 0;
+	};
+
+
+
 	/*
 	 * detectMatchingAreas: Detects the subsections of the document occurring 
 	 *                      between the user-specified regexes. 
@@ -154,6 +165,7 @@ public class RegexSearch {
 
 			Matcher firstMatchEncountered;
             Boolean inclusionCheckCalculateOffset;
+			double offsetScale;
 			AtomicInteger pageToFind;
 			Point2D.Float coordsToFind;
 
@@ -167,15 +179,19 @@ public class RegexSearch {
 					Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch.get()==INIT;
 					firstMatchEncountered = (beginNotFoundYet) ? beforeTableMatches : afterTableMatches;
 
-					//
+					//    --------------------------------
 					//    Table Beginning  <------ |Offset
-					//      Content                          (To include beginning, no offset added: coords on top-left)
+					//      Content                          (To include beginning, negative offset added: coords on top-left but buffer is needed)
 					//      Content
- 					//      Content                         (To include end, offset added)
+ 					//      Content                         (To include end, positive offset added)
 					//    Table End        <------ |Offset
+					//    --------------------------------
 
-					//                                                    No offset for inclusion       Offset needed for inclusion
-                    inclusionCheckCalculateOffset = (beginNotFoundYet) ? (!_includeRegexBeforeTable)  :   _includeRegexAfterTable ;
+                    offsetScale = (beginNotFoundYet) ?
+							                               //Negative offset for inclusion     Positive offset for exclusion
+							 ((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER ):
+							                              //Positive offset for inclusion    No offset for exclusion
+							 ((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE);
 					pageToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
 					coordsToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
 
@@ -184,7 +200,9 @@ public class RegexSearch {
 
 					Boolean beginLocFoundFirst = beforeTableMatchLoc<afterTableMatchLoc;
 					firstMatchEncountered = (beginLocFoundFirst)? beforeTableMatches : afterTableMatches;
-					inclusionCheckCalculateOffset = (beginLocFoundFirst) ? (!_includeRegexBeforeTable) : _includeRegexAfterTable;
+					offsetScale = (beginLocFoundFirst) ?
+							((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER ):
+							((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE);
 					pageToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
 					coordsToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
 				}
@@ -192,7 +210,9 @@ public class RegexSearch {
 			else{
 				Boolean beginLocNotFound = (beforeTableMatchLoc==null);
 				firstMatchEncountered = (beginLocNotFound) ? afterTableMatches : beforeTableMatches;
-				inclusionCheckCalculateOffset = (beginLocNotFound) ? _includeRegexAfterTable : (!_includeRegexBeforeTable);
+				offsetScale = (beginLocNotFound) ?
+						((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE):
+				        ((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER);
 				pageToFind = (beginLocNotFound) ? tableUnderDetection._pageEndMatch : tableUnderDetection._pageBeginMatch;
 				coordsToFind = (beginLocNotFound) ? tableUnderDetection._pageEndCoord : tableUnderDetection._pageBeginCoord;
 			}
@@ -201,8 +221,9 @@ public class RegexSearch {
 
 			Float xCoordinate = pageTextElements.get(firstMatchIndex).x;
 			Float yCoordinate = pageTextElements.get(firstMatchIndex).y;
-			Float offset = (inclusionCheckCalculateOffset)? pageTextElements.get(firstMatchIndex).height : 0;
-			yCoordinate += offset;
+			Float offset = pageTextElements.get(firstMatchIndex).height;
+			yCoordinate += (float)(offset*offsetScale);
+
 			coordsToFind.setLocation(xCoordinate,yCoordinate);
 
 			pageToFind.set(currentPage);

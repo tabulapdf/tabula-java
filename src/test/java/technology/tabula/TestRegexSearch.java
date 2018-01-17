@@ -17,7 +17,7 @@ import technology.tabula.detectors.RegexSearch;
 /*
  * TestRegexSearch
  * 
- *    TODO: Small blurb about this
+ *    This class makes up all of the back-end unit tests performed on the RegexSearch class.
  *    
  *    TODO: Large blurb about this
  *    
@@ -26,7 +26,36 @@ import technology.tabula.detectors.RegexSearch;
 
 public class TestRegexSearch {
 
-	
+
+	private static final int CLIENT_CODE_STACK_INDEX;
+
+	//Ripped this  out of StackOverflow:
+	// https://stackoverflow.com/questions/442747/getting-the-name-of-the-currently-executing-method/8592871#8592871
+	// with small change (moved increment to after the if statement) to facilitate an easier use of status_report
+	static {
+		// Finds out the index of "this code" in the returned stack trace - funny but it differs in JDK 1.5 and 1.6
+		int i = 0;
+		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+			if (ste.getClassName().equals(TestRegexSearch.class.getName())) {
+				break;
+			}
+			i++;
+		}
+		CLIENT_CODE_STACK_INDEX = i;
+	}
+
+
+	public static void statusReport(String caller,String expectedContent, String extractedContent,String messageOnFail){
+		System.out.println("----------------------------");
+		System.out.println("Status Report for "+ caller);
+		System.out.println("Expected Table Content:");
+		System.out.println(expectedContent);
+		System.out.println("Extracted Table Content:");
+		System.out.println(extractedContent);
+		assertTrue(messageOnFail,expectedContent.equals(extractedContent));
+		System.out.println();
+	}
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
@@ -88,8 +117,8 @@ public class TestRegexSearch {
 					}
 				}
 			}
-
-			assertTrue(extractedTableContent.trim().equals(expectedTableContent.trim()));
+            statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Failure in multi-page detection");
 			
 			
 		} catch (IOException e) {
@@ -120,13 +149,16 @@ public class TestRegexSearch {
 			
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
 			RegexSearch regexSearch = new RegexSearch("WRONG","false","WRONG","false",docInQuestion);
-			
+
+			String expectedTableContent = "";
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
 				extractedTableContent += data.getText(tableArea);
 			}
-				
-		    assertTrue(extractedTableContent.isEmpty() );
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Content falsely detected");
+		    //assertTrue(extractedTableContent.isEmpty() );
 			
 		} 
 		catch (Exception e) {
@@ -173,9 +205,9 @@ public class TestRegexSearch {
 				extractedTableContent.trim();
 			}
 
-			System.out.println("Extracted Table Content:" + extractedTableContent);
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in simple table detection");
 
-			assertTrue("Simple table was not detected",expectedTableContent.equals(extractedTableContent));
 			
 		} 
 		catch (Exception e) {
@@ -223,8 +255,10 @@ public void testIncludePatternAfterOption() {
 			}
 			extractedTableContent = extractedTableContent.trim();
 		}
-		
-		assertTrue("PatternAfter was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
+
+		statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+				expectedTableContent,extractedTableContent,"Error in the inclusive test");
+
 		
 	} 
 	catch (Exception e) {
@@ -285,8 +319,11 @@ public void testIncludePatternBeforeOption() {
 			}
 			extractedTableContent = extractedTableContent.trim();
 		}
-		
-		assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
+
+		statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+				expectedTableContent,extractedTableContent,"PatternBefore was not included in the extracted content");
+
+
 		
 	} 
 	catch (Exception e) {
@@ -348,9 +385,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 			extractedTableContent = extractedTableContent.trim();
 		}
-		
-		assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
-		
+
+		statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+				     expectedTableContent,extractedTableContent,"Error with inclusion of patterns");
 	} 
 	catch (Exception e) {
 		// TODO Auto-generated catch block
@@ -412,13 +449,8 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 				extractedTableContent = extractedTableContent.trim();
 			}
 
-			System.out.println("Expected Content is listed first:");
-			System.out.println(expectedTableContent);
-			System.out.println(extractedTableContent);
-
-
-			assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
-
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error with pattern inclusion");
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -499,8 +531,8 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 				extractedTableContent = extractedTableContent.trim();
 			}
 
-			assertTrue("PatternBefore was not included in the extracted content",expectedTableContent.equals(extractedTableContent));
-
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in table detection");
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block
