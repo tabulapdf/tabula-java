@@ -21,6 +21,8 @@ import technology.tabula.TextElement;
  *    
  *    TODO: Large blurb about this class
  *    10/29/2017 REM; created.
+ *    1/13/2018  REM; updated detectMatchingAreas to resolve pattern-detection bug
+ *    1/27/2018  REM; added constructors to facilitate header/footer functionality as well as CLI work
  */
 
 
@@ -43,17 +45,31 @@ public class RegexSearch {
 	 */
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable, 
 			           String includeRegexAfterTable, PDDocument document) {
+
+		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable, document, null);
+	}
+
+	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
+					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,Double> headerAreas) {
 		
-		_regexBeforeTable = Pattern.compile(regexBeforeTable);
-		_regexAfterTable = Pattern.compile(regexAfterTable);
-		
-	   _includeRegexBeforeTable = Boolean.valueOf(includeRegexBeforeTable);
-	   _includeRegexAfterTable = Boolean.valueOf(includeRegexAfterTable);
-		
-		_matchingAreas = detectMatchingAreas(document);
+		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
+			Boolean.valueOf(includeRegexAfterTable),document,headerAreas);
 		
 	}
-	
+
+	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
+					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,Double> headerAreas) {
+		_regexBeforeTable = Pattern.compile(regexBeforeTable);
+		_regexAfterTable = Pattern.compile(regexAfterTable);
+
+		_includeRegexBeforeTable = includeRegexBeforeTable;
+		_includeRegexAfterTable = includeRegexAfterTable;
+
+		_matchingAreas = detectMatchingAreas(document,null);
+	}
+
+	public
+
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
