@@ -30,6 +30,7 @@ public class RegexSearch {
 
 	private static final Integer INIT=0;
 
+
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
 	
@@ -48,7 +49,7 @@ public class RegexSearch {
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable, 
 			           String includeRegexAfterTable, PDDocument document) {
 
-		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable, document, null);
+		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable,docName, document,null);
 	}
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
@@ -68,6 +69,7 @@ public class RegexSearch {
 		_includeRegexAfterTable = includeRegexAfterTable;
 
 		_matchingAreas = detectMatchingAreas(document,headerAreas);
+
 	}
 
     /*
@@ -147,11 +149,8 @@ public class RegexSearch {
 		 * Convert PDF page to text
 		 */
 		Page page = oe.extract(currentPage);
-		Integer beginHeight = (headerAreas.containsKey(page.getPageNumber()))?headerAreas.get(page.getPageNumber()):0;
-		System.out.println("Page Number:"+page.getPageNumber());
-		System.out.println("Begin Height:"+beginHeight.toString());
-		System.out.println("Page Height:"+page.height);
-		System.out.println("Page Width:"+page.width);
+		Integer beginHeight = ( (headerAreas!=null) && headerAreas.containsKey(page.getPageNumber())) ?
+				              headerAreas.get(page.getPageNumber()):0;
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
 				new Rectangle(0,beginHeight,page.width,page.height-beginHeight));
 
@@ -160,9 +159,6 @@ public class RegexSearch {
 		for(TextElement element : pageTextElements ) {
 			pageAsText.append(element.getText());
 		}
-
-		System.out.println("Extracted Text:");
-		System.out.println(pageAsText);
 
 		/*
 		 * Find each table on each page + tables which span multiple pages
