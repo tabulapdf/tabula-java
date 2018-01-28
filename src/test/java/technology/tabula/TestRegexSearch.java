@@ -573,7 +573,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					PDDocument.load(singleTable),new HashMap<Integer, Integer>(){{put(1,40);
+					PDDocument.load(singleTable),new HashMap<Integer, Integer>(){{put(1,83);
 			                                                                      put(2,0);}});
 
 
