@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.After;
@@ -533,6 +534,66 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
 					expectedTableContent,extractedTableContent,"Error in table detection");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Test if RegexSearch detection method will ignore the text located in the header-specified area.
+	 */
+	@Test
+	public void testHeaderFilteringCapability() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					PDDocument.load(singleTable),new HashMap<Integer, Integer>(){{put(1,40);
+			                                                                      put(2,0);}});
+
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block

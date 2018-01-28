@@ -39,6 +39,8 @@ public class RegexSearch {
 	private Boolean _includeRegexAfterTable;
 	
 	/*
+	 * This constructor is designed to be used for parameters originating in JSON and where no header areas are defined
+	 * NOTE: This constructor will soon be deprecated!!
 	 * @param regexBeforeTable The text pattern that occurs in the document directly before the table that is to be extracted
 	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
 	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
@@ -50,7 +52,7 @@ public class RegexSearch {
 	}
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
-					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,Double> headerAreas) {
+					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,Integer> headerAreas) {
 		
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
 			Boolean.valueOf(includeRegexAfterTable),document,headerAreas);
@@ -58,17 +60,15 @@ public class RegexSearch {
 	}
 
 	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
-					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,Double> headerAreas) {
+					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,Integer> headerAreas) {
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 
 		_includeRegexBeforeTable = includeRegexBeforeTable;
 		_includeRegexAfterTable = includeRegexAfterTable;
 
-		_matchingAreas = detectMatchingAreas(document,null);
+		_matchingAreas = detectMatchingAreas(document,headerAreas);
 	}
-
-	public
 
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
@@ -128,11 +128,12 @@ public class RegexSearch {
 	 *                      between the user-specified regexes. 
 	 * 
 	 * @param document The name of the document for which regex has been applied
+	 * @param headerAreas The header sections of the document that are to be ignored.
 	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
 	 * that matches the user-provided regex
 	 */
 	
-	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document) {
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,Integer> headerAreas) {
 
 
 	ObjectExtractor oe = new ObjectExtractor(document);
@@ -142,18 +143,26 @@ public class RegexSearch {
 	potentialMatches.add(new DetectionData());
 
 	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
-		
 		/*
 		 * Convert PDF page to text
 		 */
 		Page page = oe.extract(currentPage);
-		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText();
-		StringBuilder pageAsText = new StringBuilder();
+		Integer beginHeight = (headerAreas.containsKey(page.getPageNumber()))?headerAreas.get(page.getPageNumber()):0;
+		System.out.println("Page Number:"+page.getPageNumber());
+		System.out.println("Begin Height:"+beginHeight.toString());
+		System.out.println("Page Height:"+page.height);
+		System.out.println("Page Width:"+page.width);
+		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
+				new Rectangle(0,beginHeight,page.width,page.height-beginHeight));
 
+		StringBuilder pageAsText = new StringBuilder();
 
 		for(TextElement element : pageTextElements ) {
 			pageAsText.append(element.getText());
 		}
+
+		System.out.println("Extracted Text:");
+		System.out.println(pageAsText);
 
 		/*
 		 * Find each table on each page + tables which span multiple pages
@@ -245,6 +254,9 @@ public class RegexSearch {
 			pageToFind.set(currentPage);
 
             startMatchingAt = firstMatchEncountered.end();
+
+            System.out.println("yCoordinate:"+yCoordinate);
+
 		}
 	}	
 
