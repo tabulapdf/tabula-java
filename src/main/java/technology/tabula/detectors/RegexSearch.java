@@ -155,6 +155,12 @@ public class RegexSearch {
 			if((lastTableUnderDetection._pageBeginMatch.get()==INIT) || (lastTableUnderDetection._pageEndMatch.get()==INIT)){
 			   tableUnderDetection = lastTableUnderDetection;
 			}
+
+			else if(lastTableUnderDetection._pageEndCoord.getY()<lastTableUnderDetection._pageBeginCoord.getY() &&
+					(lastTableUnderDetection._pageEndMatch.get()<=lastTableUnderDetection._pageBeginMatch.get())){
+				tableUnderDetection = lastTableUnderDetection;
+			}
+
             else{
 				tableUnderDetection = new DetectionData();
 				potentialMatches.add(tableUnderDetection);
@@ -164,7 +170,6 @@ public class RegexSearch {
 			Integer afterTableMatchLoc = (afterTableMatches.find(startMatchingAt))? afterTableMatches.start() : null;
 
 			Matcher firstMatchEncountered;
-            Boolean inclusionCheckCalculateOffset;
 			double offsetScale;
 			AtomicInteger pageToFind;
 			Point2D.Float coordsToFind;

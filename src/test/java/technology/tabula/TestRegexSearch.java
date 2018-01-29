@@ -551,5 +551,79 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+	/**
+	 * Test if RegexSearch class will ignore tables which do not have a defined beginning.
+	 *   Example:
+	 *     Pattern Before: x
+	 *     Pattern After: y
+	 *     Content: x
+	 *                1
+	 *                2
+	 *              y
+	 *              b
+	 *                3
+	 *                4
+	 *              y
+	 *
+	 *      (Only 1 table area should be detected)
+	 */
+	@Test
+	public void testPatternAfterOccursBeforePatternBefore() {
 
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/ES013013-0020.ac.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+
+			RegexSearch regexSearch = new RegexSearch("Analyte","false","Report","false",PDDocument.load(singleTable));
+
+
+			String expectedTableContent = "Arsenic< 0.0050.010mg/LBarium0.12.00mg/LCadmium< 0.0010.005mg/LCalcium41mg/L"+
+			                              "Chloride15.00250mg/LChromium< 0.010.10mg/LCopper< 0.051.3mg/L"+
+					                      "Fluoride< 0.204.00mg/LIron< 0.100.30mg/LLead< 0.0050.015mg/L"+
+					                      "Magnesium11mg/LManganese< 0.030.05mg/LMercury< 0.00050.002mg/L"+
+					                      "pH7.3N/ASelenium< 0.0050.05mg/LSilver< 0.050.10mg/LSodium15.00mg/L"+
+					                      "Sulfate10.00250mg/LTotal Alkalinity130mg/LTotal Hardness150mg/LZinc0.075.00mg/L";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in table detection");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
 }
