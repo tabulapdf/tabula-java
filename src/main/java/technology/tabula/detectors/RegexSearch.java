@@ -155,9 +155,11 @@ public class RegexSearch {
 			if((lastTableUnderDetection._pageBeginMatch.get()==INIT) || (lastTableUnderDetection._pageEndMatch.get()==INIT)){
 			   tableUnderDetection = lastTableUnderDetection;
 			}
-
+			else if(lastTableUnderDetection._pageEndMatch.get()<lastTableUnderDetection._pageBeginMatch.get()){
+				tableUnderDetection = lastTableUnderDetection;
+			}
 			else if(lastTableUnderDetection._pageEndCoord.getY()<lastTableUnderDetection._pageBeginCoord.getY() &&
-					(lastTableUnderDetection._pageEndMatch.get()<=lastTableUnderDetection._pageBeginMatch.get())){
+					(lastTableUnderDetection._pageEndMatch.get()==lastTableUnderDetection._pageBeginMatch.get())){
 				tableUnderDetection = lastTableUnderDetection;
 			}
 
@@ -245,7 +247,13 @@ public class RegexSearch {
 	if((lastPotMatch._pageBeginMatch.get()==INIT) || (lastPotMatch._pageEndMatch.get()==INIT)) {
 		potentialMatches.removeLast();
 	}
-	
+	else if((lastPotMatch._pageEndMatch.get()<lastPotMatch._pageBeginMatch.get())){
+		potentialMatches.removeLast();
+	}
+	else if((lastPotMatch._pageEndMatch.get()==lastPotMatch._pageBeginMatch.get())&&
+			(lastPotMatch._pageEndCoord.getY()<lastPotMatch._pageBeginCoord.getY())){
+		potentialMatches.removeLast();
+	}
 	return calculateMatchingAreas(potentialMatches,document);
 	
 	}
