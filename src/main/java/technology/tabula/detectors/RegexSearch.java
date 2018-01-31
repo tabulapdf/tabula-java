@@ -17,19 +17,37 @@ import technology.tabula.TextElement;
 /*
  * RegexSearch
  * 
- *    TODO: Small blurb about this class
+ *    This class supports regex-based content extraction from PDF Documents
  *    
  *    TODO: Large blurb about this class
  *    10/29/2017 REM; created.
  *    1/13/2018  REM; updated detectMatchingAreas to resolve pattern-detection bug
  *    1/27/2018  REM; added constructors to facilitate header/footer functionality as well as CLI work
+ *    1/30/2018  REM; added static method skeleton for proof-of-concept header work, also added documentation
+ *
  */
 
 
 public class RegexSearch {
 
-	private static final Integer INIT=0;
+	//TODO: Add documentation for params, return, etc
+	/*
+	 * @param currentRegexSearches
+	 * @param pageNumOfHeaderResize
+	 * @param pageHeight
+	 * @param headerHeight
+	 * @return
+	 */
+	static RegexSearch[] queryCheckContentOnResize( RegexSearch[] currentRegexSearches,
+															Integer pageNumOfHeaderResize,
+															Integer pageHeight,
+															Integer headerHeight){
 
+		return null;
+	}
+
+
+	private static final Integer INIT=0;
 
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
@@ -49,7 +67,7 @@ public class RegexSearch {
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable, 
 			           String includeRegexAfterTable, PDDocument document) {
 
-		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable,docName, document,null);
+		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable, document,null);
 	}
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
