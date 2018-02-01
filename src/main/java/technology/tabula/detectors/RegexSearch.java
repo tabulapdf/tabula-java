@@ -42,6 +42,8 @@ public class RegexSearch {
 															Integer pageNumOfHeaderResize,
 															Integer pageHeight,
 															Integer headerHeight){
+		//TODO: Remember to use pageHeight, headerHeight as a scaling factor
+
 
 		return null;
 	}
@@ -90,6 +92,18 @@ public class RegexSearch {
 
 	}
 
+	/* getRegexBeforeTable: basic getter function
+	 * @return The regex pattern used to delimit the beginning of the table
+	 */
+	public String getRegexBeforeTable(){
+		return _regexBeforeTable.toString();
+	}
+	/* getRegexAfterTable: basic getter function
+	 * @return The regex pattern used to delimit the end of the table
+	 */
+	public String getRegexAfterTable(){
+		return _regexAfterTable.toString();
+	}
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
