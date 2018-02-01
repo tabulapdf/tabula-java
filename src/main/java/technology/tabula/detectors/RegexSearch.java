@@ -30,19 +30,75 @@ import technology.tabula.TextElement;
 
 public class RegexSearch {
 
-	//TODO: Add documentation for params, return, etc
-	/*
-	 * @param currentRegexSearches
-	 * @param pageNumOfHeaderResize
-	 * @param pageHeight
-	 * @param headerHeight
+	/* Converting any text found in the user-defined header region into a string of text
+	 *
+	 * @param page The page of the document containing the section of text desired
+	 * @param sectionToConvert The rectangular coordinates of the desired section
+	 * @return String The textual content within the sectionToConvert of page
+	 */
+	static String convertPageSectionToString(Page page,
+											 Rectangle sectionToConvert){
+		/*
+		 *
+		 */
+		ArrayList<TextElement> textInHeader = (ArrayList<TextElement>) page.getText( sectionToConvert);
+
+
+		StringBuilder headerTextAsString = new StringBuilder();
+
+		for(TextElement element : textInHeader ) {
+			headerTextAsString.append(element.getText());
+		}
+
+		return headerTextAsString.toString();
+	}
+
+	/* queryCheckContentOnResize
+	 *
+	 * Determines which RegexSearch objects should be modified as a result of the user changing/defining a header filter
+	 * for a page in the document
+	 *
+	 * @param file The PDDocument representation of the file
+	 * @param currentRegexSearches The array of RegexSearch objects used on this document
+	 * @param pageNumOfHeaderResize The number of the page upon which the header filter was resized
+	 * @param pageHeight The height of the page containing the header filter resize event AS IT APPEARED IN THE GUI
+	 * @param newHeaderHeight The new height of the header filter AS IT APPEARED IN THE GUI
+	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	static RegexSearch[] queryCheckContentOnResize( RegexSearch[] currentRegexSearches,
-															Integer pageNumOfHeaderResize,
-															Integer pageHeight,
-															Integer headerHeight){
-		//TODO: Remember to use pageHeight, headerHeight as a scaling factor
+	static RegexSearch[] queryCheckContentOnResize( PDDocument file,
+			                                        RegexSearch[] currentRegexSearches,
+													Integer pageNumOfHeaderResize,
+													Integer pageHeight,
+													Integer newHeaderHeight,
+	                                                Integer previousHeaderHeight){
+
+
+		System.out.println("Page # of Header Resize:");
+		System.out.println(pageNumOfHeaderResize);
+		ObjectExtractor oe = new ObjectExtractor(file);
+		Page pageOfHeaderResize = oe.extract(pageNumOfHeaderResize);
+
+		Float scaledPreviousHeaderHeight = pageOfHeaderResize.height * (float)(newHeaderHeight)/pageHeight;
+		Float scaledNewHeaderHeight = pageOfHeaderResize.height * (float)(previousHeaderHeight)/pageHeight;
+
+		Rectangle previousHeaderRegion = new Rectangle(0,0,pageOfHeaderResize.width,scaledPreviousHeaderHeight);
+		Rectangle newHeaderRegion = new Rectangle(0,0,pageOfHeaderResize.width, scaledNewHeaderHeight);
+
+		String previousHeaderText = convertPageSectionToString(pageOfHeaderResize,previousHeaderRegion);
+		String newHeaderText = convertPageSectionToString(pageOfHeaderResize,newHeaderRegion);
+
+
+		System.out.println("Text found in  new header:");
+		System.out.println(newHeaderText);
+
+		System.out.println("Text found in old header:");
+		System.out.println(previousHeaderText);
+
+		/*
+		 * Determining if any current regex queries match the text found in header
+		 */
+
 
 
 		return null;
@@ -104,6 +160,8 @@ public class RegexSearch {
 	public String getRegexAfterTable(){
 		return _regexAfterTable.toString();
 	}
+
+	public
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
