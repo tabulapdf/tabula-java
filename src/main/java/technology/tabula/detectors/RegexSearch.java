@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
@@ -34,7 +36,7 @@ public class RegexSearch {
 	 * associated with a given PDF page can both be returned to the caller
 	 */
 
-	/* checkSearchesOnHeaderResize
+	/* checkSearchesFilterResize
 	 *
 	 * Determines which RegexSearch objects should be modified as a result of the user changing/defining a header filter
 	 * for a page in the document
@@ -47,38 +49,46 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static RegexSearch[] checkSearchesOnHeaderResize( PDDocument file,
-													  RegexSearch[] currentRegexSearches,
-													  Integer pageNumOfHeaderResize,
-													  Integer pageHeight,
-													  Integer newHeaderHeight,
-													  Integer previousHeaderHeight){
+	public static RegexSearch[] checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
+													         FilteredArea previousFilterArea,
+													         HashMap<Integer,FilteredArea> areasToFilter,
+															 RegexSearch[] currentRegexSearches){
 
 
-		FilteredArea newFilteredArea = new FilteredArea(newHeaderHeight,0,pageHeight);
-		FilteredArea previouFilteredArea = new FilteredArea(previousHeaderHeight,0,pageHeight);
+
 
 		ObjectExtractor oe = new ObjectExtractor(file);
-		Page pageOfHeaderResize = oe.extract(pageNumOfHeaderResize);
+		Page pageOfHeaderResize = oe.extract(pageNumOfResizedFilter);
 
 		/*
 		 * Determining if any current regex queries match the text found in header
 		 */
 
-        if(newHeaderHeight>previousHeaderHeight){
-        	float scaledHeaderHeight = newFilteredArea.getScaledHeaderHeight(pageOfHeaderResize);
+		ArrayList<RegexSearch> searchesToReRun = new ArrayList<RegexSearch>();
+
+		Float previousHeaderHeight = previousFilterArea.getScaledHeaderHeight(pageOfHeaderResize);
+		Float currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
+
+        if(currentHeaderHeight>previousHeaderHeight){
+        	float scaledHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
         	PageTextMetaData contentsOfHeader = new PageTextMetaData(pageOfHeaderResize,
 					                                new Rectangle(0,0,pageOfHeaderResize.width, scaledHeaderHeight));
 
         	for(RegexSearch regexSearch : currentRegexSearches){
         		if(regexSearch.containsMatchIn(contentsOfHeader.pageAsText)){
-        			
+        			searchesToReRun.add(regexSearch);
 				}
 			}
 
 		}
 		else{
 
+		}
+
+		//For now, skirting the check-overlaps issue...but it will need to be handled soon and will require user-input...
+		//Most likely the cuba framework will facilitate a re-run of the parameters following a removal of a given query...
+		for(RegexSearch regexSearch : searchesToReRun){
+        	regexSearch.detectMatchingAreas(file,areasToFilter);
 		}
 
 		return null;

@@ -635,10 +635,87 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
 					document);
 
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
+
+			//Simulating header expansion:
+			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000));
+
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			RegexSearch.checkSearchesOnHeaderResize(document,searchesSoFar,1,Math.round(data.height),200,0);
+			RegexSearch.checkSearchesOnFilterResize(document,1,previousAreaToFilter,filteredAreas,searchesSoFar);
 
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk
+	 * and a new table is 'uncovered'...
+	 */
+	@Test
+	public void testBehaviorOnHeaderShrink() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea areaToFilter = new RegexSearch.FilteredArea(150,0, 1000);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,areaToFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					document,filteredAreas);
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+            filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,0));
+
+			RegexSearch.checkSearchesOnFilterResize(document,1,areaToFilter,filteredAreas,searchesSoFar);
 
 			String expectedTableContent = "";
 
