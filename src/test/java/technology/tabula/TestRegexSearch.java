@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentNameDestinationDictionary;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -569,12 +570,11 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			File singleTable = new File(basicDocName);
 
-			Page data = UtilsForTesting.getPage(basicDocName, 1);
+			final Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					PDDocument.load(singleTable),new HashMap<Integer, Integer>(){{put(1,83);
-			                                                                      put(2,0);}});
+					PDDocument.load(singleTable),new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000));}});
 
 
 			String expectedTableContent = "";
@@ -612,5 +612,67 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expanded
+	 */
+	@Test
+	public void testBehaviorOnHeaderExpand() {
 
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					document);
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			RegexSearch.checkSearchesOnHeaderResize(document,searchesSoFar,1,Math.round(data.height),200,0);
+
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
 }

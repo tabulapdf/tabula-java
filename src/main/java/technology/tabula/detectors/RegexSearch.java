@@ -1,7 +1,6 @@
 package technology.tabula.detectors;
 
 import java.awt.geom.Point2D;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,30 +29,12 @@ import technology.tabula.TextElement;
 
 public class RegexSearch {
 
-	/* Converting any text found in the user-defined header region into a string of text
-	 *
-	 * @param page The page of the document containing the section of text desired
-	 * @param sectionToConvert The rectangular coordinates of the desired section
-	 * @return String The textual content within the sectionToConvert of page
+	/*
+	 * This class is leveraged by convertPageSectionToString so that the TextElement ArrayList and the string
+	 * associated with a given PDF page can both be returned to the caller
 	 */
-	static String convertPageSectionToString(Page page,
-											 Rectangle sectionToConvert){
-		/*
-		 *
-		 */
-		ArrayList<TextElement> textInHeader = (ArrayList<TextElement>) page.getText( sectionToConvert);
 
-
-		StringBuilder headerTextAsString = new StringBuilder();
-
-		for(TextElement element : textInHeader ) {
-			headerTextAsString.append(element.getText());
-		}
-
-		return headerTextAsString.toString();
-	}
-
-	/* queryCheckContentOnResize
+	/* checkSearchesOnHeaderResize
 	 *
 	 * Determines which RegexSearch objects should be modified as a result of the user changing/defining a header filter
 	 * for a page in the document
@@ -66,46 +47,51 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	static RegexSearch[] queryCheckContentOnResize( PDDocument file,
-			                                        RegexSearch[] currentRegexSearches,
-													Integer pageNumOfHeaderResize,
-													Integer pageHeight,
-													Integer newHeaderHeight,
-	                                                Integer previousHeaderHeight){
+	public static RegexSearch[] checkSearchesOnHeaderResize( PDDocument file,
+													  RegexSearch[] currentRegexSearches,
+													  Integer pageNumOfHeaderResize,
+													  Integer pageHeight,
+													  Integer newHeaderHeight,
+													  Integer previousHeaderHeight){
 
 
-		System.out.println("Page # of Header Resize:");
-		System.out.println(pageNumOfHeaderResize);
+		FilteredArea newFilteredArea = new FilteredArea(newHeaderHeight,0,pageHeight);
+		FilteredArea previouFilteredArea = new FilteredArea(previousHeaderHeight,0,pageHeight);
+
 		ObjectExtractor oe = new ObjectExtractor(file);
 		Page pageOfHeaderResize = oe.extract(pageNumOfHeaderResize);
-
-		Float scaledPreviousHeaderHeight = pageOfHeaderResize.height * (float)(newHeaderHeight)/pageHeight;
-		Float scaledNewHeaderHeight = pageOfHeaderResize.height * (float)(previousHeaderHeight)/pageHeight;
-
-		Rectangle previousHeaderRegion = new Rectangle(0,0,pageOfHeaderResize.width,scaledPreviousHeaderHeight);
-		Rectangle newHeaderRegion = new Rectangle(0,0,pageOfHeaderResize.width, scaledNewHeaderHeight);
-
-		String previousHeaderText = convertPageSectionToString(pageOfHeaderResize,previousHeaderRegion);
-		String newHeaderText = convertPageSectionToString(pageOfHeaderResize,newHeaderRegion);
-
-
-		System.out.println("Text found in  new header:");
-		System.out.println(newHeaderText);
-
-		System.out.println("Text found in old header:");
-		System.out.println(previousHeaderText);
 
 		/*
 		 * Determining if any current regex queries match the text found in header
 		 */
 
+        if(newHeaderHeight>previousHeaderHeight){
+        	float scaledHeaderHeight = newFilteredArea.getScaledHeaderHeight(pageOfHeaderResize);
+        	PageTextMetaData contentsOfHeader = new PageTextMetaData(pageOfHeaderResize,
+					                                new Rectangle(0,0,pageOfHeaderResize.width, scaledHeaderHeight));
 
+        	for(RegexSearch regexSearch : currentRegexSearches){
+        		if(regexSearch.containsMatchIn(contentsOfHeader.pageAsText)){
+        			
+				}
+			}
+
+		}
+		else{
+
+		}
 
 		return null;
 	}
 
 
 	private static final Integer INIT=0;
+
+
+
+
+
+
 
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
@@ -129,22 +115,22 @@ public class RegexSearch {
 	}
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
-					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,Integer> headerAreas) {
+					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter) {
 		
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
-			Boolean.valueOf(includeRegexAfterTable),document,headerAreas);
+			Boolean.valueOf(includeRegexAfterTable),document,AreasToFilter);
 		
 	}
 
 	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
-					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,Integer> headerAreas) {
+					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,FilteredArea> areasToFilter) {
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 
 		_includeRegexBeforeTable = includeRegexBeforeTable;
 		_includeRegexAfterTable = includeRegexAfterTable;
 
-		_matchingAreas = detectMatchingAreas(document,headerAreas);
+		detectMatchingAreas(document,areasToFilter);
 
 	}
 
@@ -161,7 +147,7 @@ public class RegexSearch {
 		return _regexAfterTable.toString();
 	}
 
-	public
+
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
@@ -214,6 +200,74 @@ public class RegexSearch {
 	};
 
 
+	public static class PageTextMetaData{
+
+		private String pageAsText;
+		private ArrayList<TextElement> pageMetaData;
+
+		/*
+         * @param page The page of the document containing the section of text desired
+         * @param sectionToConvert The rectangular coordinates of the desired section
+         */
+		public PageTextMetaData(Page page, Rectangle sectionToConvert){
+
+			pageMetaData = (ArrayList<TextElement>) page.getText(sectionToConvert);
+
+			StringBuilder headerTextAsString = new StringBuilder();
+
+			for(TextElement element : pageMetaData ) {
+				headerTextAsString.append(element.getText());
+			}
+
+			pageAsText = headerTextAsString.toString();
+		}
+
+		public String getPageAsText(){
+			return pageAsText;
+		}
+
+		public ArrayList<TextElement> getPageMetaData(){
+			return pageMetaData;
+		}
+	}
+
+
+	public static class FilteredArea{
+		private Integer headerHeight; //The height of the header AS IT APPEARS IN THE GUI
+		private Integer footerHeight; //The height of the footer AS IT APPEARS IN THE GUI
+		private Integer pageHeight;   //The height of the page AS IT APPEARS IN THE GUI
+
+		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer heightOfPage){
+			headerHeight = heightOfHeader;
+			footerHeight = heightOfFooter;
+			pageHeight = heightOfPage;
+		}
+
+		public Float getScaledHeaderHeight(Page page){
+			return (float)(((float)headerHeight/pageHeight)*page.getHeight());
+		}
+
+		public Float getScaledFooterHeight(Page page){
+			return (float)(((float)footerHeight/pageHeight)*page.getHeight());
+		}
+	}
+
+	/*
+	 * containsMatchIn: Checks to see if patternBefore or patternAfter matches a string of text
+	 *
+	 * @param text The string of data we are looking at
+	 * @return Boolean indicating the matching status of text
+	 * that matches the user-provided regex
+	 */
+
+	private Boolean containsMatchIn(String text){
+
+		Matcher beforeTableMatch = _regexBeforeTable.matcher(text);
+		Matcher afterTableMatch = _regexAfterTable.matcher(text);
+
+		return ((beforeTableMatch.find()) || (afterTableMatch.find()));
+	};
+
 
 	/*
 	 * detectMatchingAreas: Detects the subsections of the document occurring 
@@ -225,7 +279,7 @@ public class RegexSearch {
 	 * that matches the user-provided regex
 	 */
 	
-	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,Integer> headerAreas) {
+	private void detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter) {
 
 
 	ObjectExtractor oe = new ObjectExtractor(document);
@@ -239,10 +293,13 @@ public class RegexSearch {
 		 * Convert PDF page to text
 		 */
 		Page page = oe.extract(currentPage);
-		Integer beginHeight = ( (headerAreas!=null) && headerAreas.containsKey(page.getPageNumber())) ?
-				              headerAreas.get(page.getPageNumber()):0;
+
+		FilteredArea filterArea  = ( (AreasToFilter!=null) && AreasToFilter.containsKey(page.getPageNumber())) ?
+				              AreasToFilter.get(page.getPageNumber()): new FilteredArea(0,0,page.getPageNumber());
+
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
-				new Rectangle(0,beginHeight,page.width,page.height-beginHeight));
+				new Rectangle(filterArea.getScaledHeaderHeight(page),0, (float)page.getWidth(),
+				Math.round(page.getHeight()-filterArea.getScaledHeaderHeight(page)-filterArea.getScaledFooterHeight(page))));
 
 		StringBuilder pageAsText = new StringBuilder();
 
@@ -336,12 +393,8 @@ public class RegexSearch {
 			yCoordinate += (float)(offset*offsetScale);
 
 			coordsToFind.setLocation(xCoordinate,yCoordinate);
-
 			pageToFind.set(currentPage);
-
             startMatchingAt = firstMatchEncountered.end();
-
-            System.out.println("yCoordinate:"+yCoordinate);
 
 		}
 	}	
@@ -354,8 +407,8 @@ public class RegexSearch {
 	if((lastPotMatch._pageBeginMatch.get()==INIT) || (lastPotMatch._pageEndMatch.get()==INIT)) {
 		potentialMatches.removeLast();
 	}
-	
-	return calculateMatchingAreas(potentialMatches,document);
+
+	_matchingAreas = calculateMatchingAreas(potentialMatches,document);
 	
 	}
 
