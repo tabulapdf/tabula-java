@@ -577,11 +577,11 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String expectedTableContent = "Arsenic< 0.0050.010mg/LBarium0.12.00mg/LCadmium< 0.0010.005mg/LCalcium41mg/L"+
-					"Chloride15.00250mg/LChromium< 0.010.10mg/LCopper< 0.051.3mg/L"+
-					"Fluoride< 0.204.00mg/LIron< 0.100.30mg/LLead< 0.0050.015mg/L"+
-					"Magnesium11mg/LManganese< 0.030.05mg/LMercury< 0.00050.002mg/L"+
-					"pH7.3N/ASelenium< 0.0050.05mg/LSilver< 0.050.10mg/LSodium15.00mg/L"+
-					"Sulfate10.00250mg/LTotal Alkalinity130mg/LTotal Hardness150mg/LZinc0.075.00mg/L";
+			                              "Chloride15.00250mg/LChromium< 0.010.10mg/LCopper< 0.051.3mg/L"+
+					                      "Fluoride< 0.204.00mg/LIron< 0.100.30mg/LLead< 0.0050.015mg/L"+
+					                      "Magnesium11mg/LManganese< 0.030.05mg/LMercury< 0.00050.002mg/L"+
+					                      "pH7.3N/ASelenium< 0.0050.05mg/LSilver< 0.050.10mg/LSodium15.00mg/L"+
+					                      "Sulfate10.00250mg/LTotal Alkalinity130mg/LTotal Hardness150mg/LZinc0.075.00mg/L";
 
 			expectedTableContent = expectedTableContent.trim();
 
@@ -614,6 +614,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 				}
 			}
 		}
+
 
 	}
 	/**
@@ -802,11 +803,11 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+	@Test
 	/**
 	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk
 	 * and a new table is 'uncovered'...
 	 */
-	@Test
 	public void testBehaviorOnHeaderShrink() {
 
 		PDDocument docInQuestion = new PDDocument();
@@ -823,24 +824,28 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea areaToFilter = new RegexSearch.FilteredArea(150,0, 1000);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
-			{{put(1,areaToFilter);}};
+			{{put(1,prevAreaOfFilter);}};
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
 					document,filteredAreas);
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-            filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,0));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,areaToFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
 
-			String expectedTableContent = "";
+			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" +
+					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" +
+					" and Production of Presentation and planing materials evaluation Knowledge and awareness of different" +
+					" cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and" +
+					" abilities 0,3416 0,3369 0,4303 Acquaintance of special knowledge 0,2569 0,2909 0,3557 Self competence" +
+					" 0,3791 0,3320 0,4617 * Significance p = 0,000  ";
 
 			expectedTableContent = expectedTableContent.trim();
-
 
 			String extractedTableContent = "";
 			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {

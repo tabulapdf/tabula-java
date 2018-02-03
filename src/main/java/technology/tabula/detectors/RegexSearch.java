@@ -49,59 +49,47 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static RegexSearch[] checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
+	public static void checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
 													         FilteredArea previousFilterArea,
 													         HashMap<Integer,FilteredArea> areasToFilter,
 															 RegexSearch[] currentRegexSearches){
 
-
-
-
 		ObjectExtractor oe = new ObjectExtractor(file);
 		Page pageOfHeaderResize = oe.extract(pageNumOfResizedFilter);
-
-		/*
-		 * Determining if any current regex queries match the text found in header
-		 */
 
 		ArrayList<RegexSearch> searchesToReRun = new ArrayList<RegexSearch>();
 
 		Float previousHeaderHeight = previousFilterArea.getScaledHeaderHeight(pageOfHeaderResize);
+
 		Float currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
 
-        if(currentHeaderHeight>previousHeaderHeight){
-        	float scaledHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
-        	PageTextMetaData contentsOfHeader = new PageTextMetaData(pageOfHeaderResize,
-					                                new Rectangle(0,0,pageOfHeaderResize.width, scaledHeaderHeight));
+		PageTextMetaData contentCheckedOnResize;
 
-        	for(RegexSearch regexSearch : currentRegexSearches){
-        		if(regexSearch.containsMatchIn(contentsOfHeader.pageAsText)){
-        			searchesToReRun.add(regexSearch);
-				}
+        if(currentHeaderHeight>previousHeaderHeight) { //Header has been expanded <-- this content must be checked
+			float scaledHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
+			contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
+					new Rectangle(0, 0, pageOfHeaderResize.width, scaledHeaderHeight));
+		}
+
+		else{ //Header has been shrunk <-- check content in area between old header and new header
+        	contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
+					                                      new Rectangle(0,0, pageOfHeaderResize.width,
+																        previousHeaderHeight-currentHeaderHeight));
+		}
+
+		for(RegexSearch regexSearch : currentRegexSearches){
+			if(regexSearch.containsMatchIn(contentCheckedOnResize.pageAsText)){
+				searchesToReRun.add(regexSearch);
 			}
-
 		}
-		else{
-
-		}
-
 		//For now, skirting the check-overlaps issue...but it will need to be handled soon and will require user-input...
 		//Most likely the cuba framework will facilitate a re-run of the parameters following a removal of a given query...
 		for(RegexSearch regexSearch : searchesToReRun){
         	regexSearch.detectMatchingAreas(file,areasToFilter);
 		}
-
-		return null;
 	}
 
-
 	private static final Integer INIT=0;
-
-
-
-
-
-
 
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
@@ -254,11 +242,21 @@ public class RegexSearch {
 		}
 
 		public Float getScaledHeaderHeight(Page page){
-			return (float)(((float)headerHeight/pageHeight)*page.getHeight());
+			if(pageHeight==0) {
+				return (float) 0;
+			}
+			else {
+				return (float) (((float) headerHeight / pageHeight) * page.getHeight());
+			}
 		}
 
 		public Float getScaledFooterHeight(Page page){
-			return (float)(((float)footerHeight/pageHeight)*page.getHeight());
+			if(pageHeight==0) {
+				return (float) 0;
+			}
+			else {
+				return (float)(((float)footerHeight/pageHeight)*page.getHeight());
+			}
 		}
 	}
 
@@ -333,6 +331,14 @@ public class RegexSearch {
 			if((lastTableUnderDetection._pageBeginMatch.get()==INIT) || (lastTableUnderDetection._pageEndMatch.get()==INIT)){
 			   tableUnderDetection = lastTableUnderDetection;
 			}
+			else if(lastTableUnderDetection._pageEndMatch.get()<lastTableUnderDetection._pageBeginMatch.get()){
+				tableUnderDetection = lastTableUnderDetection;
+			}
+			else if(lastTableUnderDetection._pageEndCoord.getY()<lastTableUnderDetection._pageBeginCoord.getY() &&
+					(lastTableUnderDetection._pageEndMatch.get()==lastTableUnderDetection._pageBeginMatch.get())){
+				tableUnderDetection = lastTableUnderDetection;
+			}
+
             else{
 				tableUnderDetection = new DetectionData();
 				potentialMatches.add(tableUnderDetection);
@@ -342,7 +348,6 @@ public class RegexSearch {
 			Integer afterTableMatchLoc = (afterTableMatches.find(startMatchingAt))? afterTableMatches.start() : null;
 
 			Matcher firstMatchEncountered;
-            Boolean inclusionCheckCalculateOffset;
 			double offsetScale;
 			AtomicInteger pageToFind;
 			Point2D.Float coordsToFind;
@@ -417,10 +422,17 @@ public class RegexSearch {
 	if((lastPotMatch._pageBeginMatch.get()==INIT) || (lastPotMatch._pageEndMatch.get()==INIT)) {
 		potentialMatches.removeLast();
 	}
-
-	_matchingAreas = calculateMatchingAreas(potentialMatches,document);
-	
+	else if((lastPotMatch._pageEndMatch.get()<lastPotMatch._pageBeginMatch.get())){
+		potentialMatches.removeLast();
 	}
+	else if((lastPotMatch._pageEndMatch.get()==lastPotMatch._pageBeginMatch.get())&&
+			(lastPotMatch._pageEndCoord.getY()<lastPotMatch._pageBeginCoord.getY())){
+		potentialMatches.removeLast();
+	}
+
+	System.out.println("Number of matches:"+potentialMatches.size());
+	_matchingAreas = calculateMatchingAreas(potentialMatches,document);
+}
 
 	/*
 	 * calculateMatchingAreas: Determines the rectangular coordinates of the document sections
