@@ -553,7 +553,64 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+	/**
+	 * Test if RegexSearch class will correctly not designate a table for the case where a text pattern that
+	 * matches patternAfter occur before patternBefore.
+	 */
+	@Test
+	public void testFilterOutTableOfPatternAfterOccuringBeforePatternBefore() {
 
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/sydney_disclosure_contract.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+
+			RegexSearch regexSearch = new RegexSearch("Tender","false","Name","false",PDDocument.load(singleTable));
+
+
+			String expectedTableContent = "1295";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in table detection");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
 	/**
 	 * Test if RegexSearch detection method will ignore the text located in the header-specified area.
 	 */
