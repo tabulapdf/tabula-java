@@ -236,9 +236,10 @@ public void testIncludePatternAfterOption() {
 		File singleTable = new File(basicDocName);
 		
         Page data = UtilsForTesting.getPage(basicDocName, 1);
-        
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","true",PDDocument.load(singleTable));
+		docInQuestion = PDDocument.load(singleTable);
+
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","true",docInQuestion);
 		
 		String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -572,8 +573,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			docInQuestion = PDDocument.load(singleTable);
 
-			RegexSearch regexSearch = new RegexSearch("Analyte","false","Report","false",PDDocument.load(singleTable));
+			RegexSearch regexSearch = new RegexSearch("Analyte","false","Report","false", docInQuestion);
 
 
 			String expectedTableContent = "Arsenic< 0.0050.010mg/LBarium0.12.00mg/LCadmium< 0.0010.005mg/LCalcium41mg/L"+
@@ -636,8 +638,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			docInQuestion = PDDocument.load(singleTable);
 
-			RegexSearch regexSearch = new RegexSearch("Tender","false","Name","false",PDDocument.load(singleTable));
+			RegexSearch regexSearch = new RegexSearch("Tender","false","Name","false",docInQuestion);
 
 
 			String expectedTableContent = "1295";
@@ -693,9 +696,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			final Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			docInQuestion = PDDocument.load(singleTable);
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					PDDocument.load(singleTable),new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000));}});
+					docInQuestion,new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000));}});
 
 
 			String expectedTableContent = "";
@@ -751,10 +755,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
-			PDDocument document = PDDocument.load(singleTable);
+			docInQuestion = PDDocument.load(singleTable);
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					document);
+					docInQuestion);
 
 			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
 
@@ -765,7 +769,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,previousAreaToFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(docInQuestion,1,previousAreaToFilter,filteredAreas,searchesSoFar);
 
 
 			String expectedTableContent = "";
@@ -795,9 +799,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			if(docInQuestion!=null) {
 				try {
 					docInQuestion.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				}
+				catch(IOException ie){
+					System.out.println(ie);
 				}
 			}
 		}
