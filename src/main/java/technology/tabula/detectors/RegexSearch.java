@@ -23,6 +23,7 @@ import technology.tabula.TextElement;
  *    1/13/2018  REM; updated detectMatchingAreas to resolve pattern-detection bug
  *    1/27/2018  REM; added constructors to facilitate header/footer functionality as well as CLI work
  *    1/30/2018  REM; added static method skeleton for proof-of-concept header work, also added documentation
+ *    2/4/2018   REM; added UpdatesOnResize so that the appropriate data can be passed back to the front-end
  *
  */
 
@@ -47,7 +48,7 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static void checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
+	public static HashMap<RegexSearch, UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
 													         FilteredArea previousFilterArea,
 													         HashMap<Integer,FilteredArea> areasToFilter,
 															 RegexSearch[] currentRegexSearches){
@@ -75,6 +76,8 @@ public class RegexSearch {
 																        previousHeaderHeight-currentHeaderHeight));
 		}
 
+		HashMap<RegexSearch,UpdatesOnResize> updatedSearches = new HashMap<RegexSearch,UpdatesOnResize>();
+
 		for(RegexSearch regexSearch : currentRegexSearches){
 			if(regexSearch.containsMatchIn(contentCheckedOnResize.pageAsText)){
 				searchesToReRun.add(regexSearch);
@@ -83,7 +86,39 @@ public class RegexSearch {
 		//For now, skirting the check-overlaps issue...but it will need to be handled soon and will require user-input...
 		//Most likely the cuba framework will facilitate a re-run of the parameters following a removal of a given query...
 		for(RegexSearch regexSearch : searchesToReRun){
+
+			ArrayList<MatchingArea> areasRemoved = new ArrayList<MatchingArea>();
+			ArrayList<MatchingArea> areasAddedOrModified = new ArrayList<MatchingArea>();
+
+			ArrayList<MatchingArea> matchingAreasBeforeResize = (ArrayList<MatchingArea>) regexSearch._matchingAreas.clone();
+
         	regexSearch.detectMatchingAreas(file,areasToFilter);
+
+        	for(MatchingArea matchingArea : regexSearch._matchingAreas){
+				if (matchingAreasBeforeResize.contains(matchingArea)) {
+					matchingAreasBeforeResize.remove(matchingArea);
+					areasRemoved.add(matchingArea);
+				}
+				else{
+					areasAddedOrModified.add(matchingArea);
+				}
+			}
+			updatedSearches.put(regexSearch, new UpdatesOnResize(areasAddedOrModified,areasRemoved,false));
+		}
+
+		return updatedSearches;
+	}
+
+	private static class UpdatesOnResize{
+		ArrayList<MatchingArea> areasChangedOrAdded;  //New Areas discovered or areas modified upon resize event
+		ArrayList<MatchingArea> areasRemoved;        //Previous Area dimensions for areas changed by resize event
+		Boolean overlapsAnotherSearch; //Flag for when resize causes areas to be found overlapping a present query <--TODO: this variable is always false for now...need to update this once an overlap algorithm is written
+
+		public UpdatesOnResize(ArrayList<MatchingArea> newAreasToAdd, ArrayList<MatchingArea> oldAreasToRemove,
+							   Boolean resizeEventCausedAnOverlap){
+			areasChangedOrAdded = newAreasToAdd;
+			areasRemoved = oldAreasToRemove;
+			overlapsAnotherSearch = resizeEventCausedAnOverlap;
 		}
 	}
 
@@ -96,7 +131,9 @@ public class RegexSearch {
 	
 	private Boolean _includeRegexBeforeTable;
 	private Boolean _includeRegexAfterTable;
-	
+
+
+
 	/*
 	 * This constructor is designed to be used for parameters originating in JSON and where no header areas are defined
 	 * NOTE: This constructor will soon be deprecated!!
@@ -143,10 +180,14 @@ public class RegexSearch {
 		return _regexAfterTable.toString();
 	}
 
-
+	public String toString(){
+		return "RegexBefore: " + _regexBeforeTable.toString() +"  RegexAfter: " + _regexAfterTable.toString() + "  MatchingAreas: " + _matchingAreas;
+	}
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
+     * The key is the page number that the areas first begin. The LinkedList of Rectangles allows for multiple
+     * areas to be associated with a given match (as in the case of multiple pages)
      */
 	private class MatchingArea extends HashMap<Integer,LinkedList<Rectangle>> {}
 
@@ -428,8 +469,10 @@ public class RegexSearch {
 		potentialMatches.removeLast();
 	}
 
-	System.out.println("Number of matches:"+potentialMatches.size());
 	_matchingAreas = calculateMatchingAreas(potentialMatches,document);
+
+
+
 }
 
 	/*
@@ -445,7 +488,7 @@ public class RegexSearch {
 		
 		ObjectExtractor oe = new ObjectExtractor(document);
 
-		
+
 		while(!foundMatches.isEmpty()) {
 
 			DetectionData foundTable = foundMatches.pop();
