@@ -48,10 +48,12 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static HashMap<RegexSearch, UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
+	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
 													         FilteredArea previousFilterArea,
 													         HashMap<Integer,FilteredArea> areasToFilter,
 															 RegexSearch[] currentRegexSearches){
+
+		System.out.println("In checkSearchesOnFilterResize:");
 
 		ObjectExtractor oe = new ObjectExtractor(file);
 		Page pageOfHeaderResize = oe.extract(pageNumOfResizedFilter);
@@ -59,27 +61,26 @@ public class RegexSearch {
 		ArrayList<RegexSearch> searchesToReRun = new ArrayList<RegexSearch>();
 
 		Float previousHeaderHeight = previousFilterArea.getScaledHeaderHeight(pageOfHeaderResize);
-
 		Float currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
 
 		PageTextMetaData contentCheckedOnResize;
 
         if(currentHeaderHeight>previousHeaderHeight) { //Header has been expanded <-- this content must be checked
-			float scaledHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
 			contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
-					new Rectangle(0, 0, pageOfHeaderResize.width, scaledHeaderHeight));
+					new Rectangle(0, 0, pageOfHeaderResize.width, currentHeaderHeight));
 		}
 
 		else{ //Header has been shrunk <-- check content in area between old header and new header
         	contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
-					                                      new Rectangle(0,0, pageOfHeaderResize.width,
+					                                      new Rectangle(currentHeaderHeight,0, pageOfHeaderResize.width,
 																        previousHeaderHeight-currentHeaderHeight));
 		}
 
-		HashMap<RegexSearch,UpdatesOnResize> updatedSearches = new HashMap<RegexSearch,UpdatesOnResize>();
+		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<UpdatesOnResize>();
 
 		for(RegexSearch regexSearch : currentRegexSearches){
 			if(regexSearch.containsMatchIn(contentCheckedOnResize.pageAsText)){
+				System.out.println("Regex Search contains match:");
 				searchesToReRun.add(regexSearch);
 			}
 		}
@@ -87,7 +88,7 @@ public class RegexSearch {
 		//Most likely the cuba framework will facilitate a re-run of the parameters following a removal of a given query...
 		for(RegexSearch regexSearch : searchesToReRun){
 
-			ArrayList<MatchingArea> areasRemoved = new ArrayList<MatchingArea>();
+			ArrayList<MatchingArea> areasRemoved;
 			ArrayList<MatchingArea> areasAddedOrModified = new ArrayList<MatchingArea>();
 
 			ArrayList<MatchingArea> matchingAreasBeforeResize = (ArrayList<MatchingArea>) regexSearch._matchingAreas.clone();
@@ -97,25 +98,29 @@ public class RegexSearch {
         	for(MatchingArea matchingArea : regexSearch._matchingAreas){
 				if (matchingAreasBeforeResize.contains(matchingArea)) {
 					matchingAreasBeforeResize.remove(matchingArea);
-					areasRemoved.add(matchingArea);
 				}
 				else{
 					areasAddedOrModified.add(matchingArea);
 				}
 			}
-			updatedSearches.put(regexSearch, new UpdatesOnResize(areasAddedOrModified,areasRemoved,false));
+
+			areasRemoved = matchingAreasBeforeResize;
+
+			updatedSearches.add(new UpdatesOnResize(regexSearch,areasAddedOrModified,areasRemoved,false));
 		}
 
 		return updatedSearches;
 	}
 
 	private static class UpdatesOnResize{
+		RegexSearch updatedRegexSearch; //The RegexSearch object that is being updated
 		ArrayList<MatchingArea> areasChangedOrAdded;  //New Areas discovered or areas modified upon resize event
 		ArrayList<MatchingArea> areasRemoved;        //Previous Area dimensions for areas changed by resize event
 		Boolean overlapsAnotherSearch; //Flag for when resize causes areas to be found overlapping a present query <--TODO: this variable is always false for now...need to update this once an overlap algorithm is written
 
-		public UpdatesOnResize(ArrayList<MatchingArea> newAreasToAdd, ArrayList<MatchingArea> oldAreasToRemove,
+		public UpdatesOnResize(RegexSearch regexSearch, ArrayList<MatchingArea> newAreasToAdd, ArrayList<MatchingArea> oldAreasToRemove,
 							   Boolean resizeEventCausedAnOverlap){
+			updatedRegexSearch = regexSearch;
 			areasChangedOrAdded = newAreasToAdd;
 			areasRemoved = oldAreasToRemove;
 			overlapsAnotherSearch = resizeEventCausedAnOverlap;
@@ -180,9 +185,6 @@ public class RegexSearch {
 		return _regexAfterTable.toString();
 	}
 
-	public String toString(){
-		return "RegexBefore: " + _regexBeforeTable.toString() +"  RegexAfter: " + _regexAfterTable.toString() + "  MatchingAreas: " + _matchingAreas;
-	}
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
@@ -228,12 +230,12 @@ public class RegexSearch {
 	}
 
 	static final class SignOfOffset{
-		public static final double POSITIVE_NO_BUFFER = 1;
-        public static final double POSITIVE_WITH_BUFFER = 1.5;
-        public static final double NEGATIVE_BUFFER = -.5;
+		private static final double POSITIVE_NO_BUFFER = 1;
+        private static final double POSITIVE_WITH_BUFFER = 1.5;
+        private static final double NEGATIVE_BUFFER = -.5;
     //    public static final double NEGATIVE_NO_BUFFER = -1;
     //    public static final double NEGATIVE_WITH_BUFFER = -1.5;
-        public static final int NONE = 0;
+        private static final int NONE = 0;
 	};
 
 
@@ -278,18 +280,29 @@ public class RegexSearch {
 			headerHeight = heightOfHeader;
 			footerHeight = heightOfFooter;
 			pageHeight = heightOfPage;
+
+			System.out.println("Height of header:" + heightOfHeader);
+			System.out.println("Height of page:" + heightOfPage);
 		}
 
-		public Float getScaledHeaderHeight(Page page){
+		private Float getScaledHeaderHeight(Page page){
+
+
+			System.out.println("Height of page in back-end:"+page.getHeight());
+
+			System.out.println("Height of page in front-end:"+pageHeight);
+
+			System.out.println("Height of header in front-end:" + headerHeight);
+
 			if(pageHeight==0) {
 				return (float) 0;
 			}
 			else {
-				return (float) (((float) headerHeight / pageHeight) * page.getHeight());
+				return (float)(((float)headerHeight)/(pageHeight)*page.getHeight());
 			}
 		}
 
-		public Float getScaledFooterHeight(Page page){
+		private Float getScaledFooterHeight(Page page){
 			if(pageHeight==0) {
 				return (float) 0;
 			}
@@ -313,7 +326,7 @@ public class RegexSearch {
 		Matcher afterTableMatch = _regexAfterTable.matcher(text);
 
 		return ((beforeTableMatch.find()) || (afterTableMatch.find()));
-	};
+	}
 
 
 	/*
