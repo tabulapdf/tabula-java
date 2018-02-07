@@ -60,8 +60,8 @@ public class RegexSearch {
 
 		ArrayList<RegexSearch> searchesToReRun = new ArrayList<RegexSearch>();
 
-		Float previousHeaderHeight = previousFilterArea.getScaledHeaderHeight(pageOfHeaderResize);
-		Float currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight(pageOfHeaderResize);
+		Integer previousHeaderHeight = previousFilterArea.getScaledHeaderHeight();
+		Integer currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight();
 
 		PageTextMetaData contentCheckedOnResize;
 
@@ -274,42 +274,29 @@ public class RegexSearch {
 	public static class FilteredArea{
 		private Integer headerHeight; //The height of the header AS IT APPEARS IN THE GUI
 		private Integer footerHeight; //The height of the footer AS IT APPEARS IN THE GUI
-		private Integer pageHeight;   //The height of the page AS IT APPEARS IN THE GUI
+		private Integer guiPageHeight;   //The height of the page AS IT APPEARS IN THE GUI
+		private Integer absolutePageHeight; //The height of the page AS IT APPEARS IN THE BACK-END
+        private Integer scaledHeaderHeight; //The height of the header AS IT APPEARS IN THE BACK-END
+		private Integer scaledFooterHeight; //The height of the footer AS IT APPEARS IN THE BACK-END
 
-		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer heightOfPage){
+		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer guiHeightOfPage, Integer absPageHeight){
 			headerHeight = heightOfHeader;
 			footerHeight = heightOfFooter;
-			pageHeight = heightOfPage;
+			guiPageHeight = guiHeightOfPage;
+			absolutePageHeight = absPageHeight;
+
+			scaledHeaderHeight = (guiPageHeight==0) ? 0 : (int)((((double) headerHeight)/guiPageHeight)*absolutePageHeight);
+			scaledFooterHeight = (guiPageHeight==0) ? 0 : (int)((((double) footerHeight)/guiPageHeight)*absolutePageHeight);
 
 			System.out.println("Height of header:" + heightOfHeader);
-			System.out.println("Height of page:" + heightOfPage);
+			System.out.println("Height of page in gui:" + guiPageHeight);
+			System.out.println("Height of page in back-end:" + absolutePageHeight);
 		}
 
-		private Float getScaledHeaderHeight(Page page){
+		private Integer getScaledHeaderHeight(){ return scaledHeaderHeight; }
 
+		private Integer getScaledFooterHeight(){ return scaledFooterHeight;}
 
-			System.out.println("Height of page in back-end:"+page.getHeight());
-
-			System.out.println("Height of page in front-end:"+pageHeight);
-
-			System.out.println("Height of header in front-end:" + headerHeight);
-
-			if(pageHeight==0) {
-				return (float) 0;
-			}
-			else {
-				return (float)(((float)headerHeight)/(pageHeight)*page.getHeight());
-			}
-		}
-
-		private Float getScaledFooterHeight(Page page){
-			if(pageHeight==0) {
-				return (float) 0;
-			}
-			else {
-				return (float)(((float)footerHeight/pageHeight)*page.getHeight());
-			}
-		}
 	}
 
 	/*
@@ -355,11 +342,11 @@ public class RegexSearch {
 		Page page = oe.extract(currentPage);
 
 		FilteredArea filterArea  = ( (AreasToFilter!=null) && AreasToFilter.containsKey(page.getPageNumber())) ?
-				              AreasToFilter.get(page.getPageNumber()): new FilteredArea(0,0,page.getPageNumber());
+				              AreasToFilter.get(page.getPageNumber()): new FilteredArea(0,0, (int) page.getHeight(), (int) page.getHeight());
 
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
-				new Rectangle(filterArea.getScaledHeaderHeight(page),0, (float)page.getWidth(),
-				Math.round(page.getHeight()-filterArea.getScaledHeaderHeight(page)-filterArea.getScaledFooterHeight(page))));
+				new Rectangle(filterArea.getScaledHeaderHeight(),0, (float)page.getWidth(),
+				Math.round(page.getHeight()-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight())));
 
 		StringBuilder pageAsText = new StringBuilder();
 

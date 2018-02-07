@@ -699,7 +699,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			docInQuestion = PDDocument.load(singleTable);
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					docInQuestion,new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000));}});
+					docInQuestion,new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000, 842	));}});
 
 
 			String expectedTableContent = "";
@@ -760,12 +760,12 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
 					docInQuestion);
 
-			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000, 842);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
 
 			//Simulating header expansion:
-			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000, 842));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
@@ -828,7 +828,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000, 842);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
@@ -838,7 +838,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800, 842));
 
 			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
 
@@ -902,7 +902,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1000);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1000, 842);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
@@ -914,7 +914,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800, 842));
 
 			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
 
