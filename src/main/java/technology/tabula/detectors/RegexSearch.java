@@ -93,7 +93,7 @@ public class RegexSearch {
 
 			ArrayList<MatchingArea> matchingAreasBeforeResize = (ArrayList<MatchingArea>) regexSearch._matchingAreas.clone();
 
-        	regexSearch.detectMatchingAreas(file,areasToFilter);
+        	regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,areasToFilter);
 
         	for(MatchingArea matchingArea : regexSearch._matchingAreas){
 				if (matchingAreasBeforeResize.contains(matchingArea)) {
@@ -113,15 +113,15 @@ public class RegexSearch {
 	}
 
 	private static class UpdatesOnResize{
-		RegexSearch updatedRegexSearch; //The RegexSearch object that is being updated
-		ArrayList<MatchingArea> areasChangedOrAdded;  //New Areas discovered or areas modified upon resize event
-		ArrayList<MatchingArea> areasRemoved;        //Previous Area dimensions for areas changed by resize event
+		RegexSearch updatedRegexSearch;         //The RegexSearch object that is being updated
+		ArrayList<MatchingArea> areasAdded;     //New Areas discovered or areas modified upon resize event
+		ArrayList<MatchingArea> areasRemoved;   //Previous Area dimensions for areas changed by resize event
 		Boolean overlapsAnotherSearch; //Flag for when resize causes areas to be found overlapping a present query <--TODO: this variable is always false for now...need to update this once an overlap algorithm is written
 
 		public UpdatesOnResize(RegexSearch regexSearch, ArrayList<MatchingArea> newAreasToAdd, ArrayList<MatchingArea> oldAreasToRemove,
 							   Boolean resizeEventCausedAnOverlap){
 			updatedRegexSearch = regexSearch;
-			areasChangedOrAdded = newAreasToAdd;
+			areasAdded = newAreasToAdd;
 			areasRemoved = oldAreasToRemove;
 			overlapsAnotherSearch = resizeEventCausedAnOverlap;
 		}
@@ -168,7 +168,7 @@ public class RegexSearch {
 		_includeRegexBeforeTable = includeRegexBeforeTable;
 		_includeRegexAfterTable = includeRegexAfterTable;
 
-		detectMatchingAreas(document,areasToFilter);
+		_matchingAreas = detectMatchingAreas(document,areasToFilter);
 
 	}
 
@@ -325,17 +325,20 @@ public class RegexSearch {
 	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
 	 * that matches the user-provided regex
 	 */
-	
-	private void detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter) {
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> areasToFilter) {
+	  return detectMatchingAreas(document,areasToFilter,1,null, document.getNumberOfPages(),null);
+	};
 
+	//TODO: Update documentation to reflect the new inputs...
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter, Integer pageNumStart, Integer pageStartY,
+	                                                    Integer pageNumEnd, Integer pageEndY) {
 
 	ObjectExtractor oe = new ObjectExtractor(document);
-	Integer totalPages = document.getNumberOfPages();
-	
+
 	LinkedList<DetectionData> potentialMatches = new LinkedList<>();
 	potentialMatches.add(new DetectionData());
 
-	for(Integer currentPage=1;currentPage<=totalPages;currentPage++) {
+	for(Integer currentPage=pageNumStart;currentPage<=pageNumEnd;currentPage++) {
 		/*
 		 * Convert PDF page to text
 		 */
@@ -344,9 +347,16 @@ public class RegexSearch {
 		FilteredArea filterArea  = ( (AreasToFilter!=null) && AreasToFilter.containsKey(page.getPageNumber())) ?
 				              AreasToFilter.get(page.getPageNumber()): new FilteredArea(0,0, (int) page.getHeight(), (int) page.getHeight());
 
+        Integer top = ((currentPage==pageNumStart) && (pageStartY!=null)) ? pageStartY : filterArea.getScaledHeaderHeight();
+		Integer height = ((currentPage==pageNumEnd) && (pageEndY!=null)) ? pageEndY:
+				         Math.round(page.height-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight());
+
+		System.out.println("Top: "+top);
+		System.out.println("Scaled Header Height: "+ filterArea.getScaledHeaderHeight());
+		System.out.println("Height: "+height);
+
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
-				new Rectangle(filterArea.getScaledHeaderHeight(),0, (float)page.getWidth(),
-				Math.round(page.getHeight()-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight())));
+				new Rectangle(top,0, page.width, height));
 
 		StringBuilder pageAsText = new StringBuilder();
 
@@ -469,9 +479,7 @@ public class RegexSearch {
 		potentialMatches.removeLast();
 	}
 
-	_matchingAreas = calculateMatchingAreas(potentialMatches,document);
-
-
+	return calculateMatchingAreas(potentialMatches,document);
 
 }
 
