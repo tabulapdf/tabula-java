@@ -1,13 +1,15 @@
 package technology.tabula.detectors;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import sun.awt.image.ImageWatched;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
@@ -55,6 +57,8 @@ public class RegexSearch {
 
 		System.out.println("In checkSearchesOnFilterResize:");
 
+		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<UpdatesOnResize>();
+
 		ObjectExtractor oe = new ObjectExtractor(file);
 		Page pageOfHeaderResize = oe.extract(pageNumOfResizedFilter);
 
@@ -63,51 +67,163 @@ public class RegexSearch {
 		Integer previousHeaderHeight = previousFilterArea.getScaledHeaderHeight();
 		Integer currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight();
 
-		PageTextMetaData contentCheckedOnResize;
+	//	PageTextMetaData contentCheckedOnResize;
 
         if(currentHeaderHeight>previousHeaderHeight) { //Header has been expanded <-- this content must be checked
-			contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
-					new Rectangle(0, 0, pageOfHeaderResize.width, currentHeaderHeight));
+
+	//		contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
+	//				new Rectangle(currentHeaderHeight,0, pageOfHeaderResize.width,
+	//						currentHeaderHeight));
+
+			for(RegexSearch regexSearch : currentRegexSearches){
+
+				ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
+				ArrayList<MatchingArea> areasToAdd;
+
+				for(MatchingArea matchingArea : regexSearch._matchingAreas){
+
+					FilteredArea areaToFilter = areasToFilter.get(pageNumOfResizedFilter);
+
+					TableArea overlappedSection = matchingArea.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter);
+					if(overlappedSection!=null){
+						Integer indexOfCurrentArea = regexSearch._matchingAreas.indexOf(matchingArea);
+						Integer indexOfAreaBeforeOverlap = indexOfCurrentArea;
+						MatchingArea areaBeforeOverlap = null;
+						if(indexOfAreaBeforeOverlap > 0){
+							while( (areaBeforeOverlap==null) && (--indexOfAreaBeforeOverlap>0)){
+								areaBeforeOverlap = regexSearch._matchingAreas.get(indexOfAreaBeforeOverlap);
+								if(areaBeforeOverlap.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter)!=null){
+									areaBeforeOverlap = null;
+								}
+							}
+						}
+
+						Integer indexOfAreaAfterOverlap = indexOfCurrentArea;
+						MatchingArea areaAfterOverlap = null;
+						while( (areaAfterOverlap == null) && (++indexOfAreaAfterOverlap < regexSearch._matchingAreas.size())){
+							areaAfterOverlap = regexSearch._matchingAreas.get(indexOfAreaAfterOverlap);
+							if(areaAfterOverlap.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter)!=null){
+								areaAfterOverlap = null;
+							}
+						}
+
+						/*
+						 * Remove matching areas whose subsections overlap with the header
+						 */
+						for(int indexOfAreaToRemove=(areaBeforeOverlap==null) ? 0 : indexOfAreaBeforeOverlap+1;
+							indexOfAreaToRemove<indexOfAreaAfterOverlap; indexOfAreaToRemove++){
+							areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
+						}
+						regexSearch._matchingAreas.removeAll(areasToRemove);
+
+						Integer pageOfDetectStart = (areaBeforeOverlap==null) ? 1 : areaBeforeOverlap.getStartPageNum(); //Page-numbering is one-based
+						TableArea lastSectionBeforeOverlap = (areaBeforeOverlap==null) ? null : areaBeforeOverlap.get(areaBeforeOverlap._endPageNum).getLast();
+						Integer yOfDetectStart = (areaBeforeOverlap==null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
+
+						Integer pageOfDetectEnd = (areaAfterOverlap==null) ? file.getNumberOfPages() : areaAfterOverlap.getStartPageNum();
+						TableArea firstSectionAfterOverlap = (areaAfterOverlap==null) ? null : areaAfterOverlap.get(areaAfterOverlap._startPageNum).getFirst();
+						Integer yOfDetectEnd = (areaAfterOverlap == null) ? null : firstSectionAfterOverlap.getTop() + firstSectionAfterOverlap.getHeight();
+
+						areasToAdd = regexSearch.detectMatchingAreas(file,areasToFilter,pageOfDetectStart,yOfDetectStart,pageOfDetectEnd,yOfDetectEnd);
+
+						regexSearch._matchingAreas.addAll(indexOfAreaBeforeOverlap,areasToAdd);
+
+						updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
+
+						break;
+					}
+				}
+			}
 		}
 
 		else{ //Header has been shrunk <-- check content in area between old header and new header
-        	contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
-					                                      new Rectangle(currentHeaderHeight,0, pageOfHeaderResize.width,
-																        previousHeaderHeight-currentHeaderHeight));
-		}
+    //  	contentCheckedOnResize = new PageTextMetaData(pageOfHeaderResize,
+	//				                                      new Rectangle(currentHeaderHeight,0, pageOfHeaderResize.width,
+	//															        previousHeaderHeight-currentHeaderHeight));
 
-		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<UpdatesOnResize>();
+			ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
+			ArrayList<MatchingArea> areasToAdd;
 
-		for(RegexSearch regexSearch : currentRegexSearches){
-			if(regexSearch.containsMatchIn(contentCheckedOnResize.pageAsText)){
-				System.out.println("Regex Search contains match:");
-				searchesToReRun.add(regexSearch);
+			MatchingArea areaBeforeHeader = null;
+			MatchingArea areaAfterHeader = null;
+
+			for(RegexSearch regexSearch : currentRegexSearches){
+				for(MatchingArea matchingArea : regexSearch._matchingAreas){
+					if((matchingArea.getStartPageNum()<pageNumOfResizedFilter) &&
+					   (matchingArea.getEndPageNum()>=pageNumOfResizedFilter)){
+						areaBeforeHeader=matchingArea;
+					}
+					else if((matchingArea.getStartPageNum()>=pageNumOfResizedFilter) &&
+							(matchingArea.sectionOverlappingHeader(pageNumOfResizedFilter,
+									                               areasToFilter.get(pageNumOfResizedFilter)))==null){
+						if(areaAfterHeader==null || areaAfterHeader.getStartPageNum()>matchingArea.getStartPageNum()){
+							areaAfterHeader = matchingArea;
+						}
+					}
+				}
+
+				/*
+				* Remove matching areas whose subsections will be modified by the header shrink event
+				*/
+
+				int minIndex = (areaBeforeHeader==null) ? 0 : regexSearch._matchingAreas.indexOf(areaBeforeHeader);
+				int maxIndex = (areaAfterHeader==null) ? regexSearch._matchingAreas.size() :
+						                                 regexSearch._matchingAreas.indexOf(areaAfterHeader);
+
+				for(int indexOfAreaToRemove=minIndex; indexOfAreaToRemove< maxIndex; indexOfAreaToRemove++){
+					areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
+				}
+				regexSearch._matchingAreas.removeAll(areasToRemove);
+
+				Integer pageOfDetectStart = (areaBeforeHeader==null) ? 1 : areaBeforeHeader.getStartPageNum(); //Page-numbering is one-based
+				TableArea lastSectionBeforeOverlap = (areaBeforeHeader==null) ? null : areaBeforeHeader.get(areaBeforeHeader._endPageNum).getLast();
+				Integer yOfDetectStart = (areaBeforeHeader==null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
+
+				Integer pageOfDetectEnd = (areaAfterHeader==null) ? file.getNumberOfPages() : areaAfterHeader.getStartPageNum();
+				TableArea firstSectionAfterOverlap = (areaAfterHeader==null) ? null : areaAfterHeader.get(areaAfterHeader._startPageNum).getFirst();
+				Integer yOfDetectEnd = (areaAfterHeader == null) ? null : firstSectionAfterOverlap.getTop() + firstSectionAfterOverlap.getHeight();
+
+
+				areasToAdd = regexSearch.detectMatchingAreas(file,areasToFilter,pageOfDetectStart,yOfDetectStart,pageOfDetectEnd,yOfDetectEnd);
+				regexSearch._matchingAreas.addAll(minIndex,areasToAdd);
+
+				updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
+
 			}
-		}
+        }
+
+	//	ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<UpdatesOnResize>();
+
+	//	for(RegexSearch regexSearch : currentRegexSearches){
+	//		if(regexSearch.containsMatchIn(contentCheckedOnResize.pageAsText)){
+	//			System.out.println("Regex Search contains match:");
+	//			searchesToReRun.add(regexSearch);
+	//		}
+	//	}
 		//For now, skirting the check-overlaps issue...but it will need to be handled soon and will require user-input...
 		//Most likely the cuba framework will facilitate a re-run of the parameters following a removal of a given query...
-		for(RegexSearch regexSearch : searchesToReRun){
+	//	for(RegexSearch regexSearch : searchesToReRun){
 
-			ArrayList<MatchingArea> areasRemoved;
-			ArrayList<MatchingArea> areasAddedOrModified = new ArrayList<MatchingArea>();
+	//		ArrayList<MatchingArea> areasRemoved;
+	//		ArrayList<MatchingArea> areasAddedOrModified = new ArrayList<MatchingArea>();
 
-			ArrayList<MatchingArea> matchingAreasBeforeResize = (ArrayList<MatchingArea>) regexSearch._matchingAreas.clone();
+	//		ArrayList<MatchingArea> matchingAreasBeforeResize = (ArrayList<MatchingArea>) regexSearch._matchingAreas.clone();
 
-        	regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,areasToFilter);
+    //   	regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,areasToFilter);
 
-        	for(MatchingArea matchingArea : regexSearch._matchingAreas){
-				if (matchingAreasBeforeResize.contains(matchingArea)) {
-					matchingAreasBeforeResize.remove(matchingArea);
-				}
-				else{
-					areasAddedOrModified.add(matchingArea);
-				}
-			}
+    //   	for(MatchingArea matchingArea : regexSearch._matchingAreas){
+	//			if (matchingAreasBeforeResize.contains(matchingArea)) {
+	//				matchingAreasBeforeResize.remove(matchingArea);
+	//			}
+	//			else{
+	//				areasAddedOrModified.add(matchingArea);
+	//			}
+	//		}
 
-			areasRemoved = matchingAreasBeforeResize;
+	//		areasRemoved = matchingAreasBeforeResize;
 
-			updatedSearches.add(new UpdatesOnResize(regexSearch,areasAddedOrModified,areasRemoved,false));
-		}
+	//		updatedSearches.add(new UpdatesOnResize(regexSearch,areasAddedOrModified,areasRemoved,false));
+	//	}
 
 		return updatedSearches;
 	}
@@ -128,6 +244,7 @@ public class RegexSearch {
 	}
 
 	private static final Integer INIT=0;
+	private static final Integer INVALID_INDEX=-1;
 
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
@@ -185,24 +302,85 @@ public class RegexSearch {
 		return _regexAfterTable.toString();
 	}
 
+	//TODO-Write up blurb for TableArea...
+	private class TableArea {
+		private Integer _pageNum; //Number of the page that the TableArea is drawn on
+		private Rectangle _area; //Rectangular coordinates defining the boundaries of TableArea
+
+		public TableArea(Integer pageNum, Rectangle area){
+			_pageNum = pageNum;
+			_area = area;
+		}
+
+		public Integer getPageNum(){return _pageNum;}
+		public Rectangle getArea() {return _area;}
+		public Integer getHeight() { return Math.round(_area.height);}
+		public Integer getTop()    { return Math.round(_area.getTop());}
+		public Integer getLeft()   { return Math.round(_area.getLeft());}
+		public Integer getWidth()  { return Math.round(_area.width);}
+	}
+
+
+
     /*
      * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
      * The key is the page number that the areas first begin. The LinkedList of Rectangles allows for multiple
      * areas to be associated with a given match (as in the case of multiple pages)
      */
-	private class MatchingArea extends HashMap<Integer,LinkedList<Rectangle>> {}
+	private static class MatchingArea extends HashMap<Integer,LinkedList<TableArea>> {
+
+		private Integer _startPageNum;
+		private Integer _endPageNum;
+
+
+		public MatchingArea(Integer startPageNum, Integer endPageNum){
+			_startPageNum = startPageNum;
+			_endPageNum = endPageNum;
+		}
+
+
+		public TableArea sectionOverlappingHeader(Integer pageNumOfHeaderResize, FilteredArea resizedFilter){
+			for(Integer pageNum : this.keySet()){
+				LinkedList<TableArea> subsections = this.get(pageNum);
+				ListIterator<TableArea> iterator = subsections.listIterator(subsections.size());
+
+				//Starting at the back of the list so that the subsection closest to the end of the header filter
+				//is selected
+				while(iterator.hasPrevious()){
+					TableArea subsection = iterator.previous();
+					if((subsection.getPageNum()==pageNumOfHeaderResize) &&
+						(subsection.getArea().getTop()<resizedFilter.getScaledHeaderHeight())){
+						return subsection;
+					}
+				}
+			}
+			return null;
+		}
+
+		public Integer getStartPageNum(){ return _startPageNum;}
+		public Integer getEndPageNum() { return _endPageNum;}
+
+
+	}
 
 	/*
 	 * @param pageNumber The one-based index into the document
 	 * @return ArrayList<Rectangle> The values stored in _matchingAreas for a given page	
 	 */
+
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
 		
         ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
 		
 		for( MatchingArea matchingArea : _matchingAreas) {
-			allMatchingAreas.addAll(matchingArea.get(pageNumber));
+			for( int currentPageNumber : matchingArea.keySet()){
+				if(currentPageNumber == pageNumber){
+					for(TableArea tableArea : matchingArea.get(currentPageNumber)){
+						allMatchingAreas.add(tableArea.getArea());
+					}
+				}
+			}
 		}
 		
 		 return allMatchingAreas;	
@@ -293,9 +471,9 @@ public class RegexSearch {
 			System.out.println("Height of page in back-end:" + absolutePageHeight);
 		}
 
-		private Integer getScaledHeaderHeight(){ return scaledHeaderHeight; }
+		public Integer getScaledHeaderHeight(){ return scaledHeaderHeight; }
 
-		private Integer getScaledFooterHeight(){ return scaledFooterHeight;}
+		public Integer getScaledFooterHeight(){ return scaledFooterHeight;}
 
 	}
 
@@ -506,10 +684,10 @@ public class RegexSearch {
             	float width = oe.extract(foundTable._pageBeginMatch.get()).width;
             	float height = foundTable._pageEndCoord.y-foundTable._pageBeginCoord.y;
             	
-            	LinkedList<Rectangle> tableArea = new LinkedList<>();
-            	tableArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,width,height)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
+            	LinkedList<TableArea> tableArea = new LinkedList<>();
+            	tableArea.add(new TableArea(foundTable._pageBeginMatch.get(),new Rectangle(foundTable._pageBeginCoord.y,0,width,height)));
             	
-            	MatchingArea matchingArea = new MatchingArea();
+            	MatchingArea matchingArea = new MatchingArea(foundTable._pageBeginMatch.get(), foundTable._pageEndMatch.get());
             	matchingArea.put(foundTable._pageBeginMatch.get(), tableArea);
             
             	matchingAreas.add(matchingArea);
@@ -517,17 +695,17 @@ public class RegexSearch {
 			}
             else {
             	
-            	MatchingArea matchingArea = new MatchingArea();
+            	MatchingArea matchingArea = new MatchingArea(foundTable._pageBeginMatch.get(),foundTable._pageEndMatch.get());
             	/*
             	 * Create sub-area for table from directly below the pattern-before-table content to the end of the page
             	 */
             	Page currentPage =  oe.extract(foundTable._pageBeginMatch.get());
-            	LinkedList<Rectangle> tableSubArea = new LinkedList<>();
+            	LinkedList<TableArea> tableSubArea = new LinkedList<>();
 
-            	tableSubArea.add( new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
-            			                        currentPage.height-foundTable._pageBeginCoord.y)); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
+            	tableSubArea.add( new TableArea(currentPage.getPageNumber(), new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
+            			                        currentPage.height-foundTable._pageBeginCoord.y))); //TODO:Figure out how/what must be done to support multi-column texts (4 corners??)
             	
-            	matchingArea.put(foundTable._pageBeginMatch.get(), tableSubArea);
+            	matchingArea.put(currentPage.getPageNumber(), tableSubArea);
             	
             	/*
             	 * Create sub-areas for table that span the entire page
@@ -535,10 +713,8 @@ public class RegexSearch {
             	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
             		tableSubArea = new LinkedList<>();
-            		tableSubArea.add(new Rectangle(0,0,currentPage.width,currentPage.height));
-            		
+            		tableSubArea.add(new TableArea(currentPage.getPageNumber(),new Rectangle(0,0,currentPage.width,currentPage.height)));
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
-            		
             	}
                 
             	/*
@@ -547,7 +723,7 @@ public class RegexSearch {
             	
             	currentPage = oe.extract(foundTable._pageEndMatch.get());
                 tableSubArea = new LinkedList<>();
-                tableSubArea.add(new Rectangle(0,0,currentPage.width,foundTable._pageEndCoord.y));
+                tableSubArea.add(new TableArea(currentPage.getPageNumber(), new Rectangle(0,0,currentPage.width,foundTable._pageEndCoord.y)));
 
                 matchingArea.put(currentPage.getPageNumber(), tableSubArea);
                 matchingAreas.add(matchingArea);
