@@ -884,9 +884,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 	@Test
 	/**
-	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expand for a regex search resulting in multiple matches
 	 */
-	public void testBehaviorOfHeaderShrinkage() {
+	public void testBehaviorOfHeaderExpandForMultiMatch() {
 
 		PDDocument docInQuestion = new PDDocument();
 
@@ -902,19 +902,85 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1000, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132, 842);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
 			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
 
-			RegexSearch regexSearch2 = new RegexSearch("Table 5","false","Table 6","false",
-					document,filteredAreas);
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(282,0,1132, 842));
+
+			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+
+			String expectedTableContent = "Foreign language competence -0,0857 -0,1804 -0,1337education"
+			                             +" in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk for a regex search with multiple matches
+	 */
+	public void testBehaviorOfHeaderShrinkForMultiMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1132, 842);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(154,0,1132, 842));
 
 			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
 
