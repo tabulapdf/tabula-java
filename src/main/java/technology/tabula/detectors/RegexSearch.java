@@ -249,11 +249,6 @@ public class RegexSearch {
 	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
 	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
 	 */
-	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable, 
-			           String includeRegexAfterTable, PDDocument document) {
-
-		this(regexBeforeTable, includeRegexBeforeTable, regexAfterTable, includeRegexAfterTable, document,null);
-	}
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
 					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter) {
@@ -397,8 +392,6 @@ public class RegexSearch {
 		private static final double POSITIVE_NO_BUFFER = 1;
         private static final double POSITIVE_WITH_BUFFER = 1.5;
         private static final double NEGATIVE_BUFFER = -.5;
-    //    public static final double NEGATIVE_NO_BUFFER = -1;
-    //    public static final double NEGATIVE_WITH_BUFFER = -1.5;
         private static final int NONE = 0;
 	};
 
