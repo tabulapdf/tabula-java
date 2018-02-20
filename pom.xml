@@ -154,15 +154,17 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- Travis build workaround -->
-                    <argLine>-Xms1024m -Xmx2048m</argLine>
-                </configuration>
+            <version>2.20.1</version>
+            <configuration>
+                <!-- Travis build workaround -->
+                <argLine>-Xms1024m -Xmx2048m</argLine>
+            </configuration>
         </plugin>
         <!-- download source jars and link them when running eclipse:eclipse -->
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-eclipse-plugin</artifactId>
+            <version>2.10</version>
             <configuration>
                 <downloadSources>true</downloadSources>
                 <downloadJavadocs>true</downloadJavadocs>
@@ -243,7 +245,7 @@
     <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>2.0.7</version>
+        <version>2.0.8</version>
     </dependency>
 
     <dependency>
