@@ -816,9 +816,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 							extractedTableContent += element.getText();
 						}
 						extractedTableContent = extractedTableContent.trim();
-					statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
-							expectedTableContent,extractedTableContent,"Error in header filtering capability");
+
 				}
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
 			}
 		catch (Exception e) {
 			// TODO Auto-generated catch block

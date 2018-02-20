@@ -132,8 +132,9 @@ public class RegexSearch {
 
 						areasToAdd = regexSearch.detectMatchingAreas(file,areasToFilter,pageOfDetectStart,yOfDetectStart,pageOfDetectEnd,yOfDetectEnd);
 
-						System.out.println("Areas To Add Length:"+areasToAdd.size());
 
+						System.out.println("Areas To Add Length:"+areasToAdd.size());
+						System.out.println("Areas to Remove Length:"+areasToRemove.size());
 						regexSearch._matchingAreas.addAll(indexOfAreaBeforeOverlap,areasToAdd);
 
 						updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
@@ -198,7 +199,15 @@ public class RegexSearch {
 				System.out.println("Page of Detect End:"+pageOfDetectEnd);
 				System.out.println("y of Detect End:" + yOfDetectEnd);
 
-				if((areaBeforeHeader==null) && (areaAfterHeader==null) && !(regexSearch.containsMatchIn(new PageTextMetaData(pageOfHeaderResize,
+				//TODO-time permitting, clean this up a bit...to much redundancy here.
+				if(Math.abs(Math.round(currentHeaderHeight - pageOfHeaderResize.getTextBounds().y))<TEXT_BUFFER){
+					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+					System.out.println("Areas to Add Length:"+ areasToAdd.size());
+					System.out.println("Areas to Remove Length:" + areasToRemove.size());
+					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
+					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
+				}
+				else if((areaBeforeHeader==null) && (areaAfterHeader==null) && !(regexSearch.containsMatchIn(new PageTextMetaData(pageOfHeaderResize,
 						new Rectangle(currentHeaderHeight,0,pageOfHeaderResize.width,
 								previousHeaderHeight-currentHeaderHeight)).pageAsText))){
 						continue;
@@ -206,6 +215,7 @@ public class RegexSearch {
 				else {
 					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
 					System.out.println("Areas to Add Length:"+ areasToAdd.size());
+					System.out.println("Areas to Remove Length:" + areasToRemove.size());
 					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
 					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
 				}
@@ -231,6 +241,8 @@ public class RegexSearch {
 
 	private static final Integer INIT=0;
 	private static final Integer INVALID_INDEX=-1;
+	private static final Integer TEXT_BUFFER = 10;
+
 
 	private Pattern _regexBeforeTable;
 	private Pattern _regexAfterTable;
@@ -445,9 +457,9 @@ public class RegexSearch {
 			scaledHeaderHeight = (guiPageHeight==0) ? 0 : (int)((((double) headerHeight)/guiPageHeight)*absolutePageHeight);
 			scaledFooterHeight = (guiPageHeight==0) ? 0 : (int)((((double) footerHeight)/guiPageHeight)*absolutePageHeight);
 
-			System.out.println("Height of header:" + heightOfHeader);
-			System.out.println("Height of page in gui:" + guiPageHeight);
-			System.out.println("Height of page in back-end:" + absolutePageHeight);
+	//		System.out.println("Height of header:" + heightOfHeader);
+	//		System.out.println("Height of page in gui:" + guiPageHeight);
+	//		System.out.println("Height of page in back-end:" + absolutePageHeight);
 		}
 
 		public Integer getScaledHeaderHeight(){ return scaledHeaderHeight; }
@@ -478,7 +490,7 @@ public class RegexSearch {
 	 *                      between the user-specified regexes. 
 	 * 
 	 * @param document The name of the document for which regex has been applied
-	 * @param headerAreas The header sections of the document that are to be ignored.
+	 * @param areasToFilter The header and footer sections of the document that are to be ignored.
 	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
 	 * that matches the user-provided regex
 	 */
@@ -487,6 +499,12 @@ public class RegexSearch {
 	};
 
 	//TODO: Update documentation to reflect the new inputs...
+	/*
+	 * @param pageNumStart The first page of the document to begin detection
+	 * @param pageStartY The y position on pageNumStart to begin detection
+	 * @param pageNumEnd The last page of the document to perform detecion
+	 * @param pageEndY The ending y position on pageNumEnd where detection should stop
+	 */
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> areasToFilter, Integer pageNumStart, Integer pageStartY,
 	                                                    Integer pageNumEnd, Integer pageEndY) {
 
@@ -501,15 +519,39 @@ public class RegexSearch {
 		 */
 		Page page = oe.extract(currentPage);
 
-		FilteredArea filterArea  = ( (areasToFilter!=null) && areasToFilter.containsKey(page.getPageNumber())) ?
-				              areasToFilter.get(page.getPageNumber()): new FilteredArea(0,0, (int) page.getHeight(), (int) page.getHeight());
+		//FilteredArea filterArea  = ( (areasToFilter!=null) && areasToFilter.containsKey(page.getPageNumber())) ?
+		//		              areasToFilter.get(page.getPageNumber()): new FilteredArea(0,0, (int) page.getHeight(), (int) page.getHeight());
 
-        Integer top = ((currentPage==pageNumStart) && (pageStartY!=null)) ? pageStartY : filterArea.getScaledHeaderHeight();
-		Integer height = (((currentPage==pageNumEnd) && (pageEndY!=null)) ? pageEndY:
-				         Math.round(page.height-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight())) - top;
+		FilteredArea filterArea = null;
+
+		if(areasToFilter!=null && areasToFilter.containsKey(page.getPageNumber())){
+			filterArea = areasToFilter.get(page.getPageNumber());
+		}
+
+
+		Integer top = INIT;
+		if((currentPage==pageNumStart) && (pageStartY!=null)){
+			top = pageStartY;
+		}
+		else if(filterArea!=null){
+			top = filterArea.getScaledHeaderHeight();
+		}
+
+		Integer height = Math.round(page.height);
+		if((currentPage==pageNumEnd) && (pageEndY!=null)) {
+			height = pageEndY;
+		}
+		else if(filterArea!=null){
+			height = Math.round(page.height-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight());
+		}
+		height -= top;
+
+        //Integer top = ((currentPage==pageNumStart) && (pageStartY!=null)) ? pageStartY : filterArea.getScaledHeaderHeight();
+		//Integer height = (((currentPage==pageNumEnd) && (pageEndY!=null)) ? pageEndY:
+		//		         Math.round(page.height-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight())) - top;
 
 		System.out.println("Top: "+top);
-		System.out.println("Scaled Header Height: "+ filterArea.getScaledHeaderHeight());
+		System.out.println("Scaled Header Height: "+ ((filterArea!=null)? filterArea.getScaledHeaderHeight().toString() : "N/A"));
 		System.out.println("Height: "+height);
 
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
@@ -695,7 +737,7 @@ public class RegexSearch {
             	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
             		FilteredArea filteredArea = areasToFilter.get(currentPage.getPageNumber());
-            		Integer top = filteredArea.getScaledHeaderHeight();
+            		Integer top = (filteredArea!=null) ? filteredArea.getScaledHeaderHeight() : Math.round(currentPage.getTextBounds().y);
             		tableSubArea = new LinkedList<>();
             		tableSubArea.add(new TableArea(currentPage.getPageNumber(),
 							new Rectangle(top,0,currentPage.width,
@@ -710,7 +752,7 @@ public class RegexSearch {
             	currentPage = oe.extract(foundTable._pageEndMatch.get());
                 tableSubArea = new LinkedList<>();
 				FilteredArea filteredArea = areasToFilter.get(currentPage.getPageNumber());
-				Integer top = filteredArea.getScaledHeaderHeight();
+				Integer top = (filteredArea!=null) ? filteredArea.getScaledHeaderHeight(): Math.round(currentPage.getTextBounds().y);
 				System.out.println("Current Page #:"+currentPage.getPageNumber());
 				System.out.println("Top:"+top);
                 tableSubArea.add(new TableArea(currentPage.getPageNumber(), new Rectangle(top,0,currentPage.width,foundTable._pageEndCoord.y-top)));
