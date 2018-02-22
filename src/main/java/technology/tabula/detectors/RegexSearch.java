@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.Map;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
@@ -74,7 +76,18 @@ public class RegexSearch {
 		
 		 return allMatchingAreas;	
 	}
-	
+
+	// TODO: New code added to accommodate for for CLI Regex, see if it works
+    public ArrayList<Rectangle> getAllMatchingAreas(){
+
+        ArrayList<Rectangle> allPagesMatchingAreas = new ArrayList<>();
+
+        for(MatchingArea matchingArea : _matchingAreas){
+            for( int i : matchingArea.keySet())
+            allPagesMatchingAreas.addAll(matchingArea.get(i));
+        }
+        return allPagesMatchingAreas;
+    }
 	
 	  /*
      * Inner class to retain information about a potential matching area while

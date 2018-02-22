@@ -27,6 +27,7 @@ public class TestCommandLineApp {
     }
 
     @Test
+    //Test fails with identical expected and actual results
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");

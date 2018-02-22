@@ -25,23 +25,20 @@ import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
 import technology.tabula.writers.Writer;
+import technology.tabula.detectors.RegexSearch;
 
 /*
-  *** Want to batch processes multiple files (can already do that)
-      BUT we need to implement REGEX functionality into command line
-      That involves REGEX implementation, also GRAPHICAL VALIDATION -
-      GRAPHICAL VALIDATION is pop-up window
-
-  *** Also make a LOG FILE (TEXT ONLY FOR NOW) after processing
-      Should say which files were processed, which weren't
-      If not processed, should say why it wasn't processed
-      Should say what specifically was successfully processed
-
-*/
+ * CommandLineApp
+ *
+ *    TODO: Small blurb about this class
+ *
+ *    TODO: Large blurb about this class
+ *    2/20/2018 BHT, edited.
+ */
 
 public class CommandLineApp {
 
-    private static String VERSION = "1.0.2";
+    private static String VERSION = "1.0.3";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2017 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
@@ -54,7 +51,7 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
-        this.pageArea = CommandLineApp.whichArea(line);
+        this.pageArea = CommandLineApp.whichArea(line); //TODO: incorporate found rectangles into whichArea
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
@@ -65,9 +62,10 @@ public class CommandLineApp {
     }
 
     public static void main(String[] args) {
+        // creates DefaultParser object
         CommandLineParser parser = new DefaultParser();
         try {
-            // parse the command line arguments
+            // parse the command line arguments --> collects options and puts into variable 'line'
             CommandLine line = parser.parse(buildOptions(), args);
 
             if (line.hasOption('h')) {
@@ -80,6 +78,35 @@ public class CommandLineApp {
                 System.exit(0);
             }
 
+            // TODO: Figure out a way to parse the five arguments needed for RegexSearch from CLI
+            // TODO: Find a way to parse multiple REGEX pairs on CLI
+            // TODO: Figure out how -a/--area argument is handled
+            // TODO: Figure out which JSON-to-JAVA API to use (most likely GSON)
+            // TODO: Find best area to put -r/--regex option (leave here? or move it?)
+            if (line.hasOption('r')){
+                // HARDCODED for testing/debugging purposes
+                System.out.println("Reached the regex option.");
+
+                //Loading existing document
+                File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+
+                try {
+                    PDDocument testdoc = PDDocument.load(file);
+                    RegexSearch rs = new RegexSearch("From:", "0",
+                            "To:", "0", testdoc);
+                    // String extractedContent = "";
+                    // TODO: key-value pairs being sent to CLI, now have to parse for coords
+                    // TODO: Figure out how Rectangles are parsed
+                    List<Rectangle> ma = rs.getAllMatchingAreas();
+                    System.out.println(ma);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                System.exit(0);
+            }
+            // where the magic happens (I think)
             new CommandLineApp(System.out, line).extractTables(line);
         } catch (ParseException exp) {
             System.err.println("Error: " + exp.getMessage());
@@ -88,6 +115,7 @@ public class CommandLineApp {
         System.exit(0);
     }
 
+    // begin the table extraction
     public void extractTables(CommandLine line) throws ParseException {
         if (line.hasOption('b')) {
             if (line.getArgs().length != 0) {
@@ -230,24 +258,30 @@ public class CommandLineApp {
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
-        if (line.hasOption('r') || line.hasOption('l')) {
+        // -r/--spreadsheet [deprecated, -r used for regex] or -l/--lattice
+        if (/*line.hasOption('r') || */line.hasOption('l')) {
             return ExtractionMethod.SPREADSHEET;
         }
 
-        // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
+        // -n/--no-spreadsheet [deprecated -r used for regex; use -t] or  -c/--columns or -g/--guess or -t/--stream
+        // NOTE: from personal experience, -g/--guess does not work very well (outputted blank csv files)
+        if (/*line.hasOption('n') || */line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
     }
 
+    // TableExtractor goes through 4 methods to return params to needed to extract tables
     private static TableExtractor createExtractor(CommandLine line) throws ParseException {
         TableExtractor extractor = new TableExtractor();
+        // setGuess sees if user wants areas-to-be-analyzed to be 'guessed' by Tabula
+        // from personal experience, -g--guess does not work very well (outputted blank csv files)
         extractor.setGuess(line.hasOption('g'));
+        // setMethod sees which extractor should be used (user picks SPREADSHEET or BASIC, or the method DECIDEs for you)
         extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
+        // setUseLineReturns checks if the use-line-returns option was selected
         extractor.setUseLineReturns(line.hasOption('u'));
-
+        // setVerticalRulingPosition checks if column (verticalRulingPositions) option was selected
         if (line.hasOption('c')) {
             extractor.setVerticalRulingPositions(parseFloatList(line.getOptionValue('c')));
         }
@@ -280,7 +314,6 @@ public class CommandLineApp {
         o.addOption("v", "version", false, "Print version and exit.");
         o.addOption("h", "help", false, "Print this help text.");
         o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
-        o.addOption("r", "regex", false, "Apply regular expressions (regexes) to highlight portions of the page to analyze.");
         o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
         o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
         o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
@@ -328,6 +361,12 @@ public class CommandLineApp {
                 .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
                 .hasArg()
                 .argName("PAGES")
+                .build());
+        o.addOption(Option.builder("r")
+                .longOpt("regex")
+                .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
+                .hasArg()
+                .argName("REGEX")
                 .build());
 
         return o;
