@@ -235,9 +235,16 @@ public class RegexSearch {
 		Integer previousHeaderHeight = previousFilterArea.getScaledHeaderHeight();
 		Integer currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight();
 
+		Integer previousFooterHeight = previousFilterArea.getScaledFooterHeight();
+		Integer currentFooterHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledFooterHeight();
+
 		if (previousHeaderHeight != currentHeaderHeight) {
 			determineHeaderResizeImpact(previousHeaderHeight,currentHeaderHeight,file,
 					pageOfHeaderResize,areasToFilter,currentRegexSearches,updatedSearches);
+		}
+        else if(previousFooterHeight!=currentFooterHeight){
+			//determineFooterResizeImpact(previousFooterHeight,currentFooterHeight,file,
+			//		pageOfFooterResize,areasToFilter,currentRegexSearches,updatedSearches);
 		}
 
 		return updatedSearches;
