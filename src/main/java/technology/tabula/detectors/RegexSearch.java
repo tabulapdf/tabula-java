@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import sun.awt.image.ImageWatched;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
@@ -37,6 +38,170 @@ public class RegexSearch {
 	 * associated with a given PDF page can both be returned to the caller
 	 */
 
+	private static void determineHeaderResizeImpact(Integer previousHeight,
+													Integer currentHeight,
+													PDDocument file,
+													Page pageOfHeaderResize,
+													HashMap<Integer,FilteredArea> areasToFilter,
+													RegexSearch[] currentRegexSearches,
+													ArrayList<UpdatesOnResize> updatedSearches) {
+
+		Integer pageNumOfHeaderResize = pageOfHeaderResize.getPageNumber();
+
+		System.out.println("Previous Height:"+previousHeight);
+		System.out.println("Current Height:"+currentHeight);
+
+
+		if ( currentHeight > previousHeight) {
+
+			System.out.println("Header has been expanded...");
+
+			for (RegexSearch regexSearch : currentRegexSearches) {
+				ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
+				ArrayList<MatchingArea> areasToAdd;
+
+				for (MatchingArea matchingArea : regexSearch._matchingAreas) {
+
+					FilteredArea areaToFilter = areasToFilter.get(pageNumOfHeaderResize);
+
+					TableArea overlappedSection = matchingArea.sectionOverlappingHeader(pageNumOfHeaderResize, areaToFilter);
+					if (overlappedSection != null) {
+						Integer indexOfCurrentArea = regexSearch._matchingAreas.indexOf(matchingArea);
+						Integer indexOfAreaBeforeOverlap = indexOfCurrentArea;
+						MatchingArea areaBeforeOverlap = null;
+						if (indexOfAreaBeforeOverlap > 0) {
+							while ((areaBeforeOverlap == null) && (--indexOfAreaBeforeOverlap > 0)) {
+								areaBeforeOverlap = regexSearch._matchingAreas.get(indexOfAreaBeforeOverlap);
+								if (areaBeforeOverlap.sectionOverlappingHeader(pageNumOfHeaderResize, areaToFilter) != null) {
+									areaBeforeOverlap = null;
+								}
+							}
+						}
+
+						Integer indexOfAreaAfterOverlap = indexOfCurrentArea;
+						MatchingArea areaAfterOverlap = null;
+						while ((areaAfterOverlap == null) && (++indexOfAreaAfterOverlap < regexSearch._matchingAreas.size())) {
+							areaAfterOverlap = regexSearch._matchingAreas.get(indexOfAreaAfterOverlap);
+							if (areaAfterOverlap.sectionOverlappingHeader(pageNumOfHeaderResize, areaToFilter) != null) {
+								areaAfterOverlap = null;
+							}
+						}
+
+						/*
+						 * Remove matching areas whose subsections overlap with the header
+						 */
+						for (int indexOfAreaToRemove = (areaBeforeOverlap == null) ? 0 : indexOfAreaBeforeOverlap + 1;
+							 indexOfAreaToRemove < indexOfAreaAfterOverlap; indexOfAreaToRemove++) {
+							areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
+						}
+						regexSearch._matchingAreas.removeAll(areasToRemove);
+
+						Integer pageOfDetectStart = (areaBeforeOverlap == null) ? 1 : areaBeforeOverlap.getStartPageNum(); //Page-numbering is one-based
+						TableArea lastSectionBeforeOverlap = (areaBeforeOverlap == null) ? null : areaBeforeOverlap.get(areaBeforeOverlap._endPageNum).getLast();
+						Integer yOfDetectStart = (areaBeforeOverlap == null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
+
+						System.out.println("Page of Detect Start:" + pageOfDetectStart);
+						System.out.println("y of Detect Start:" + yOfDetectStart);
+
+
+						Integer pageOfDetectEnd = (areaAfterOverlap == null) ? file.getNumberOfPages() : areaAfterOverlap.getStartPageNum();
+						TableArea firstSectionAfterOverlap = (areaAfterOverlap == null) ? null : areaAfterOverlap.get(areaAfterOverlap._startPageNum).getFirst();
+						Integer yOfDetectEnd = (areaAfterOverlap == null) ? null : firstSectionAfterOverlap.getTop();
+
+						System.out.println("Page of Detect End:" + pageOfDetectEnd);
+						System.out.println("y of Detect End:" + yOfDetectEnd);
+
+						areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+
+
+						System.out.println("Areas To Add Length:" + areasToAdd.size());
+						System.out.println("Areas to Remove Length:" + areasToRemove.size());
+						regexSearch._matchingAreas.addAll(indexOfAreaBeforeOverlap, areasToAdd);
+
+						updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
+
+						break;
+					}
+				}
+			}
+		}
+		else{ //Header has been shrunk <-- check content in area between old header and new header
+
+			System.out.println("Header has been shrunk...");
+
+			ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
+			ArrayList<MatchingArea> areasToAdd;
+
+			MatchingArea areaBeforeHeader = null;
+			MatchingArea areaAfterHeader = null;
+
+			for (RegexSearch regexSearch : currentRegexSearches) {
+				for (MatchingArea matchingArea : regexSearch._matchingAreas) {
+					if ((matchingArea.getStartPageNum() < pageNumOfHeaderResize) &&
+							(matchingArea.getEndPageNum() >= pageNumOfHeaderResize)) {
+						areaBeforeHeader = matchingArea;
+					} else if ((matchingArea.getStartPageNum() >= pageNumOfHeaderResize) &&
+							(matchingArea.sectionOverlappingHeader(pageNumOfHeaderResize,
+									areasToFilter.get(pageNumOfHeaderResize))) == null) {
+						if (areaAfterHeader == null || areaAfterHeader.getStartPageNum() > matchingArea.getStartPageNum()) {
+							areaAfterHeader = matchingArea;
+						}
+					}
+				}
+
+				/*
+				* Remove matching areas whose subsections will be modified by the header shrink event
+				*/
+
+				int minIndex = (areaBeforeHeader == null) ? 0 : regexSearch._matchingAreas.indexOf(areaBeforeHeader);
+				int maxIndex = (areaAfterHeader == null) ? regexSearch._matchingAreas.size() :
+						regexSearch._matchingAreas.indexOf(areaAfterHeader);
+
+				for (int indexOfAreaToRemove = minIndex; indexOfAreaToRemove < maxIndex; indexOfAreaToRemove++) {
+					areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
+				}
+				regexSearch._matchingAreas.removeAll(areasToRemove);
+
+				Integer pageOfDetectStart = (areaBeforeHeader == null) ? 1 : areaBeforeHeader.getStartPageNum(); //Page-numbering is one-based
+				TableArea lastSectionBeforeOverlap = (areaBeforeHeader == null) ? null : areaBeforeHeader.get(areaBeforeHeader._endPageNum).getLast();
+				Integer yOfDetectStart = (areaBeforeHeader == null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
+
+				Integer pageOfDetectEnd = (areaAfterHeader == null) ? file.getNumberOfPages() : areaAfterHeader.getStartPageNum();
+				TableArea firstSectionAfterOverlap = (areaAfterHeader == null) ? null : areaAfterHeader.get(areaAfterHeader._startPageNum).getFirst();
+				Integer yOfDetectEnd = (areaAfterHeader == null) ? null : firstSectionAfterOverlap.getTop();
+
+
+				System.out.println("Page of Detect Start:" + pageOfDetectStart);
+				System.out.println("y of Detect Start:" + yOfDetectStart);
+
+				System.out.println("Page of Detect End:" + pageOfDetectEnd);
+				System.out.println("y of Detect End:" + yOfDetectEnd);
+
+
+
+				//TODO-time permitting, clean this up a bit...to much redundancy here.
+				if (Math.abs(Math.round(currentHeight - pageOfHeaderResize.getTextBounds().y)) < TEXT_BUFFER) {
+					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+					System.out.println("Areas to Add Length:" + areasToAdd.size());
+					System.out.println("Areas to Remove Length:" + areasToRemove.size());
+					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
+					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
+				} else if ((areaBeforeHeader == null) && (areaAfterHeader == null) && !(regexSearch.containsMatchIn(new PageTextMetaData(pageOfHeaderResize,
+						new Rectangle(currentHeight, 0, pageOfHeaderResize.width,
+								previousHeight - currentHeight)).pageAsText))) {
+					continue;
+				} else {
+					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+					System.out.println("Areas to Add Length:" + areasToAdd.size());
+					System.out.println("Areas to Remove Length:" + areasToRemove.size());
+					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
+					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
+				}
+			}
+		}
+	}
+
+
 	/* checkSearchesFilterResize
 	 *
 	 * Determines which RegexSearch objects should be modified as a result of the user changing/defining a header filter
@@ -53,7 +218,7 @@ public class RegexSearch {
 	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
 													         FilteredArea previousFilterArea,
 													         HashMap<Integer,FilteredArea> areasToFilter,
-															 RegexSearch[] currentRegexSearches){
+															 RegexSearch[] currentRegexSearches) {
 
 		System.out.println("In checkSearchesOnFilterResize:");
 
@@ -70,157 +235,11 @@ public class RegexSearch {
 		Integer previousHeaderHeight = previousFilterArea.getScaledHeaderHeight();
 		Integer currentHeaderHeight = areasToFilter.get(pageNumOfResizedFilter).getScaledHeaderHeight();
 
-        if(currentHeaderHeight>previousHeaderHeight) { //Header has been expanded <-- this content must be checked
-
-			System.out.println("Header has been expanded...");
-
-			for(RegexSearch regexSearch : currentRegexSearches){
-
-				ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
-				ArrayList<MatchingArea> areasToAdd;
-
-				for(MatchingArea matchingArea : regexSearch._matchingAreas){
-
-					FilteredArea areaToFilter = areasToFilter.get(pageNumOfResizedFilter);
-
-					TableArea overlappedSection = matchingArea.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter);
-					if(overlappedSection!=null){
-						Integer indexOfCurrentArea = regexSearch._matchingAreas.indexOf(matchingArea);
-						Integer indexOfAreaBeforeOverlap = indexOfCurrentArea;
-						MatchingArea areaBeforeOverlap = null;
-						if(indexOfAreaBeforeOverlap > 0){
-							while( (areaBeforeOverlap==null) && (--indexOfAreaBeforeOverlap>0)){
-								areaBeforeOverlap = regexSearch._matchingAreas.get(indexOfAreaBeforeOverlap);
-								if(areaBeforeOverlap.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter)!=null){
-									areaBeforeOverlap = null;
-								}
-							}
-						}
-
-						Integer indexOfAreaAfterOverlap = indexOfCurrentArea;
-						MatchingArea areaAfterOverlap = null;
-						while( (areaAfterOverlap == null) && (++indexOfAreaAfterOverlap < regexSearch._matchingAreas.size())){
-							areaAfterOverlap = regexSearch._matchingAreas.get(indexOfAreaAfterOverlap);
-							if(areaAfterOverlap.sectionOverlappingHeader(pageNumOfResizedFilter,areaToFilter)!=null){
-								areaAfterOverlap = null;
-							}
-						}
-
-						/*
-						 * Remove matching areas whose subsections overlap with the header
-						 */
-						for(int indexOfAreaToRemove=(areaBeforeOverlap==null) ? 0 : indexOfAreaBeforeOverlap+1;
-							indexOfAreaToRemove<indexOfAreaAfterOverlap; indexOfAreaToRemove++){
-							areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
-						}
-						regexSearch._matchingAreas.removeAll(areasToRemove);
-
-						Integer pageOfDetectStart = (areaBeforeOverlap==null) ? 1 : areaBeforeOverlap.getStartPageNum(); //Page-numbering is one-based
-						TableArea lastSectionBeforeOverlap = (areaBeforeOverlap==null) ? null : areaBeforeOverlap.get(areaBeforeOverlap._endPageNum).getLast();
-						Integer yOfDetectStart = (areaBeforeOverlap==null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
-
-						System.out.println("Page of Detect Start:" + pageOfDetectStart);
-						System.out.println("y of Detect Start:" + yOfDetectStart);
-
-
-						Integer pageOfDetectEnd = (areaAfterOverlap==null) ? file.getNumberOfPages() : areaAfterOverlap.getStartPageNum();
-						TableArea firstSectionAfterOverlap = (areaAfterOverlap==null) ? null : areaAfterOverlap.get(areaAfterOverlap._startPageNum).getFirst();
-						Integer yOfDetectEnd = (areaAfterOverlap == null) ? null : firstSectionAfterOverlap.getTop();
-
-						System.out.println("Page of Detect End:" + pageOfDetectEnd);
-						System.out.println("y of Detect End:" + yOfDetectEnd);
-
-						areasToAdd = regexSearch.detectMatchingAreas(file,areasToFilter,pageOfDetectStart,yOfDetectStart,pageOfDetectEnd,yOfDetectEnd);
-
-
-						System.out.println("Areas To Add Length:"+areasToAdd.size());
-						System.out.println("Areas to Remove Length:"+areasToRemove.size());
-						regexSearch._matchingAreas.addAll(indexOfAreaBeforeOverlap,areasToAdd);
-
-						updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
-
-						break;
-					}
-				}
-			}
+		if (previousHeaderHeight != currentHeaderHeight) {
+			determineHeaderResizeImpact(previousHeaderHeight,currentHeaderHeight,file,
+					pageOfHeaderResize,areasToFilter,currentRegexSearches,updatedSearches);
 		}
 
-		else{ //Header has been shrunk <-- check content in area between old header and new header
-
-
-			System.out.println("Header has been shrunk...");
-
-			ArrayList<MatchingArea> areasToRemove = new ArrayList<>();
-			ArrayList<MatchingArea> areasToAdd;
-
-			MatchingArea areaBeforeHeader = null;
-			MatchingArea areaAfterHeader = null;
-
-			for(RegexSearch regexSearch : currentRegexSearches){
-				for(MatchingArea matchingArea : regexSearch._matchingAreas){
-					if((matchingArea.getStartPageNum()<pageNumOfResizedFilter) &&
-					   (matchingArea.getEndPageNum()>=pageNumOfResizedFilter)){
-						areaBeforeHeader=matchingArea;
-					}
-					else if((matchingArea.getStartPageNum()>=pageNumOfResizedFilter) &&
-							(matchingArea.sectionOverlappingHeader(pageNumOfResizedFilter,
-									                               areasToFilter.get(pageNumOfResizedFilter)))==null){
-						if(areaAfterHeader==null || areaAfterHeader.getStartPageNum()>matchingArea.getStartPageNum()){
-							areaAfterHeader = matchingArea;
-						}
-					}
-				}
-
-				/*
-				* Remove matching areas whose subsections will be modified by the header shrink event
-				*/
-
-				int minIndex = (areaBeforeHeader==null) ? 0 : regexSearch._matchingAreas.indexOf(areaBeforeHeader);
-				int maxIndex = (areaAfterHeader==null) ? regexSearch._matchingAreas.size() :
-						                                 regexSearch._matchingAreas.indexOf(areaAfterHeader);
-
-				for(int indexOfAreaToRemove=minIndex; indexOfAreaToRemove< maxIndex; indexOfAreaToRemove++){
-					areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
-				}
-				regexSearch._matchingAreas.removeAll(areasToRemove);
-
-				Integer pageOfDetectStart = (areaBeforeHeader==null) ? 1 : areaBeforeHeader.getStartPageNum(); //Page-numbering is one-based
-				TableArea lastSectionBeforeOverlap = (areaBeforeHeader==null) ? null : areaBeforeHeader.get(areaBeforeHeader._endPageNum).getLast();
-				Integer yOfDetectStart = (areaBeforeHeader==null) ? null : lastSectionBeforeOverlap.getTop() + lastSectionBeforeOverlap.getHeight();
-
-				Integer pageOfDetectEnd = (areaAfterHeader==null) ? file.getNumberOfPages() : areaAfterHeader.getStartPageNum();
-				TableArea firstSectionAfterOverlap = (areaAfterHeader==null) ? null : areaAfterHeader.get(areaAfterHeader._startPageNum).getFirst();
-				Integer yOfDetectEnd = (areaAfterHeader == null) ? null : firstSectionAfterOverlap.getTop();
-
-
-				System.out.println("Page of Detect Start:"+pageOfDetectStart);
-				System.out.println("y of Detect Start:"+yOfDetectStart);
-
-				System.out.println("Page of Detect End:"+pageOfDetectEnd);
-				System.out.println("y of Detect End:" + yOfDetectEnd);
-
-				//TODO-time permitting, clean this up a bit...to much redundancy here.
-				if(Math.abs(Math.round(currentHeaderHeight - pageOfHeaderResize.getTextBounds().y))<TEXT_BUFFER){
-					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
-					System.out.println("Areas to Add Length:"+ areasToAdd.size());
-					System.out.println("Areas to Remove Length:" + areasToRemove.size());
-					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
-					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
-				}
-				else if((areaBeforeHeader==null) && (areaAfterHeader==null) && !(regexSearch.containsMatchIn(new PageTextMetaData(pageOfHeaderResize,
-						new Rectangle(currentHeaderHeight,0,pageOfHeaderResize.width,
-								previousHeaderHeight-currentHeaderHeight)).pageAsText))){
-						continue;
-				}
-				else {
-					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
-					System.out.println("Areas to Add Length:"+ areasToAdd.size());
-					System.out.println("Areas to Remove Length:" + areasToRemove.size());
-					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
-					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
-				}
-			}
-        }
 		return updatedSearches;
 	}
 
