@@ -1248,7 +1248,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
 
 			//Simulating header expansion:
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,800,1000, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,700,1000, 842));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
@@ -1318,12 +1318,12 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,150,1132, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,550,1132, 842));
 
 			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
 
-			String expectedTableContent = "Foreign language competence -0,0857 -0,1804 -0,1337education"
-					+" in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
+			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899"+
+					"Foreign language competence -0,0857 -0,1804 -0,1337";
 
 			expectedTableContent = expectedTableContent.trim();
 
@@ -1357,4 +1357,88 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the footer filter has been expanded for a regex search
+	 * whose match spans 2 pages
+	 */
+	public void testBehaviorOfFooterExpandForMultiPageMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(basicDocName, iter));
+			}
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132, 842));}};
+
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
+
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter);
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			areasToFilter.put(1,new RegexSearch.FilteredArea(0,100,1132, 842));
+
+
+			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,areasToFilter,searchesSoFar);
+
+			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030"+
+			" school School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school  "+
+			"-0,2586 -0,2557 -0,0928 management Training of teachers -0,1839 -0,1703 -0,0518 "+
+			"Involvement of external actors in the every -0,2346 -0,2343 -0,2237 day school-life "+
+			"International mobility of pupils ** ** -0,0583 * Significance p = 0,000 ** No significant "+
+			"correlation  Chart 4";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			extractedTableContent = extractedTableContent.trim();
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multi-page match on header expand");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
 }
