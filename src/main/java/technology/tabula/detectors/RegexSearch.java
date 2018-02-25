@@ -145,8 +145,8 @@ public class RegexSearch {
 					else{
 						TableArea sectionWithOverlap = matchingArea.sectionOverlappingFooter(pageNumOfFooterResize,
 								areasToFilter.get(pageNumOfFooterResize));
-						if(matchingArea.getStartPageNum()>= pageNumOfFooterResize && sectionWithOverlap==null){
-							if(matchAfterFooter==null || matchAfterFooter.getStartPageNum() > matchingArea.getStartPageNum()) {
+						if(matchingArea.getStartPageNum()> pageNumOfFooterResize && sectionWithOverlap==null){
+							if(matchAfterFooter==null || (matchAfterFooter.getStartPageNum() > matchingArea.getStartPageNum())) {
 								matchAfterFooter = matchingArea;
 							}
 						}
@@ -184,17 +184,32 @@ public class RegexSearch {
 
 
 				//TODO-time permitting, clean this up a bit...too much redundancy here.
-				if (Math.abs(Math.round(currentHeight - pageOfFooterResize.getTextBounds().y)) < TEXT_BUFFER) {
-					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+
+				Float pageHeight = (float)pageOfFooterResize.getHeight();
+
+				Boolean contentEndCloseToFilter = (Math.abs(Math.round(currentHeight -
+						(pageHeight-pageOfFooterResize.getTextBounds().getBottom()))) < TEXT_BUFFER);
+
+				Boolean noMatchesOutsideFooter = (matchBeforeFooter==null) && (matchAfterFooter==null);
+
+				FilteredArea filteredArea = areasToFilter.get(pageNumOfFooterResize);
+				Integer top = (filteredArea==null) ? 0 : filteredArea.getScaledHeaderHeight();
+
+				Boolean potentialMatchInFooter = regexSearch.containsMatchIn(new PageTextMetaData(pageOfFooterResize,
+						new Rectangle(pageHeight-previousHeight, 0, pageOfFooterResize.width,
+								previousHeight-currentHeight)).pageAsText);
+
+				if (contentEndCloseToFilter) {
+					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart,
+							pageOfDetectEnd, yOfDetectEnd);
 					System.out.println("Areas to Add Length:" + areasToAdd.size());
 					System.out.println("Areas to Remove Length:" + areasToRemove.size());
 					regexSearch._matchingAreas.addAll(minIndex, areasToAdd);
 					updatedSearches.add(new UpdatesOnResize(regexSearch, areasToAdd, areasToRemove, false));
-				} else if ((matchBeforeFooter == null) && (matchAfterFooter == null) && !(regexSearch.containsMatchIn(new PageTextMetaData(pageOfFooterResize,
-						new Rectangle(currentHeight, 0, pageOfFooterResize.width,
-								previousHeight - currentHeight)).pageAsText))) {
+				} else if ((noMatchesOutsideFooter) && (!potentialMatchInFooter) ){
 					continue;
-				} else {
+				}
+				else {
 					areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
 					System.out.println("Areas to Add Length:" + areasToAdd.size());
 					System.out.println("Areas to Remove Length:" + areasToRemove.size());
@@ -939,7 +954,10 @@ public class RegexSearch {
             	Page currentPage =  oe.extract(foundTable._pageBeginMatch.get());
             	LinkedList<TableArea> tableSubArea = new LinkedList<>();
 
-            	Float height = currentPage.height-foundTable._pageBeginCoord.y-areasToFilter.get(currentPage.getPageNumber()).getScaledFooterHeight();
+            	Float footer_height = (areasToFilter.get(currentPage.getPageNumber())==null) ? (float)0:
+						areasToFilter.get(currentPage.getPageNumber()).getScaledFooterHeight();
+
+            	Float height = currentPage.height-foundTable._pageBeginCoord.y-footer_height;
 
             	tableSubArea.add( new TableArea(currentPage.getPageNumber(), new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
             			                        height))); //Note: limitation of this approach is that the entire width of the page is used...could be problematic for multi-column data
