@@ -96,11 +96,11 @@ public class TestRegexSearch {
 				dataPages.add(UtilsForTesting.getPage(docName, iter));
 			}
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-				put(2,new RegexSearch.FilteredArea(0,0,1000, 842));}};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	));
+				put(2,new RegexSearch.FilteredArea(0,0,842));}};
 
 			RegexSearch regexSearch = new RegexSearch("9\\.","false","10\\.","false",
-					PDDocument.load(multiPageTable),areasToFilter);
+					PDDocument.load(multiPageTable),areasToFilter.get(1));
 			
 			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
 			//to facilitate future regression testing
@@ -154,10 +154,10 @@ public class TestRegexSearch {
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
 				{put(1,new RegexSearch.FilteredArea(
-						0,0,1000, 842	)); }};
+						0,0,842	)); }};
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
 			RegexSearch regexSearch = new RegexSearch("WRONG","false",
-					"WRONG","false",docInQuestion,areasToFilter);
+					"WRONG","false",docInQuestion,areasToFilter.get(1));
 
 			String expectedTableContent = "";
 			String extractedTableContent = "";
@@ -195,9 +195,9 @@ public class TestRegexSearch {
 
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false",
-					"Table [0-9]","false",docInQuestion,areasToFilter);
+					"Table [0-9]","false",docInQuestion,areasToFilter.get(1));
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -248,9 +248,9 @@ public void testIncludePatternAfterOption() {
 
 		docInQuestion = PDDocument.load(singleTable);
 		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-			{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false",
-				"Table [0-9]","true",docInQuestion,areasToFilter);
+				"Table [0-9]","true",docInQuestion,areasToFilter.get(1));
 		
 		String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -312,10 +312,10 @@ public void testIncludePatternBeforeOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-			{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
 		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true",
-				"Table [0-9]","false",PDDocument.load(singleTable),areasToFilter);
+				"Table [0-9]","false",PDDocument.load(singleTable),areasToFilter.get(1));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -381,10 +381,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
         Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-			{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
 		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true",
-				"Table [0-9]","true",PDDocument.load(singleTable),areasToFilter);
+				"Table [0-9]","true",PDDocument.load(singleTable),areasToFilter.get(1));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -447,10 +447,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
 			RegexSearch regexSearch = new RegexSearch("Knowledge","true",
-					"Social","true",PDDocument.load(singleTable),areasToFilter);
+					"Social","true",PDDocument.load(singleTable),areasToFilter.get(1));
 
 			String expectedTableContent = "Knowledge and awareness of different " +
 					"cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and " +
@@ -528,9 +528,9 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 			RegexSearch regexSearch = new RegexSearch("Correlations","true",
-					"Knowledge","true",PDDocument.load(singleTable),areasToFilter);
+					"Knowledge","true",PDDocument.load(singleTable),areasToFilter.get(1));
 
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities " +
 					                      "and the perceived  impacts on pupils (Pearsons correlation coefficient*)   "+
@@ -597,10 +597,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			docInQuestion = PDDocument.load(singleTable);
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
 			RegexSearch regexSearch = new RegexSearch("Analyte","false",
-					"Report","false", docInQuestion,areasToFilter);
+					"Report","false", docInQuestion,areasToFilter.get(1));
 
 
 			String expectedTableContent = "Arsenic< 0.0050.010mg/LBarium0.12.00mg/LCadmium< 0.0010.005mg/LCalcium41mg/L"+
@@ -666,10 +666,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			docInQuestion = PDDocument.load(singleTable);
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	)); }};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
 			RegexSearch regexSearch = new RegexSearch("Tender","false",
-					"Name","false",docInQuestion,areasToFilter);
+					"Name","false",docInQuestion,areasToFilter.get(1));
 
 
 			String expectedTableContent = "1295";
@@ -728,7 +728,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			docInQuestion = PDDocument.load(singleTable);
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					docInQuestion,new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(120,0,1000, 842	));}});
+					docInQuestion,new RegexSearch.FilteredArea(120,0,1000));
 
 
 			String expectedTableContent = "";
@@ -786,23 +786,23 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			docInQuestion = PDDocument.load(singleTable);
 
-			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-				put(2,new RegexSearch.FilteredArea(0,0,1000, 842));}};
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,842	));
+				put(2,new RegexSearch.FilteredArea(0,0,1000));}};
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					docInQuestion,areasToFilter);
+					docInQuestion,areasToFilter.get(1));
 
 
-			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000, 842);
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
 
 			//Simulating header expansion:
-			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			RegexSearch.checkSearchesOnFilterResize(docInQuestion,1,previousAreaToFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(docInQuestion,filteredAreas.get(1),searchesSoFar);
 
 
 			String expectedTableContent = "";
@@ -859,19 +859,19 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					document,filteredAreas);
+					document,filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" +
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" +
@@ -933,18 +933,18 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(282,0,1132, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(282,0,1132));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Foreign language competence -0,0857 -0,1804 -0,1337education"
 			                             +" in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
@@ -1002,18 +1002,18 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1132, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1132);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(154,0,1132, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(154,0,1132));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899Foreign language competence -0,0857 -0,1804 -0,1337"
 			                             +"education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
@@ -1079,20 +1079,20 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-					put(2,new RegexSearch.FilteredArea(100,0,1132, 842));}};
+				{put(1,new RegexSearch.FilteredArea(100,0,1000	));
+					put(2,new RegexSearch.FilteredArea(100,0,1132));}};
 
 
 			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(2);
 
-			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter);
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(2));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			areasToFilter.put(2,new RegexSearch.FilteredArea(0,0,1132, 842));
+			areasToFilter.put(2,new RegexSearch.FilteredArea(0,0,1132));
 
 
-			RegexSearch.checkSearchesOnFilterResize(document,2,prevAreaOfFilter,areasToFilter,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(2),searchesSoFar);
 
 			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
 					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
@@ -1161,20 +1161,20 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-					put(2,new RegexSearch.FilteredArea(0,0,1132, 842));}};
+				{put(1,new RegexSearch.FilteredArea(0,0,1000	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
 
 
 			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
 
-			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter);
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document,areasToFilter.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			areasToFilter.put(2,new RegexSearch.FilteredArea(100,0,1132, 842));
+			areasToFilter.put(2,new RegexSearch.FilteredArea(100,0,1132));
 
 
-			RegexSearch.checkSearchesOnFilterResize(document,2,prevAreaOfFilter,areasToFilter,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(2),searchesSoFar);
 
 			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
 					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
@@ -1236,23 +1236,23 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			docInQuestion = PDDocument.load(singleTable);
 
-			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-				put(2,new RegexSearch.FilteredArea(0,0,1000, 842));}};
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,1000	));
+				put(2,new RegexSearch.FilteredArea(0,0,1000));}};
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					docInQuestion,areasToFilter);
+					docInQuestion,areasToFilter.get(1));
 
 
-			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000, 842);
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
 
 			//Simulating header expansion:
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,700,1000, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,700,1000));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			RegexSearch.checkSearchesOnFilterResize(docInQuestion,1,previousAreaToFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(docInQuestion,filteredAreas.get(1),searchesSoFar);
 
 
 			String expectedTableContent = "";
@@ -1309,18 +1309,18 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,550,1132, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,550,1132));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899"+
 					"Foreign language competence -0,0857 -0,1804 -0,1337";
@@ -1386,20 +1386,20 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,1000, 842	));
-					put(2,new RegexSearch.FilteredArea(0,0,1132, 842));}};
+				{put(1,new RegexSearch.FilteredArea(0,0,842	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
 
 
 			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
 
-			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter);
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			areasToFilter.put(1,new RegexSearch.FilteredArea(0,100,1132, 842));
+			areasToFilter.put(1,new RegexSearch.FilteredArea(0,100,1132));
 
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,areasToFilter,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(1),searchesSoFar);
 
 			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030"+
 			" school School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school  "+
@@ -1462,19 +1462,19 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,850, 1000, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,850, 842);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
 			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
-					document,filteredAreas);
+					document,filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,250,800, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,250,800));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" +
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" +
@@ -1544,20 +1544,20 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 
 			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,700,1132, 842	));
-					put(2,new RegexSearch.FilteredArea(0,0,1132, 842));}};
+				{put(1,new RegexSearch.FilteredArea(0,700,1132	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
 
 
 			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
 
-			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter);
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			areasToFilter.put(1,new RegexSearch.FilteredArea(0,80,1132, 842));
+			areasToFilter.put(1,new RegexSearch.FilteredArea(0,80,1132));
 
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,areasToFilter,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(1),searchesSoFar);
 
 			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
 					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
@@ -1619,18 +1619,18 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			PDDocument document = PDDocument.load(singleTable);
 
-			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,550, 1132, 842);
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,550, 1132);
 
 			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
 			{{put(1,prevAreaOfFilter);}};
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas);
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
 
 			RegexSearch[] searchesSoFar = {regexSearch};
 
-			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,1132, 842));
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,1132));
 
-			RegexSearch.checkSearchesOnFilterResize(document,1,prevAreaOfFilter,filteredAreas,searchesSoFar);
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
 
 			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899Foreign language competence -0,0857 -0,1804 -0,1337"
 					+"education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";

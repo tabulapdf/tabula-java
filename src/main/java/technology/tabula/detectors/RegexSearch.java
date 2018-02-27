@@ -1,16 +1,12 @@
 package technology.tabula.detectors;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import sun.awt.image.ImageWatched;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
@@ -37,7 +33,7 @@ public class RegexSearch {
 	 * This class is leveraged by convertPageSectionToString so that the TextElement ArrayList and the string
 	 * associated with a given PDF page can both be returned to the caller
 	 */
-
+/*
 	private static void determineFooterResizeImpact(Integer previousHeight,
 													Integer currentHeight,
 													PDDocument file,
@@ -88,9 +84,7 @@ public class RegexSearch {
 							}
 						}
 
-						/*
-						 * Remove matching areas whose subsections overlap with the header
-						 */
+
 						for (int indexOfAreaToRemove = (matchBeforeOverlap == null) ? 0 : indexOfMatchBeforeOverlap + 1;
 							 indexOfAreaToRemove < indexOfMatchAfterOverlap; indexOfAreaToRemove++) {
 							areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
@@ -112,7 +106,7 @@ public class RegexSearch {
 						System.out.println("Page of Detect End:" + pageOfDetectEnd);
 						System.out.println("y of Detect End:" + yOfDetectEnd);
 
-						areasToAdd = regexSearch.detectMatchingAreas(file, areasToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
+						areasToAdd = regexSearch.detectMatchingAreas(file, areaToFilter, pageOfDetectStart, yOfDetectStart, pageOfDetectEnd, yOfDetectEnd);
 
 
 						System.out.println("Areas To Add Length:" + areasToAdd.size());
@@ -153,9 +147,7 @@ public class RegexSearch {
 					}
 				}
 
-				/*
-				* Remove matching areas whose subsections will be modified by the footer shrink event
-				*/
+
 
 				int minIndex = (matchBeforeFooter == null) ? 0 : regexSearch._matchingAreas.indexOf(matchBeforeFooter);
 				int maxIndex = (matchAfterFooter == null) ? regexSearch._matchingAreas.size() :
@@ -219,7 +211,8 @@ public class RegexSearch {
 			}
 		}
 	}
-
+*/
+/*
 	private static void determineHeaderResizeImpact(Integer previousHeight,
 													Integer currentHeight,
 													PDDocument file,
@@ -269,14 +262,12 @@ public class RegexSearch {
 							}
 						}
 
-						/*
-						 * Remove matching areas whose subsections overlap with the header
-						 */
+
 						for (int indexOfAreaToRemove = (matchBeforeOverlap == null) ? 0 : indexOfMatchBeforeOverlap + 1;
 							 indexOfAreaToRemove < indexOfMatchAfterOverlap; indexOfAreaToRemove++) {
 							areasToRemove.add(regexSearch._matchingAreas.get(indexOfAreaToRemove));
 						}
-						regexSearch._matchingAreas.removeAll(areasToRemove);
+						//regexSearch._matchingAreas.removeAll(areasToRemove);
 
 						Integer pageOfDetectStart = (matchBeforeOverlap == null) ? 1 : matchBeforeOverlap.getStartPageNum(); //Page-numbering is one-based
 						TableArea lastSectionBeforeOverlap = (matchBeforeOverlap == null) ? null : matchBeforeOverlap.get(matchBeforeOverlap._endPageNum).getLast();
@@ -331,10 +322,6 @@ public class RegexSearch {
 					}
 				}
 
-				/*
-				* Remove matching areas whose subsections will be modified by the header shrink event
-				*/
-
 				int minIndex = (areaBeforeHeader == null) ? 0 : regexSearch._matchingAreas.indexOf(areaBeforeHeader);
 				int maxIndex = (areaAfterHeader == null) ? regexSearch._matchingAreas.size() :
 						regexSearch._matchingAreas.indexOf(areaAfterHeader);
@@ -382,7 +369,7 @@ public class RegexSearch {
 			}
 		}
 	}
-
+*/
 
 	/* checkSearchesFilterResize
 	 *
@@ -397,16 +384,27 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file, Integer pageNumOfResizedFilter,
-													         FilteredArea previousFilterArea,
-													         HashMap<Integer,FilteredArea> areasToFilter,
+	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file,
+													         FilteredArea filterArea,
 															 RegexSearch[] currentRegexSearches) {
 
 		System.out.println("In checkSearchesOnFilterResize:");
 
-		System.out.println("previousFilterArea height:" + previousFilterArea.getScaledHeaderHeight());
+		System.out.println("FilterArea height scale:" + filterArea.getHeaderHeightScale());
 
 
+
+		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<>();
+		for (RegexSearch regexSearch : currentRegexSearches){
+			ArrayList<MatchingArea> areasToRemove = new ArrayList<MatchingArea>(regexSearch._matchingAreas);
+			regexSearch._matchingAreas.clear();
+			ArrayList<MatchingArea> areasToAdd = regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,filterArea);
+			updatedSearches.add(new UpdatesOnResize(regexSearch,areasToRemove,areasToAdd,false));
+		}
+		return updatedSearches;
+
+
+		/*
 		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<UpdatesOnResize>();
 
 		ObjectExtractor oe = new ObjectExtractor(file);
@@ -430,6 +428,7 @@ public class RegexSearch {
 		}
 
 		return updatedSearches;
+		*/
 	}
 
 	private static class UpdatesOnResize{
@@ -448,8 +447,6 @@ public class RegexSearch {
 	}
 
 	private static final Integer INIT=0;
-	private static final Integer INVALID_INDEX=-1;
-	private static final Integer TEXT_BUFFER = 10;
 
 
 	private Pattern _regexBeforeTable;
@@ -471,22 +468,22 @@ public class RegexSearch {
 	 */
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
-					   String includeRegexAfterTable, PDDocument document, HashMap<Integer,FilteredArea> AreasToFilter) {
+					   String includeRegexAfterTable, PDDocument document, FilteredArea areaToFilter) {
 		
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
-			Boolean.valueOf(includeRegexAfterTable),document,AreasToFilter);
+			Boolean.valueOf(includeRegexAfterTable),document,areaToFilter);
 		
 	}
 
 	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
-					   Boolean includeRegexAfterTable, PDDocument document, HashMap<Integer,FilteredArea> areasToFilter) {
+					   Boolean includeRegexAfterTable, PDDocument document, FilteredArea filterArea) {
 		_regexBeforeTable = Pattern.compile(regexBeforeTable);
 		_regexAfterTable = Pattern.compile(regexAfterTable);
 
 		_includeRegexBeforeTable = includeRegexBeforeTable;
 		_includeRegexAfterTable = includeRegexAfterTable;
 
-		_matchingAreas = detectMatchingAreas(document,areasToFilter);
+		_matchingAreas = detectMatchingAreas(document,filterArea);
 
 	}
 
@@ -539,58 +536,6 @@ public class RegexSearch {
 			_startPageNum = startPageNum;
 			_endPageNum = endPageNum;
 		}
-
-		public TableArea sectionOverlappingHeader(Integer pageNumOfHeaderResize, FilteredArea resizedFilter){
-			if((this._startPageNum<=pageNumOfHeaderResize) &&(this._endPageNum>=pageNumOfHeaderResize)) {
-				for (Integer pageNum : this.keySet()) {
-					LinkedList<TableArea> subsections = this.get(pageNum);
-					ListIterator<TableArea> iterator = subsections.listIterator(subsections.size());
-
-					//Starting at the back of the list so that the subsection closest to the end of the header filter
-					//is selected
-					while (iterator.hasPrevious()) {
-						TableArea subsection = iterator.previous();
-						if (subsection.getPageNum() == pageNumOfHeaderResize){
-							if(subsection.getArea().getTop() < resizedFilter.getScaledHeaderHeight()){
-								return subsection;
-							}
-						}
-					}
-				}
-			}
-			return null;
-		}
-
-		public TableArea sectionOverlappingFooter(Integer pageNumOfResize, FilteredArea resizedFilter){
-
-			if((this._startPageNum<=pageNumOfResize) && (this._endPageNum>=pageNumOfResize)){
-				for(Integer pageNum : this.keySet()){
-					LinkedList<TableArea> subsections = this.get(pageNum);
-					ListIterator<TableArea> iterator = subsections.listIterator();
-
-					//Starting at the front of the list so that the subsection closest to the beginning of the footer filter
-					//is selected
-
-					while(iterator.hasNext()){
-						TableArea subsection = iterator.next();
-						if(subsection.getPageNum()==pageNumOfResize){
-							if((resizedFilter.getAbsolutePageHeight()-subsection.getArea().getBottom())<
-									resizedFilter.getScaledFooterHeight()){
-								return subsection;
-							}
-						}
-					}
-				}
-			}
-
-			return null;
-
-		}
-
-		public Integer getStartPageNum(){ return _startPageNum;}
-		public Integer getEndPageNum() { return _endPageNum;}
-
-
 	}
 
 	/*
@@ -677,30 +622,23 @@ public class RegexSearch {
 
 
 	public static class FilteredArea{
-		private Integer headerHeight; //The height of the header AS IT APPEARS IN THE GUI
-		private Integer footerHeight; //The height of the footer AS IT APPEARS IN THE GUI
 		private Integer guiPageHeight;   //The height of the page AS IT APPEARS IN THE GUI
-		private Integer absolutePageHeight; //The height of the page AS IT APPEARS IN THE BACK-END
-        private Integer scaledHeaderHeight; //The height of the header AS IT APPEARS IN THE BACK-END
-		private Integer scaledFooterHeight; //The height of the footer AS IT APPEARS IN THE BACK-END
+		private Float  scaleOfHeaderHeight;
+		private Float  scaleOfFooterHeight;
 
-		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer guiHeightOfPage, Integer absPageHeight){
-			headerHeight = heightOfHeader;
-			footerHeight = heightOfFooter;
+		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer guiHeightOfPage){
 			guiPageHeight = guiHeightOfPage;
-			absolutePageHeight = absPageHeight;
 
-			scaledHeaderHeight = (guiPageHeight==0) ? 0 : (int)((((double) headerHeight)/guiPageHeight)*absolutePageHeight);
-			scaledFooterHeight = (guiPageHeight==0) ? 0 : (int)((((double) footerHeight)/guiPageHeight)*absolutePageHeight);
-
+			scaleOfFooterHeight = ((float)heightOfFooter)/guiPageHeight;
+			scaleOfHeaderHeight = ((float)heightOfHeader)/guiPageHeight;
 	//		System.out.println("Height of header:" + heightOfHeader);
 	//		System.out.println("Height of page in gui:" + guiPageHeight);
 	//		System.out.println("Height of page in back-end:" + absolutePageHeight);
 		}
 
-		public Integer getScaledHeaderHeight(){ return scaledHeaderHeight;}
-		public Integer getScaledFooterHeight(){ return scaledFooterHeight;}
-		public Integer getAbsolutePageHeight(){ return absolutePageHeight;}
+		public Float getHeaderHeightScale(){ return scaleOfHeaderHeight;}
+		public Float getFooterHeightScale(){ return scaleOfFooterHeight;}
+
 	}
 
 	/*
@@ -729,8 +667,8 @@ public class RegexSearch {
 	 * @return ArrayList<MatchingArea> A list of the sections of the document that occur between text 
 	 * that matches the user-provided regex
 	 */
-	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> areasToFilter) {
-	  return detectMatchingAreas(document,areasToFilter,1,null, document.getNumberOfPages(),null);
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, FilteredArea areaToFilter) {
+	  return detectMatchingAreas(document,areaToFilter,1,null, document.getNumberOfPages(),null);
 	};
 
 	//TODO: Update documentation to reflect the new inputs...
@@ -740,7 +678,7 @@ public class RegexSearch {
 	 * @param pageNumEnd The last page of the document to perform detecion
 	 * @param pageEndY The ending y position on pageNumEnd where detection should stop
 	 */
-	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, HashMap<Integer,FilteredArea> areasToFilter, Integer pageNumStart, Integer pageStartY,
+	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, FilteredArea areaToFilter, Integer pageNumStart, Integer pageStartY,
 	                                                    Integer pageNumEnd, Integer pageEndY) {
 
 	ObjectExtractor oe = new ObjectExtractor(document);
@@ -757,27 +695,23 @@ public class RegexSearch {
 		//FilteredArea filterArea  = ( (areasToFilter!=null) && areasToFilter.containsKey(page.getPageNumber())) ?
 		//		              areasToFilter.get(page.getPageNumber()): new FilteredArea(0,0, (int) page.getHeight(), (int) page.getHeight());
 
-		FilteredArea filterArea = null;
-
-		if(areasToFilter!=null && areasToFilter.containsKey(page.getPageNumber())){
-			filterArea = areasToFilter.get(page.getPageNumber());
-		}
 
 
 		Integer top = INIT;
 		if((currentPage==pageNumStart) && (pageStartY!=null)){
 			top = pageStartY;
 		}
-		else if(filterArea!=null){
-			top = filterArea.getScaledHeaderHeight();
+		else if(areaToFilter!=null){
+			top = Math.round(areaToFilter.getHeaderHeightScale()* page.height);
 		}
 
 		Integer height = Math.round(page.height);
 		if((currentPage==pageNumEnd) && (pageEndY!=null)) {
 			height = pageEndY;
 		}
-		else if(filterArea!=null){
-			height = Math.round(page.height-filterArea.getScaledHeaderHeight()-filterArea.getScaledFooterHeight());
+		else if(areaToFilter!=null){
+			height = Math.round(page.height-areaToFilter.getHeaderHeightScale()*page.height
+					-areaToFilter.getFooterHeightScale()* page.height);
 		}
 		height -= top;
 
@@ -908,7 +842,7 @@ public class RegexSearch {
 		potentialMatches.removeLast();
 	}
 
-	return calculateMatchingAreas(potentialMatches,document,areasToFilter);
+	return calculateMatchingAreas(potentialMatches,document,areaToFilter);
 
 }
 
@@ -920,7 +854,7 @@ public class RegexSearch {
 	 * @return ArrayList<MatchingArea> A Hashmap 
 	 */
 	private ArrayList<MatchingArea> calculateMatchingAreas(LinkedList<DetectionData> foundMatches, PDDocument document,
-														   HashMap<Integer,FilteredArea> areasToFilter) {
+														   FilteredArea areaToFilter) {
 		
 		ArrayList<MatchingArea> matchingAreas = new ArrayList<>();
 		
@@ -954,8 +888,8 @@ public class RegexSearch {
             	Page currentPage =  oe.extract(foundTable._pageBeginMatch.get());
             	LinkedList<TableArea> tableSubArea = new LinkedList<>();
 
-            	Float footer_height = (areasToFilter.get(currentPage.getPageNumber())==null) ? (float)0:
-						areasToFilter.get(currentPage.getPageNumber()).getScaledFooterHeight();
+            	Float footer_height = (areaToFilter==null) ? (float)0:
+						areaToFilter.getFooterHeightScale()*currentPage.height;
 
             	Float height = currentPage.height-foundTable._pageBeginCoord.y-footer_height;
 
@@ -968,12 +902,23 @@ public class RegexSearch {
             	 */
             	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
-            		FilteredArea filteredArea = areasToFilter.get(currentPage.getPageNumber());
-            		Integer top = (filteredArea!=null) ? filteredArea.getScaledHeaderHeight() : (int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+            		Integer subAreaTop = (areaToFilter!=null) ? Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height) :
+							(int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+
+            		Float subAreaHeight = currentPage.height-subAreaTop;
+
+            		if(areaToFilter!=null){
+						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
+					}
+					else{
+            			subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
+					}
+
+
             		tableSubArea = new LinkedList<>();
             		tableSubArea.add(new TableArea(currentPage.getPageNumber(),
-							new Rectangle(top,0,currentPage.width,
-									currentPage.height-(top+filteredArea.getScaledFooterHeight()))));
+							new Rectangle(subAreaTop,0,currentPage.width,
+									currentPage.height-(subAreaTop+areaToFilter.getFooterHeightScale()))));
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
             	}
                 
@@ -983,9 +928,9 @@ public class RegexSearch {
             	
             	currentPage = oe.extract(foundTable._pageEndMatch.get());
                 tableSubArea = new LinkedList<>();
-				FilteredArea filteredArea = areasToFilter.get(currentPage.getPageNumber());
 
-				Integer top = (filteredArea!=null) ? filteredArea.getScaledHeaderHeight() : (int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+				Integer top = (areaToFilter!=null) ? Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height) :
+						(int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
 
 				System.out.println("Current Page #:"+currentPage.getPageNumber());
 				System.out.println("Top:"+top);
