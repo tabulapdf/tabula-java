@@ -5,7 +5,7 @@ tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?bra
 
 (This is the new version of the extraction engine; the previous code can be found at [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor).)
 
-© 2014-2016 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
+© 2014-2018 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
 
 ## Download
 
