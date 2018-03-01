@@ -16,6 +16,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import com.google.gson.*;
 
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
@@ -97,23 +98,55 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public static ArrayList<RegexSearch> regexAreas(CommandLine line, File pdfFile) throws IOException {
-        // TODO: Find a way to parse multiple REGEX pairs on CLI
-        // TODO: Figure out how -a/--area argument is handled
-        // TODO: Figure out which JSON-to-JAVA API to use (most likely GSON)
-        // TODO: Find best area to put -r/--regex option (leave here? or move it?)
+    public static ArrayList<RegexSearch> regexAreas(CommandLine line, File pdfFile) throws IOException, ParseException {
         // HARDCODED for testing/debugging purposes
         // Loading existing document
         // File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+
         if(!line.hasOption('r')){
             return null;
         }
+
         System.out.println("Getting to regexAreas");
         PDDocument regexDoc = PDDocument.load(pdfFile);
-        RegexSearch rs = new RegexSearch("From:", "0",
-                "To:", "0", regexDoc);
         ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
-        localRegexSearchArray.add(rs); // TODO: change into a 'for' loop to add multiple RegexSearches
+        JsonParser parser = new JsonParser();
+
+        try {
+            JsonObject jo = parser.parse(line.getOptionValue('r')).getAsJsonObject();
+
+            JsonArray queries = jo.getAsJsonArray("queries");
+
+            for (int index = 0; index < queries.size(); index++) {
+                JsonElement queryAsElement = queries.get(index);
+                JsonObject queryAsObject = queryAsElement.getAsJsonObject();
+
+                JsonElement patternBeforeData = queryAsObject.get("pattern_before");
+                JsonElement patternAfterData = queryAsObject.get("pattern_after");
+
+                String patternBeforeAsString = patternBeforeData.getAsString();
+                String patternAfterAsString = patternAfterData.getAsString();
+
+                Boolean patternBeforeIsValid = patternBeforeAsString != null && !patternBeforeAsString.isEmpty();
+                Boolean patternAfterIsValid = patternAfterAsString != null && !patternAfterAsString.isEmpty();
+
+                if (patternBeforeIsValid && patternAfterIsValid) {
+                    RegexSearch rs = new RegexSearch(patternBeforeAsString, "0",
+                            patternAfterAsString, "0", regexDoc);
+                    localRegexSearchArray.add(rs);
+                }
+                else {
+                    throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));
+                }
+            }
+        //Verifying behavior during implementation...
+        //System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
+        //System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
+        }
+        catch (IllegalStateException ie){
+            throw new IllegalStateException("Illegal data structure: " + line.getOptionValue('r'));
+        }
+
         System.out.println(localRegexSearchArray); // verify 'rs' is in localRegexSearchArray
         return localRegexSearchArray;
     }

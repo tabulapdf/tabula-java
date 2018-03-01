@@ -64,6 +64,10 @@ public class RegexSearch {
 	 * @param pageNumber The one-based index into the document
 	 * @return ArrayList<Rectangle> The values stored in _matchingAreas for a given page	
 	 */
+
+	public String getPatternBefore() { return new String(_regexBeforeTable.toString());}
+	public String getPatternAfter() { return new String(_regexAfterTable.toString());}
+
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
 		
         ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
@@ -71,7 +75,7 @@ public class RegexSearch {
 		for( MatchingArea matchingArea : _matchingAreas) {
 			allMatchingAreas.addAll(matchingArea.get(pageNumber));
 		}
-		
+
 		 return allMatchingAreas;	
 	}
 
