@@ -32,9 +32,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private Logger log;
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
-    public List<Shape> clippingPaths;
-
-    private Matrix translateMatrix;
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);

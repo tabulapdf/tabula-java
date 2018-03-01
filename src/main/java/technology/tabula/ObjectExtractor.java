@@ -1,9 +1,11 @@
 package technology.tabula;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 public class ObjectExtractor {
 
@@ -11,6 +13,11 @@ public class ObjectExtractor {
 
     public ObjectExtractor(PDDocument pdfDocument) {
         this.pdfDocument = pdfDocument;
+    }
+
+    private List<PDAnnotation> getAnnotations(PDPage p) throws IOException {
+        List<PDAnnotation> annotations = p.getAnnotations();
+        return annotations;
     }
 
     protected Page extractPage(Integer pageNumber) throws IOException {
@@ -27,7 +34,6 @@ public class ObjectExtractor {
 
 
         TextStripper pdfTextStripper = new TextStripper(this.pdfDocument, pageNumber);
-
         pdfTextStripper.process();
 
         Utils.sort(pdfTextStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
@@ -42,8 +48,16 @@ public class ObjectExtractor {
             h = p.getCropBox().getHeight();
         }
 
-        return new Page(0, 0, w, h, pageRotation, pageNumber, p, pdfTextStripper.textElements,
+        Page page = new Page(0, 0, w, h, pageRotation, pageNumber, p, pdfTextStripper.textElements,
                 se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
+
+        for (PDAnnotation ann: this.getAnnotations(p)) {
+            System.out.println(ann.getContents());
+            System.out.println(ann.getRectangle());
+            System.out.println(ann.getRectangle().toGeneralPath().createTransformedShape(se.getPageTransform()).getBounds2D());
+        }
+
+        return page;
     }
 
     public PageIterator extract(Iterable<Integer> pages) {
@@ -61,7 +75,4 @@ public class ObjectExtractor {
     public void close() throws IOException {
         this.pdfDocument.close();
     }
-
-
-
 }
