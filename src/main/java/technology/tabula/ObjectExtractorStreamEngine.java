@@ -195,6 +195,10 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                 case PathIterator.SEG_LINETO:
                     end_pos = new Point2D.Float(c[0], c[1]);
 
+                    if (start_pos == null || end_pos == null) {
+                        break;
+                    }
+
                     line = pc.compare(start_pos, end_pos) == -1 ? new Line2D.Float(start_pos, end_pos)
                             : new Line2D.Float(end_pos, start_pos);
 
@@ -216,6 +220,9 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                     // segment
                     // back to the point corresponding to the most recent
                     // SEG_MOVETO."
+                    if (start_pos == null || end_pos == null) {
+                        break;
+                    }
                     line = pc.compare(end_pos, last_move) == -1 ? new Line2D.Float(end_pos, last_move)
                             : new Line2D.Float(last_move, end_pos);
 
