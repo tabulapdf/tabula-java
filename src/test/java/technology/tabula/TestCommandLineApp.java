@@ -154,5 +154,21 @@ public class TestCommandLineApp {
                 "-f",
                 "CSV"
         }));
+
+    }
+    @Test//(expected = ParseException.class)
+    public void testIncorrectPDFFile() throws ParseException, IOException {
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
+
+        try {
+            this.csvFromCommandLineArgs(new String[]{
+                    "src/test/resources/technology/tabula/fakeFile.pdf",
+                    "-p", "1", "-r", "argForR",
+                    "-f",
+                    "CSV"
+            });
+        } catch (ParseException pe) {
+            assertTrue(pe.toString(), true);
+        }
     }
 }

@@ -52,9 +52,16 @@ public class CommandLineApp {
     private TableExtractor tableExtractor;
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
+
+        // Retrieve pdf file from command line; throw exception if file doesn't exist
+        File pdfFile = new File(line.getArgs()[0]);
+        if (!pdfFile.exists()) {
+            throw new ParseException("File does not exist. Check file path.");
+        }
+
         this.defaultOutput = defaultOutput;
-        this.regexPageAreas = CommandLineApp.regexAreas(line);
-        this.pageArea = CommandLineApp.whichArea(line); //TODO: incorporate found rectangles into whichArea
+        this.regexPageAreas = CommandLineApp.regexAreas(line, pdfFile);
+        this.pageArea = CommandLineApp.whichArea(line);
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
@@ -90,27 +97,25 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public static List<Rectangle> regexAreas(CommandLine line) throws IOException {
+    public static ArrayList<RegexSearch> regexAreas(CommandLine line, File pdfFile) throws IOException {
         // TODO: Find a way to parse multiple REGEX pairs on CLI
         // TODO: Figure out how -a/--area argument is handled
         // TODO: Figure out which JSON-to-JAVA API to use (most likely GSON)
         // TODO: Find best area to put -r/--regex option (leave here? or move it?)
         // HARDCODED for testing/debugging purposes
-
-        //Loading existing document
-        //File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+        // Loading existing document
+        // File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
         if(!line.hasOption('r')){
             return null;
         }
         System.out.println("Getting to regexAreas");
-        File pdfFile = new File(line.getArgs()[0]);
         PDDocument regexDoc = PDDocument.load(pdfFile);
-        // TODO: Find way to split comma-separated string
         RegexSearch rs = new RegexSearch("From:", "0",
                 "To:", "0", regexDoc);
-        // TODO: key-value pairs being sent to CLI, now have to parse for coords
-        System.out.println("");
-        return rs.getAllMatchingAreas();
+        ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
+        localRegexSearchArray.add(rs); // TODO: change into a 'for' loop to add multiple RegexSearches
+        System.out.println(localRegexSearchArray); // verify 'rs' is in localRegexSearchArray
+        return localRegexSearchArray;
     }
 
     // begin the table extraction
@@ -127,15 +132,14 @@ public class CommandLineApp {
             extractDirectoryTables(line, pdfDirectory);
             return;
         }
-
-        if (line.getArgs().length != 1) {
-            throw new ParseException("Need exactly one filename\nTry --help for help");
-        }
-
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist");
         }
+        if (line.getArgs().length != 1) {
+            throw new ParseException("Need exactly one filename\nTry --help for help");
+        }
+
         extractFileTables(line, pdfFile);
     }
 
