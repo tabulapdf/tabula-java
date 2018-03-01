@@ -146,8 +146,13 @@ public class TestCommandLineApp {
 
     @Test
     public void testSingleRegexSearch() throws ParseException, IOException {
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 
-
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/spanning_cells.pdf",
+                "-p", "1", "-r", "argForR",
+                "-f",
+                "CSV"
+        }));
     }
-
 }

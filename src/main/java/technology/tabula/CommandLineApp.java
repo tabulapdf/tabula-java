@@ -19,13 +19,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.detectors.RegexSearch;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
 import technology.tabula.writers.Writer;
-import technology.tabula.detectors.RegexSearch;
+
 
 /*
  * CommandLineApp
@@ -44,7 +45,7 @@ public class CommandLineApp {
 
     private Appendable defaultOutput;
     private Rectangle pageArea;
-    private List<Rectangle> pageAreas; //made for use with regex
+    private ArrayList<RegexSearch> regexPageAreas; //made for use with regex
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -52,7 +53,7 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
         this.defaultOutput = defaultOutput;
-        this.pageAreas = CommandLineApp.regexAreas(line);
+        this.regexPageAreas = CommandLineApp.regexAreas(line);
         this.pageArea = CommandLineApp.whichArea(line); //TODO: incorporate found rectangles into whichArea
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
@@ -101,7 +102,7 @@ public class CommandLineApp {
         if(!line.hasOption('r')){
             return null;
         }
-
+        System.out.println("Getting to regexAreas");
         File pdfFile = new File(line.getArgs()[0]);
         PDDocument regexDoc = PDDocument.load(pdfFile);
         // TODO: Find way to split comma-separated string
