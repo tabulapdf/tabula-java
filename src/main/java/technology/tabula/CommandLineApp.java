@@ -44,13 +44,15 @@ public class CommandLineApp {
 
     private Appendable defaultOutput;
     private Rectangle pageArea;
+    private List<Rectangle> pageAreas; //made for use with regex
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
 
-    public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
+    public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
         this.defaultOutput = defaultOutput;
+        this.pageAreas = CommandLineApp.regexAreas(line);
         this.pageArea = CommandLineApp.whichArea(line); //TODO: incorporate found rectangles into whichArea
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
@@ -61,11 +63,11 @@ public class CommandLineApp {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // creates DefaultParser object
         CommandLineParser parser = new DefaultParser();
         try {
-            // parse the command line arguments --> collects options and puts into variable 'line'
+            // parse the command line arguments --> collects options and puts into 'line'
             CommandLine line = parser.parse(buildOptions(), args);
 
             if (line.hasOption('h')) {
@@ -78,34 +80,6 @@ public class CommandLineApp {
                 System.exit(0);
             }
 
-            // TODO: Figure out a way to parse the five arguments needed for RegexSearch from CLI
-            // TODO: Find a way to parse multiple REGEX pairs on CLI
-            // TODO: Figure out how -a/--area argument is handled
-            // TODO: Figure out which JSON-to-JAVA API to use (most likely GSON)
-            // TODO: Find best area to put -r/--regex option (leave here? or move it?)
-            if (line.hasOption('r')){
-                // HARDCODED for testing/debugging purposes
-                System.out.println("Reached the regex option.");
-
-                //Loading existing document
-                File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
-
-                try {
-                    PDDocument testdoc = PDDocument.load(file);
-                    RegexSearch rs = new RegexSearch("From:", "0",
-                            "To:", "0", testdoc);
-                    // String extractedContent = "";
-                    // TODO: key-value pairs being sent to CLI, now have to parse for coords
-                    // TODO: Figure out how Rectangles are parsed
-                    List<Rectangle> ma = rs.getAllMatchingAreas();
-                    System.out.println(ma);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                System.exit(0);
-            }
             // where the magic happens (I think)
             new CommandLineApp(System.out, line).extractTables(line);
         } catch (ParseException exp) {
@@ -113,6 +87,29 @@ public class CommandLineApp {
             System.exit(1);
         }
         System.exit(0);
+    }
+
+    public static List<Rectangle> regexAreas(CommandLine line) throws IOException {
+        // TODO: Find a way to parse multiple REGEX pairs on CLI
+        // TODO: Figure out how -a/--area argument is handled
+        // TODO: Figure out which JSON-to-JAVA API to use (most likely GSON)
+        // TODO: Find best area to put -r/--regex option (leave here? or move it?)
+        // HARDCODED for testing/debugging purposes
+
+        //Loading existing document
+        //File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+        if(!line.hasOption('r')){
+            return null;
+        }
+
+        File pdfFile = new File(line.getArgs()[0]);
+        PDDocument regexDoc = PDDocument.load(pdfFile);
+        // TODO: Find way to split comma-separated string
+        RegexSearch rs = new RegexSearch("From:", "0",
+                "To:", "0", regexDoc);
+        // TODO: key-value pairs being sent to CLI, now have to parse for coords
+        System.out.println("");
+        return rs.getAllMatchingAreas();
     }
 
     // begin the table extraction
@@ -289,7 +286,6 @@ public class CommandLineApp {
     }
 
     // utilities, etc.
-
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");
         List<Float> rv = new ArrayList<>();

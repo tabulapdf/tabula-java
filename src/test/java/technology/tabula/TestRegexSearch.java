@@ -78,6 +78,49 @@ public class TestRegexSearch {
 	/*
 	 * Test if table spanning multiple pages is correctly detected
 	 */
+	public void testGetAllMatchingAreas() {
+
+		String docName = "src/test/resources/technology/tabula/eu-002.pdf";
+		File multiPageTable = new File(docName);
+
+
+		try {
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(docName, iter));
+			}
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge","false","Social.","false",PDDocument.load(multiPageTable));
+			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
+			//to facilitate future regression testing
+			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899 Foreign language competence -0,0857 -0,1804 -0,1337 education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519 New EU-27 and Turkey73";
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getAllMatchingAreas()) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Failure in multi-page detection");
+
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+	}
+
+	@Test
+	/*
+	 * Test if table spanning multiple pages is correctly detected
+	 */
 	public void testMultiPageTableDetectMatchingRegex() {
 		
 		String docName = "src/test/resources/technology/tabula/sydney_disclosure_contract.pdf";

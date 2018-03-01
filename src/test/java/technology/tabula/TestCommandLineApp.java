@@ -16,7 +16,7 @@ import org.junit.Test;
 
 public class TestCommandLineApp {
 
-    private String csvFromCommandLineArgs(String[] args) throws ParseException {
+    private String csvFromCommandLineArgs(String[] args) throws ParseException, IOException {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(CommandLineApp.buildOptions(), args);
 
@@ -124,7 +124,7 @@ public class TestCommandLineApp {
     }
 
     @Test
-    public void testEncryptedPasswordSupplied() throws ParseException {
+    public void testEncryptedPasswordSupplied() throws ParseException, IOException {
         String s = this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/encrypted.pdf",
                 "-s", "userpassword",
@@ -135,7 +135,7 @@ public class TestCommandLineApp {
     }
 
     @Test(expected=org.apache.commons.cli.ParseException.class)
-    public void testEncryptedWrongPassword() throws ParseException {
+    public void testEncryptedWrongPassword() throws ParseException, IOException {
         String s = this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/encrypted.pdf",
                 "-s", "wrongpassword",
@@ -144,6 +144,10 @@ public class TestCommandLineApp {
         });
     }
 
+    @Test
+    public void testSingleRegexSearch() throws ParseException, IOException {
 
+
+    }
 
 }
