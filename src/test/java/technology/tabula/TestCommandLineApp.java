@@ -145,7 +145,7 @@ public class TestCommandLineApp {
         });
     }
 
-    @Test//(expected = ParseException.class)
+    @Test
     public void testIncorrectPDFFile() throws ParseException, IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 
@@ -194,6 +194,22 @@ public class TestCommandLineApp {
         } catch (IllegalStateException ie) {
             assertTrue(ie.toString(), true);
         }
+    }
+
+    @Test
+    public void testExtractRegexArea() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractRegexArea.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f",
+                "CSV"
+        }));
     }
 /*
     public void testBeforeAndAfterRegexData() throws IOException, ParseException {

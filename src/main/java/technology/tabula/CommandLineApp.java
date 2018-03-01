@@ -61,15 +61,14 @@ public class CommandLineApp {
         }
 
         this.defaultOutput = defaultOutput;
-        this.regexPageAreas = CommandLineApp.regexAreas(line, pdfFile);
         this.pageArea = CommandLineApp.whichArea(line);
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
-
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
+        this.regexPageAreas = getRegexSearches(line, pdfFile);
     }
 
     public static void main(String[] args) throws IOException {
@@ -98,20 +97,21 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public static ArrayList<RegexSearch> regexAreas(CommandLine line, File pdfFile) throws IOException, ParseException {
+    public ArrayList<RegexSearch> getRegexSearches(CommandLine line, File pdfFile) throws IOException, ParseException {
         // HARDCODED for testing/debugging purposes
         // Loading existing document
         // File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
 
-        if(!line.hasOption('r')){
+        if (!line.hasOption('r')) {
             return null;
         }
 
         System.out.println("Getting to regexAreas");
         PDDocument regexDoc = PDDocument.load(pdfFile);
+        regexDoc = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
         ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
-        JsonParser parser = new JsonParser();
 
+        JsonParser parser = new JsonParser();
         try {
             JsonObject jo = parser.parse(line.getOptionValue('r')).getAsJsonObject();
 
@@ -134,22 +134,23 @@ public class CommandLineApp {
                     RegexSearch rs = new RegexSearch(patternBeforeAsString, "0",
                             patternAfterAsString, "0", regexDoc);
                     localRegexSearchArray.add(rs);
-                }
-                else {
+                } else {
                     throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));
                 }
             }
-        //Verifying behavior during implementation...
-        //System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
-        //System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
-        }
-        catch (IllegalStateException ie){
+            //Verifying behavior during implementation...
+            //System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
+            //System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
+        } catch (IllegalStateException ie) {
             throw new IllegalStateException("Illegal data structure: " + line.getOptionValue('r'));
         }
 
-        System.out.println(localRegexSearchArray); // verify 'rs' is in localRegexSearchArray
         return localRegexSearchArray;
     }
+
+        //After all RegexSearch objects created, extract the areas
+
+
 
     // begin the table extraction
     public void extractTables(CommandLine line) throws ParseException {
@@ -173,7 +174,34 @@ public class CommandLineApp {
             throw new ParseException("Need exactly one filename\nTry --help for help");
         }
 
-        extractFileTables(line, pdfFile);
+       if(!line.hasOption('r')){
+           extractFileTables(line, pdfFile);
+        }
+        else{
+            try {
+                PDDocument pdDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+                PageIterator pageIterator = getPageIterator(pdDocument);
+                List<Table> tables = new ArrayList<>();
+
+                while (pageIterator.hasNext()) {
+                    Page page = pageIterator.next();
+                    if (page != null) {
+                        System.out.println("Do I get here?");
+                        for (RegexSearch rs : this.regexPageAreas) {
+                            ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
+                            for (Rectangle subSection : subSections) {
+                                Page selectionArea = page.getArea(subSection);
+                                System.out.println("Selection Area:");
+                                System.out.println(selectionArea.toString());
+                                tables.addAll(tableExtractor.extractTables(selectionArea));
+                            }
+                        }
+                    }
+                }
+                writeTables(tables, this.defaultOutput);
+            }
+            catch(IOException ie){}
+        }
     }
 
     public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
