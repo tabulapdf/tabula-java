@@ -1,8 +1,10 @@
 package technology.tabula.detectors;
 
 import java.awt.geom.Point2D;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +13,11 @@ import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
+
+import java.text.SimpleDateFormat;	// added imports
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /*
  * RegexSearch
@@ -174,6 +181,23 @@ public class RegexSearch {
 		public MatchingArea(Integer startPageNum, Integer endPageNum){
 			_startPageNum = startPageNum;
 			_endPageNum = endPageNum;
+
+
+			// Logging Additions
+			try {
+				String timeStamp = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
+				FileWriter fw = new FileWriter("./" + "ExtractionLog_" + timeStamp + ".txt",true);	// APPEND mode
+				BufferedWriter bw = new BufferedWriter(fw);
+				if (startPageNum == endPageNum)
+					bw.write("\tMATCH FOUND - page #" + startPageNum);
+				else
+					bw.write("\tMATCH FOUND - pages #" + startPageNum + "-" + endPageNum);
+				bw.newLine();
+				bw.close();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -315,7 +339,24 @@ public class RegexSearch {
 	LinkedList<DetectionData> potentialMatches = new LinkedList<>();
 	potentialMatches.add(new DetectionData());
 
-	for(Integer currentPage=1;currentPage<=totalNumPages;currentPage++) {
+
+		// Logging Additions
+		try {
+			String timeStamp = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
+			FileWriter fw = new FileWriter("./" + "ExtractionLog_" + timeStamp + ".txt",true);	// APPEND mode
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			bw.newLine();
+			bw.write("Document Processed: " + document.getDocumentInformation().getTitle());
+			bw.newLine();
+			bw.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		for(Integer currentPage=1;currentPage<=totalNumPages;currentPage++) {
 		/*
 		 * Convert PDF page to text
 		 */
