@@ -146,7 +146,9 @@ public class TestCommandLineApp {
     }
 
     @Test
-    public void testIncorrectPDFFile() throws ParseException, IOException {
+    // Tests for when app attempts to load an invalid/nonexistent pdf
+    // Test expects to catch a ParseException
+    public void testIncorrectPDFFile() throws IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 
         try {
@@ -162,6 +164,8 @@ public class TestCommandLineApp {
     }
 
     @Test
+    // Tests for an invalid input for argument following '-r'
+    // Test expects to catch IllegalStateException
     public void testImproperlyFormattedData() throws IOException, ParseException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 
@@ -178,6 +182,8 @@ public class TestCommandLineApp {
     }
 
     @Test
+    // Tests for correct parsing of pattern_before and pattern_after regex
+    // Note: Data is formatted as JSON Object
     public void testParsingBeforeAndAfterRegex() throws IOException, ParseException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 

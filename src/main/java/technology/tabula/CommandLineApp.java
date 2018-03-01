@@ -139,8 +139,8 @@ public class CommandLineApp {
                 }
             }
             //Verifying behavior during implementation...
-            //System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
-            //System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
+            System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
+            System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
         } catch (IllegalStateException ie) {
             throw new IllegalStateException("Illegal data structure: " + line.getOptionValue('r'));
         }
@@ -186,7 +186,7 @@ public class CommandLineApp {
                 while (pageIterator.hasNext()) {
                     Page page = pageIterator.next();
                     if (page != null) {
-                        System.out.println("Do I get here?");
+                        //System.out.println("Do I get here?");
                         for (RegexSearch rs : this.regexPageAreas) {
                             ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
                             for (Rectangle subSection : subSections) {
