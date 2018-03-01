@@ -1,23 +1,21 @@
 package technology.tabula.detectors;
 
 import java.awt.geom.Point2D;
-import java.io.*;
-import java.util.*;
+
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import technology.tabula.ObjectExtractor;
 import technology.tabula.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.TextElement;
 
-import java.text.SimpleDateFormat;	// added imports
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.text.SimpleDateFormat;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 /*
  * RegexSearch
@@ -66,7 +64,8 @@ public class RegexSearch {
 
 		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<>();
 		for (RegexSearch regexSearch : currentRegexSearches){
-			ArrayList<MatchingArea> areasToRemove = new ArrayList<MatchingArea>(regexSearch._matchingAreas);
+			ArrayList<MatchingArea> areasToRemove = new ArrayList<
+					MatchingArea>(regexSearch._matchingAreas);
 			System.out.println("Areas To Remove Length:"+areasToRemove.size());
 			regexSearch._matchingAreas.clear();
 			System.out.println("Areas To Remove Length:"+areasToRemove.size());
