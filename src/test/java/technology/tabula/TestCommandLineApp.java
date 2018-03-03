@@ -66,7 +66,7 @@ public class TestCommandLineApp {
         }
         //Test has failed if parseException has been thrown...
         catch(ParseException pe){
-            assertTrue(pe.getMessage(),false);
+            assertFalse(pe.getMessage(),false);
         }
     }
 
