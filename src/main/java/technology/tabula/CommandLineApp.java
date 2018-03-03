@@ -55,6 +55,9 @@ public class CommandLineApp {
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
 
         // Retrieve pdf file from command line; throw exception if file doesn't exist
+        if(line.getArgs().length==0){
+            throw new ParseException("Ill-formed program invocation. Check program call.");
+        }
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist. Check file path.");
