@@ -126,6 +126,18 @@ public class TestObjectExtractor {
             assertTrue(page.contains(te));
         }
     }
+
+    @Test public void testDoNotNPEInPointComparator() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/npe_issue_206.pdf"));
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+
+        try {
+            Page p = oe.extractPage(1);
+            assertNotNull(p);
+        } catch (NullPointerException e) {
+            fail("NPE in ObjectExtractor " + e.toString());
+        }
+    }
     
     /*
     @Test
