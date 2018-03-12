@@ -6,7 +6,10 @@ import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,7 +37,8 @@ public class CommandLineApp {
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
     private Appendable defaultOutput;
-    private Rectangle pageArea;
+    
+    private List<Pair<Integer, Rectangle>> pageAreas;
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -42,7 +46,7 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
-        this.pageArea = CommandLineApp.whichArea(line);
+        this.pageAreas = CommandLineApp.whichAreas(line);
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
@@ -156,11 +160,13 @@ public class CommandLineApp {
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
-                if (pageArea != null) {
-                    page = page.getArea(pageArea);
+                if (pageAreas != null) {
+                    for (Pair<Integer, Rectangle> areaPair : pageAreas) {
+                        tables.addAll(tableExtractor.extractTables(page.getArea(areaPair.getRight(), areaPair.getLeft())));
+                    }
+                } else {
+                    tables.addAll(tableExtractor.extractTables(page));
                 }
-
-                tables.addAll(tableExtractor.extractTables(page));
             }
             writeTables(tables, outFile);
         } catch (IOException e) {
@@ -200,16 +206,28 @@ public class CommandLineApp {
         }
     }
 
-    private static Rectangle whichArea(CommandLine line) throws ParseException {
+    private static List<Pair<Integer, Rectangle>> whichAreas(CommandLine line) throws ParseException {
         if (!line.hasOption('a')) {
             return null;
         }
+        
+        String[] optionValues = line.getOptionValues('a');
 
-        List<Float> f = parseFloatList(line.getOptionValue('a'));
-        if (f.size() != 4) {
-            throw new ParseException("area parameters must be top,left,bottom,right");
+        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>(); 
+        for (String optionValue: optionValues) {
+            int areaCalculationMode = Page.ABSOLUTE_AREA_CALCULATION_MODE;
+            int startIndex = 0;
+            if (optionValue.startsWith("%")) {
+                startIndex = 1;
+                areaCalculationMode = Page.RELATIVE_AREA_CALCULATION_MODE;
+            }
+            List<Float> f = parseFloatList(optionValue.substring(startIndex));
+            if (f.size() != 4) {
+                throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
+            }
+            areaList.add(new Pair<Integer, Rectangle>(areaCalculationMode, new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0))));
         }
-        return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+        return areaList;
     }
 
     private static List<Integer> whichPages(CommandLine line) throws ParseException {
@@ -307,7 +325,9 @@ public class CommandLineApp {
                 .build());
         o.addOption(Option.builder("a")
                 .longOpt("area")
-                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
+                .desc("-a/--area = Portion of the page to analyze. Accepts top,left,bottom,right . Example: --area 269.875,12.75,790.5,561. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual height or width of the page. "
+                        + "Example: --area %0,0,100,50. To specify multiple areas, -a option should be repeated. Default is entire page")
                 .hasArg()
                 .argName("AREA")
                 .build());

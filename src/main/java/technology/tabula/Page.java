@@ -21,6 +21,9 @@ public class Page extends Rectangle {
     private RectangleSpatialIndex<TextElement> spatial_index;
     private PDPage pdPage;
 
+    public static final int RELATIVE_AREA_CALCULATION_MODE = 0;
+    public static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
+
     public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage) {
         super(top, left, width, height);
         this.rotation = rotation;
@@ -48,6 +51,21 @@ public class Page extends Rectangle {
     }
 
     
+    public Page getArea(float top, float left, float bottom, float right, int mode) {
+        Rectangle area = new Rectangle(top, left, right - left, bottom - top);
+        return getArea(area, mode);
+    }
+
+    public Page getArea(Rectangle area, int mode) {
+        Rectangle newArea = area;
+        if (mode == RELATIVE_AREA_CALCULATION_MODE) {
+            newArea = new Rectangle((float) (area.getTop() / 100 * getHeight()),
+                    (float) (area.getLeft() / 100 * getWidth()), (float) (area.getWidth() / 100 * getWidth()),
+                    (float) (area.getHeight() / 100 * getHeight()));
+        }
+        return getArea(newArea);
+    }
+
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
         float min_char_width  = 7;
