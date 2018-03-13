@@ -105,7 +105,7 @@ public class CommandLineApp {
             ParseException {
 
         if (!line.hasOption('r')) {
-            return null;
+            return new ArrayList<>();
         }
 
         System.out.println("Getting to regexAreas");
@@ -175,10 +175,8 @@ public class CommandLineApp {
             throw new ParseException("Need exactly one filename\nTry --help for help");
         }
 
-       if(!line.hasOption('r')){
-           extractFileTables(line, pdfFile);
-        }
-        else{
+        extractFileTables(line, pdfFile);
+     /*
             try {
                 PDDocument pdDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
                 PageIterator pageIterator = getPageIterator(pdDocument);
@@ -203,6 +201,7 @@ public class CommandLineApp {
             }
             catch(IOException ie){}
         }
+        */
     }
 
     public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
@@ -251,6 +250,7 @@ public class CommandLineApp {
     }
 
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
+        System.out.println("In extractFile:");
         PDDocument pdfDocument = null;
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
@@ -260,11 +260,30 @@ public class CommandLineApp {
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
+                Page drawnSelection=page;
                 if (pageArea != null) {
-                    page = page.getArea(pageArea);
+                    tables.addAll(tableExtractor.extractTables(page.getArea(this.pageArea)));
+                }
+                //Attempt to extract entire page as table ONLY if user provides no other means of extraction...
+                else if((pageArea==null) && (this.requestedSearches.size()==0)){
+                    tables.addAll(tableExtractor.extractTables(page.getArea(page)));
                 }
 
-                tables.addAll(tableExtractor.extractTables(page));
+
+                //Moved here from the extractTables(line) method...
+                if(page!=null){
+                    for (RegexSearch rs: this.requestedSearches){
+                        System.out.println("Processing a requested search...");
+                        ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
+                        for(Rectangle subSection: subSections){
+                            Page selectionSubArea=page.getArea(subSection);
+                            System.out.println("Selection Area:");
+                            System.out.println(selectionSubArea.toString());
+                            tables.addAll(tableExtractor.extractTables(selectionSubArea));
+                        }
+
+                    }
+                }
             }
             writeTables(tables, outFile);
         } catch (IOException e) {
