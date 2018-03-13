@@ -46,7 +46,7 @@ public class CommandLineApp {
 
     private Appendable defaultOutput;
     private Rectangle pageArea;
-    private ArrayList<RegexSearch> regexPageAreas; //made for use with regex
+    private ArrayList<RegexSearch> requestedSearches; //made for use with regex
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -68,10 +68,11 @@ public class CommandLineApp {
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
+
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
-        this.regexPageAreas = getRegexSearches(line, pdfFile);
+        this.requestedSearches = CommandLineApp.whichRegexSearches(line, pdfFile,password);
     }
 
     public static void main(String[] args) throws IOException {
@@ -100,18 +101,15 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public ArrayList<RegexSearch> getRegexSearches(CommandLine line, File pdfFile) throws IOException, ParseException {
-        // HARDCODED for testing/debugging purposes
-        // Loading existing document
-        // File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+    public static ArrayList<RegexSearch> whichRegexSearches(CommandLine line, File pdfFile, String password) throws IOException,
+            ParseException {
 
         if (!line.hasOption('r')) {
             return null;
         }
 
         System.out.println("Getting to regexAreas");
-        PDDocument regexDoc = PDDocument.load(pdfFile);
-        regexDoc = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+        PDDocument regexDoc = (password==null) ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, password);
         ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
 
         JsonParser parser = new JsonParser();
@@ -190,7 +188,7 @@ public class CommandLineApp {
                     Page page = pageIterator.next();
                     if (page != null) {
                         //System.out.println("Do I get here?");
-                        for (RegexSearch rs : this.regexPageAreas) {
+                        for (RegexSearch rs : this.requestedSearches) {
                             ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
                             for (Rectangle subSection : subSections) {
                                 Page selectionArea = page.getArea(subSection);
@@ -427,7 +425,7 @@ public class CommandLineApp {
                 .hasArg()
                 .argName("PAGES")
                 .build());
-        o.addOption(Option.builder("r")
+        o.addOption(Option.builder("r") //TODO: The description will need to be updated here due to use of JSON...
                 .longOpt("regex")
                 .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
                 .hasArg()
