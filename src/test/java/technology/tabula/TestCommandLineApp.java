@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -28,11 +30,12 @@ public class TestCommandLineApp {
     }
 
     @Test
-    //Test fails with identical expected and actual results
+    // Test fails with identical expected and actual results
+    // Test failure due to end-of-line (\r\n) mismatches  - 'expectedCsv' has 3 extra \n's than the output Csv
+    // Most likely due to "UtilsForTesting.loadCsv"
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
-
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
@@ -42,6 +45,8 @@ public class TestCommandLineApp {
     }
 
     @Test
+    // Test failure due to end-of-line (\r\n) mismatches - 'expectedCsv' has 3 extra \n's than the output Csv
+    // Most likely due to the replaceAll in "UtilsForTesting.loadCsv"
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
@@ -66,6 +71,7 @@ public class TestCommandLineApp {
     }
 
     @Test
+    // Test is passing, but I'm not sure if it's testing what it was intended to test for...
     public void testExtractSpreadsheetWithAreaAndNewFile() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");

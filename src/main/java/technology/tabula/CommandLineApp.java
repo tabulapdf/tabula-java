@@ -54,11 +54,13 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
 
+        /*
         // Retrieve pdf file from command line; throw exception if file doesn't exist
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist. Check file path.");
         }
+        */
 
         this.defaultOutput = defaultOutput;
         this.pageArea = CommandLineApp.whichArea(line);
@@ -68,7 +70,7 @@ public class CommandLineApp {
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
-        this.regexPageAreas = getRegexSearches(line, pdfFile);
+        this.regexPageAreas = getRegexSearches(line);//, pdfFile);
     }
 
     public static void main(String[] args) throws IOException {
@@ -97,13 +99,16 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public ArrayList<RegexSearch> getRegexSearches(CommandLine line, File pdfFile) throws IOException, ParseException {
-        // HARDCODED for testing/debugging purposes
-        // Loading existing document
-        // File file = new File("C:/Users/tenja/Desktop/Test_PDFs/Test.pdf");
+    public ArrayList<RegexSearch> getRegexSearches(CommandLine line/*, File pdfFile*/) throws IOException, ParseException {
 
         if (!line.hasOption('r')) {
             return null;
+        }
+
+        // Retrieve pdf file from command line; throw exception if file doesn't exist
+        File pdfFile = new File(line.getArgs()[0]);
+        if (!pdfFile.exists()) {
+            throw new ParseException("File does not exist. Check file path.");
         }
 
         System.out.println("Getting to regexAreas");
