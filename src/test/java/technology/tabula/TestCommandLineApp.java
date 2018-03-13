@@ -57,17 +57,22 @@ public class TestCommandLineApp {
         Path sourcePDF = fs.getPath("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf");
         Files.copy(sourcePDF, copiedPDF);
         copiedPDF.toFile().deleteOnExit();
+        try {
+            this.csvFromCommandLineArgs(new String[]{
+                    "-b", tmpFolder.toString(),
+                    "-p", "1", "-a",
+                    "150.56,58.9,654.7,536.12", "-f",
+                    "CSV"
+            });
 
-        this.csvFromCommandLineArgs(new String[]{
-                "-b", tmpFolder.toString(),
-                "-p", "1", "-a",
-                "150.56,58.9,654.7,536.12", "-f",
-                "CSV"
-        });
-
-        Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
-        assertTrue(csvPath.toFile().exists());
-        assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
+            Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
+            assertTrue(csvPath.toFile().exists());
+            assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
+        }
+        //Test has failed if parseException has been thrown...
+        catch(ParseException pe){
+            assertTrue(pe.getMessage(),false);
+        }
     }
 
     @Test

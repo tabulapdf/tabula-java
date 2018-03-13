@@ -46,7 +46,7 @@ public class CommandLineApp {
 
     private Appendable defaultOutput;
     private Rectangle pageArea;
-    private ArrayList<RegexSearch> regexPageAreas; //made for use with regex
+    private ArrayList<RegexSearch> requestedSearches; //made for use with regex
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -54,23 +54,25 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
 
-        /*
         // Retrieve pdf file from command line; throw exception if file doesn't exist
+        if(line.getArgs().length==0){
+            throw new ParseException("Ill-formed program invocation. Check program call.");
+        }
         File pdfFile = new File(line.getArgs()[0]);
         if (!pdfFile.exists()) {
             throw new ParseException("File does not exist. Check file path.");
         }
-        */
 
         this.defaultOutput = defaultOutput;
         this.pageArea = CommandLineApp.whichArea(line);
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
+
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
-        this.regexPageAreas = getRegexSearches(line);//, pdfFile);
+        this.requestedSearches = CommandLineApp.whichRegexSearches(line, pdfFile,password);
     }
 
     public static void main(String[] args) throws IOException {
@@ -99,21 +101,15 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public ArrayList<RegexSearch> getRegexSearches(CommandLine line/*, File pdfFile*/) throws IOException, ParseException {
+    public static ArrayList<RegexSearch> whichRegexSearches(CommandLine line, File pdfFile, String password) throws IOException,
+            ParseException {
 
         if (!line.hasOption('r')) {
-            return null;
-        }
-
-        // Retrieve pdf file from command line; throw exception if file doesn't exist
-        File pdfFile = new File(line.getArgs()[0]);
-        if (!pdfFile.exists()) {
-            throw new ParseException("File does not exist. Check file path.");
+            return new ArrayList<>();
         }
 
         System.out.println("Getting to regexAreas");
-        PDDocument regexDoc = PDDocument.load(pdfFile);
-        regexDoc = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+        PDDocument regexDoc = (password==null) ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, password);
         ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
 
         JsonParser parser = new JsonParser();
@@ -179,10 +175,8 @@ public class CommandLineApp {
             throw new ParseException("Need exactly one filename\nTry --help for help");
         }
 
-       if(!line.hasOption('r')){
-           extractFileTables(line, pdfFile);
-        }
-        else{
+        extractFileTables(line, pdfFile);
+     /*
             try {
                 PDDocument pdDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
                 PageIterator pageIterator = getPageIterator(pdDocument);
@@ -192,7 +186,7 @@ public class CommandLineApp {
                     Page page = pageIterator.next();
                     if (page != null) {
                         //System.out.println("Do I get here?");
-                        for (RegexSearch rs : this.regexPageAreas) {
+                        for (RegexSearch rs : this.requestedSearches) {
                             ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
                             for (Rectangle subSection : subSections) {
                                 Page selectionArea = page.getArea(subSection);
@@ -207,6 +201,7 @@ public class CommandLineApp {
             }
             catch(IOException ie){}
         }
+        */
     }
 
     public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
@@ -255,6 +250,7 @@ public class CommandLineApp {
     }
 
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
+        System.out.println("In extractFile:");
         PDDocument pdfDocument = null;
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
@@ -264,11 +260,30 @@ public class CommandLineApp {
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
+                Page drawnSelection=page;
                 if (pageArea != null) {
-                    page = page.getArea(pageArea);
+                    tables.addAll(tableExtractor.extractTables(page.getArea(this.pageArea)));
+                }
+                //Attempt to extract entire page as table ONLY if user provides no other means of extraction...
+                else if((pageArea==null) && (this.requestedSearches.size()==0)){
+                    tables.addAll(tableExtractor.extractTables(page.getArea(page)));
                 }
 
-                tables.addAll(tableExtractor.extractTables(page));
+
+                //Moved here from the extractTables(line) method...
+                if(page!=null){
+                    for (RegexSearch rs: this.requestedSearches){
+                        System.out.println("Processing a requested search...");
+                        ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
+                        for(Rectangle subSection: subSections){
+                            Page selectionSubArea=page.getArea(subSection);
+                            System.out.println("Selection Area:");
+                            System.out.println(selectionSubArea.toString());
+                            tables.addAll(tableExtractor.extractTables(selectionSubArea));
+                        }
+
+                    }
+                }
             }
             writeTables(tables, outFile);
         } catch (IOException e) {
@@ -429,7 +444,7 @@ public class CommandLineApp {
                 .hasArg()
                 .argName("PAGES")
                 .build());
-        o.addOption(Option.builder("r")
+        o.addOption(Option.builder("r") //TODO: The description will need to be updated here due to use of JSON...
                 .longOpt("regex")
                 .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
                 .hasArg()
