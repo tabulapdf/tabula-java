@@ -4,8 +4,10 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -94,7 +96,7 @@ public class TestRegexSearch {
 				dataPages.add(UtilsForTesting.getPage(docName, iter));
 			}
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge","false","Social.","false",PDDocument.load(multiPageTable));
+			RegexSearch regexSearch = new RegexSearch("Knowledge","false","Social.","false",PDDocument.load(multiPageTable),null);
 			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
 			//to facilitate future regression testing
 			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899 Foreign language competence -0,0857 -0,1804 -0,1337 education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519 New EU-27 and Turkey73";
@@ -136,8 +138,12 @@ public class TestRegexSearch {
 			for(Integer iter=1; iter<=numDataPages; iter++) {
 				dataPages.add(UtilsForTesting.getPage(docName, iter));
 			}
-			
-			RegexSearch regexSearch = new RegexSearch("9\\.","false","10\\.","false",PDDocument.load(multiPageTable));
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	));
+				put(2,new RegexSearch.FilteredArea(0,0,842));}};
+
+			RegexSearch regexSearch = new RegexSearch("9\\.","false","10\\.","false",
+					PDDocument.load(multiPageTable),areasToFilter.get(1));
 			
 			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
 			//to facilitate future regression testing
@@ -189,9 +195,12 @@ public class TestRegexSearch {
 
 
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
-			
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(
+						0,0,842	)); }};
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
-			RegexSearch regexSearch = new RegexSearch("WRONG","false","WRONG","false",docInQuestion);
+			RegexSearch regexSearch = new RegexSearch("WRONG","false",
+					"WRONG","false",docInQuestion,areasToFilter.get(1));
 
 			String expectedTableContent = "";
 			String extractedTableContent = "";
@@ -228,8 +237,10 @@ public class TestRegexSearch {
 	        Page data = UtilsForTesting.getPage(basicDocName, 1);
 
 	        PDDocument docInQuestion = PDDocument.load(singleTable);
-
-			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","false",docInQuestion);
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+			RegexSearch regexSearch = new RegexSearch("Table [0-9]","false",
+					"Table [0-9]","false",docInQuestion,areasToFilter.get(1));
 			
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -277,9 +288,12 @@ public void testIncludePatternAfterOption() {
 		File singleTable = new File(basicDocName);
 		
         Page data = UtilsForTesting.getPage(basicDocName, 1);
-        
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false","Table [0-9]","true",PDDocument.load(singleTable));
+		docInQuestion = PDDocument.load(singleTable);
+		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","false",
+				"Table [0-9]","true",docInQuestion,areasToFilter.get(1));
 		
 		String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -339,9 +353,12 @@ public void testIncludePatternBeforeOption() {
 		File singleTable = new File(basicDocName);
 		
         Page data = UtilsForTesting.getPage(basicDocName, 1);
-        
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true","Table [0-9]","false",PDDocument.load(singleTable));
+		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true",
+				"Table [0-9]","false",PDDocument.load(singleTable),areasToFilter.get(1));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -405,9 +422,12 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		File singleTable = new File(basicDocName);
 		
         Page data = UtilsForTesting.getPage(basicDocName, 1);
-        
 
-		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true","Table [0-9]","true",PDDocument.load(singleTable));
+		HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+			{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+
+		RegexSearch regexSearch = new RegexSearch("Table [0-9]","true",
+				"Table [0-9]","true",PDDocument.load(singleTable),areasToFilter.get(1));
 		
 		String expectedTableContent = "Table 5 Correlations between the extent of participation of pupils in project activities and the" + 
 				" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" + 
@@ -469,8 +489,11 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
 
-			RegexSearch regexSearch = new RegexSearch("Knowledge","true","Social","true",PDDocument.load(singleTable));
+			RegexSearch regexSearch = new RegexSearch("Knowledge","true",
+					"Social","true",PDDocument.load(singleTable),areasToFilter.get(1));
 
 			String expectedTableContent = "Knowledge and awareness of different " +
 					"cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and " +
@@ -547,9 +570,10 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
-
-			RegexSearch regexSearch = new RegexSearch("Correlations","true","Knowledge","true",PDDocument.load(singleTable));
-
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+			RegexSearch regexSearch = new RegexSearch("Correlations","true",
+					"Knowledge","true",PDDocument.load(singleTable),areasToFilter.get(1));
 
 			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities " +
 					                      "and the perceived  impacts on pupils (Pearsons correlation coefficient*)   "+
@@ -613,8 +637,13 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			docInQuestion = PDDocument.load(singleTable);
 
-			RegexSearch regexSearch = new RegexSearch("Analyte","false","Report","false",PDDocument.load(singleTable));
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+
+			RegexSearch regexSearch = new RegexSearch("Analyte","false",
+					"Report","false", docInQuestion,areasToFilter.get(1));
 
 
 			String expectedTableContent = "Arsenic< 0.0050.010mg/LBarium0.12.00mg/LCadmium< 0.0010.005mg/LCalcium41mg/L"+
@@ -656,6 +685,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			}
 		}
 
+
 	}
 	/**
 	 * Test if RegexSearch class will correctly not designate a table for the case where a text pattern that
@@ -676,8 +706,13 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			Page data = UtilsForTesting.getPage(basicDocName, 1);
 
+			docInQuestion = PDDocument.load(singleTable);
 
-			RegexSearch regexSearch = new RegexSearch("Tender","false","Name","false",PDDocument.load(singleTable));
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	)); }};
+
+			RegexSearch regexSearch = new RegexSearch("Tender","false",
+					"Name","false",docInQuestion,areasToFilter.get(1));
 
 
 			String expectedTableContent = "1295";
@@ -715,4 +750,966 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		}
 
 	}
+	/**
+	 * Test if RegexSearch detection method will ignore the text located in the header-specified area.
+	 */
+	@Test
+	public void testHeaderFilteringCapability() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			final Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			docInQuestion = PDDocument.load(singleTable);
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					docInQuestion,new RegexSearch.FilteredArea(120,0,1000));
+
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expanded
+	 */
+	@Test
+	public void testBehaviorOnHeaderExpand() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			docInQuestion = PDDocument.load(singleTable);
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,842	));
+				put(2,new RegexSearch.FilteredArea(0,0,1000));}};
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					docInQuestion,areasToFilter.get(1));
+
+
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
+
+			//Simulating header expansion:
+			filteredAreas.put(1,new RegexSearch.FilteredArea(150,0,1000));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			RegexSearch.checkSearchesOnFilterResize(docInQuestion,filteredAreas.get(1),searchesSoFar);
+
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+					for(TextElement element : data.getText(tableArea)) {
+							extractedTableContent += element.getText();
+						}
+						extractedTableContent = extractedTableContent.trim();
+
+				}
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+			}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				}
+				catch(IOException ie){
+					System.out.println(ie);
+				}
+			}
+		}
+
+	}
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk
+	 * and a new table is 'uncovered'...
+	 */
+	public void testBehaviorOnHeaderShrink() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(150,0, 1000);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					document,filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,800));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" +
+					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" +
+					" and Production of Presentation and planing materials evaluation Knowledge and awareness of different" +
+					" cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and" +
+					" abilities 0,3416 0,3369 0,4303 Acquaintance of special knowledge 0,2569 0,2909 0,3557 Self competence" +
+					" 0,3791 0,3320 0,4617 * Significance p = 0,000  ";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expand for a regex search resulting in multiple matches
+	 */
+	public void testBehaviorOfHeaderExpandForMultiMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(282,0,1132));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Foreign language competence -0,0857 -0,1804 -0,1337education"
+			                             +" in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multiple matches on header expand");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk for a regex search with multiple matches
+	 */
+	public void testBehaviorOfHeaderShrinkForMultiMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(250,0, 1132);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(154,0,1132));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899Foreign language competence -0,0857 -0,1804 -0,1337"
+			                             +"education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multiple matches on header shrink");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk for a regex search
+	 * whose match spans 2 pages
+	 */
+	public void testBehaviorOfHeaderShrinkForMultiPageMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(basicDocName, iter));
+			}
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(100,0,1000	));
+					put(2,new RegexSearch.FilteredArea(100,0,1132));}};
+
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(2);
+
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(2));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			areasToFilter.put(2,new RegexSearch.FilteredArea(0,0,1132));
+
+
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(2),searchesSoFar);
+
+			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
+					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
+					"  -0,2586 -0,2557 -0,0928 management Training of teachers -0,1839 -0,1703"+
+					" -0,0518 Involvement of external actors in the every -0,2346 -0,2343 -0,2237"+
+					" day school-life International mobility of pupils ** ** -0,0583 * "+
+					"Significance p = 0,000 ** No significant correlation   8Chart 4  ";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			extractedTableContent = extractedTableContent.trim();
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multi-page match on header shrink");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expanded for a regex search
+	 * whose match spans 2 pages
+	 */
+	public void testBehaviorOfHeaderExpandForMultiPageMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(basicDocName, iter));
+			}
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,1000	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
+
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
+
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document,areasToFilter.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			areasToFilter.put(2,new RegexSearch.FilteredArea(100,0,1132));
+
+
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(2),searchesSoFar);
+
+			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
+					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
+					"  -0,2586 -0,2557 -0,0928 management Training of teachers -0,1839 -0,1703"+
+					" -0,0518 Involvement of external actors in the every -0,2346 -0,2343 -0,2237"+
+					" day school-life International mobility of pupils ** ** -0,0583 * "+
+					"Significance p = 0,000 ** No significant correlation   8";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			extractedTableContent = extractedTableContent.trim();
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multi-page match on header expand");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the footer filter has been expanded
+	 */
+	@Test
+	public void testBehaviorOnFooterExpand() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			docInQuestion = PDDocument.load(singleTable);
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){{put(1,new RegexSearch.FilteredArea(0,0,1000	));
+				put(2,new RegexSearch.FilteredArea(0,0,1000));}};
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					docInQuestion,areasToFilter.get(1));
+
+
+			final RegexSearch.FilteredArea previousAreaToFilter = new RegexSearch.FilteredArea(0,0, 1000);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>();
+
+			//Simulating header expansion:
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,700,1000));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			RegexSearch.checkSearchesOnFilterResize(docInQuestion,filteredAreas.get(1),searchesSoFar);
+
+
+			String expectedTableContent = "";
+
+			expectedTableContent = expectedTableContent.trim();
+
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+
+			}
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				}
+				catch(IOException ie){
+					System.out.println(ie);
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been expand for a regex search resulting in multiple matches
+	 */
+	public void testBehaviorOfFooterExpandForMultiMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,0, 1132);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,550,1132));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899"+
+					"Foreign language competence -0,0857 -0,1804 -0,1337";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multiple matches on header expand");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the footer filter has been expanded for a regex search
+	 * whose match spans 2 pages
+	 */
+	public void testBehaviorOfFooterExpandForMultiPageMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(basicDocName, iter));
+			}
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,0,842	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
+
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
+
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			areasToFilter.put(1,new RegexSearch.FilteredArea(0,100,1132));
+
+
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(1),searchesSoFar);
+
+			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030"+
+			" school School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school  "+
+			"-0,2586 -0,2557 -0,0928 management Training of teachers -0,1839 -0,1703 -0,0518 "+
+			"Involvement of external actors in the every -0,2346 -0,2343 -0,2237 day school-life "+
+			"International mobility of pupils ** ** -0,0583 * Significance p = 0,000 ** No significant "+
+			"correlation  Chart 4";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			extractedTableContent = extractedTableContent.trim();
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multi-page match on header expand");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk
+	 * and a new table is 'uncovered'...
+	 */
+	public void testBehaviorOnFooterShrink() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,850, 842);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Table 5","false","Table 6","false",
+					document,filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,250,800));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Correlations between the extent of participation of pupils in project activities and the" +
+					" perceived  impacts on pupils (Pearsons correlation coefficient*)   Involvement of pupils in  Preperation" +
+					" and Production of Presentation and planing materials evaluation Knowledge and awareness of different" +
+					" cultures 0,2885 0,3974 0,3904 Foreign language competence 0,3057 0,4184 0,3899 Social skills and" +
+					" abilities 0,3416 0,3369 0,4303 Acquaintance of special knowledge 0,2569 0,2909 0,3557 Self competence" +
+					" 0,3791 0,3320 0,4617 * Significance p = 0,000  ";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the footer filter has been shrunk for a regex search
+	 * whose match spans 2 pages
+	 */
+	public void testBehaviorOfFooterShrinkForMultiPageMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			Integer numDataPages = 2;
+
+			ArrayList<Page> dataPages = new ArrayList<Page>();
+
+			for(Integer iter=1; iter<=numDataPages; iter++) {
+				dataPages.add(UtilsForTesting.getPage(basicDocName, iter));
+			}
+
+			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
+				{put(1,new RegexSearch.FilteredArea(0,700,1132	));
+					put(2,new RegexSearch.FilteredArea(0,0,1132));}};
+
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = areasToFilter.get(1);
+
+			RegexSearch regexSearch = new RegexSearch("Impacts on",false,"Overall",false,document, areasToFilter.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			areasToFilter.put(1,new RegexSearch.FilteredArea(0,80,1132));
+
+
+			RegexSearch.checkSearchesOnFilterResize(document,areasToFilter.get(1),searchesSoFar);
+
+			String expectedTableContent = "European/International dimension of the -0,2438 -0,1945 -0,1030 school"+
+					" School climate -0,2976 -0,1810 -0,1012 Innovation in teaching and school" +
+					"  -0,2586 -0,2557 -0,0928 management Training of teachers -0,1839 -0,1703"+
+					" -0,0518 Involvement of external actors in the every -0,2346 -0,2343 -0,2237"+
+					" day school-life International mobility of pupils ** ** -0,0583 * "+
+					"Significance p = 0,000 ** No significant correlation  Chart 4  ";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContent += element.getText();
+					}
+				}
+			}
+			extractedTableContent = extractedTableContent.trim();
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multi-page match on header shrink");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	@Test
+	/**
+	 * Test if queryCheckContentOnResize method behaves correctly when the header filter has been shrunk for a regex search with multiple matches
+	 */
+	public void testBehaviorOfFooterShrinkForMultiMatch() {
+
+		PDDocument docInQuestion = new PDDocument();
+
+		try {
+
+			//Upload 1 page of PDF containing a single table
+
+			String basicDocName = "src/test/resources/technology/tabula/eu-002.pdf";
+
+			File singleTable = new File(basicDocName);
+
+			Page data = UtilsForTesting.getPage(basicDocName, 1);
+
+			PDDocument document = PDDocument.load(singleTable);
+
+			final RegexSearch.FilteredArea prevAreaOfFilter = new RegexSearch.FilteredArea(0,550, 1132);
+
+			HashMap<Integer,RegexSearch.FilteredArea> filteredAreas = new HashMap<Integer,RegexSearch.FilteredArea>()
+			{{put(1,prevAreaOfFilter);}};
+
+			RegexSearch regexSearch = new RegexSearch("Knowledge",false,"Social",false,document, filteredAreas.get(1));
+
+			RegexSearch[] searchesSoFar = {regexSearch};
+
+			filteredAreas.put(1,new RegexSearch.FilteredArea(0,0,1132));
+
+			RegexSearch.checkSearchesOnFilterResize(document,filteredAreas.get(1),searchesSoFar);
+
+			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899Foreign language competence -0,0857 -0,1804 -0,1337"
+					+"education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519";
+
+			expectedTableContent = expectedTableContent.trim();
+
+			String extractedTableContent = "";
+
+			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+
+				for(TextElement element : data.getText(tableArea)) {
+					extractedTableContent += element.getText();
+				}
+				extractedTableContent = extractedTableContent.trim();
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContent,extractedTableContent,"Error in header filtering capability for multiple matches on header shrink");
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail("Error in test case");
+		}
+		finally {
+			if(docInQuestion!=null) {
+				try {
+					docInQuestion.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+
 }

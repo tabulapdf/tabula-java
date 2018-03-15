@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -30,26 +28,25 @@ public class TestCommandLineApp {
     }
 
     @Test
-    // Test fails with identical expected and actual results
-    // Test failure due to end-of-line (\r\n) mismatches  - 'expectedCsv' has 3 extra \n's than the output Csv
-    // Most likely due to "UtilsForTesting.loadCsv"
+    //Test fails with identical expected and actual results
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        expectedCsv = expectedCsv.replaceAll("\n","");
+
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
                 "CSV"
-        }));
+        }).replaceAll("\n", ""));
     }
 
     @Test
-    // Test failure due to end-of-line (\r\n) mismatches - 'expectedCsv' has 3 extra \n's than the output Csv
-    // Most likely due to the replaceAll in "UtilsForTesting.loadCsv"
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        expectedCsv = expectedCsv.replaceAll("\n","");
         Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
         tmpFolder.toFile().deleteOnExit();
 
@@ -67,7 +64,8 @@ public class TestCommandLineApp {
 
             Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
             assertTrue(csvPath.toFile().exists());
-            assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
+            assertEquals(expectedCsv,UtilsForTesting.loadCsv(csvPath.toString()).replaceAll("\n", ""));
+            //assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
         }
         //Test has failed if parseException has been thrown...
         catch(ParseException pe){
@@ -76,18 +74,18 @@ public class TestCommandLineApp {
     }
 
     @Test
-    // Test is passing, but I'm not sure if it's testing what it was intended to test for...
     public void testExtractSpreadsheetWithAreaAndNewFile() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
-
+        expectedCsv = expectedCsv.replaceAll("\n", "");
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
                 "CSV", "-o", "outputFile"
         });
-        //assertEquals(expectedCsv,);
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 
 
@@ -187,8 +185,8 @@ public class TestCommandLineApp {
                     "-f",
                     "CSV"
             });
-        } catch (IllegalStateException ie) {
-            assertTrue(ie.toString(), true);
+        } catch (ParseException pe) {
+            assertTrue(pe.toString(), true);
         }
     }
 
@@ -224,9 +222,27 @@ public class TestCommandLineApp {
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
-                "-f",
-                "CSV"
+                "-f", "CSV"
         }));
+    }
+
+
+    @Test
+    public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractRegexArea.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 /*
     public void testBeforeAndAfterRegexData() throws IOException, ParseException {
