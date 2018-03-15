@@ -32,13 +32,14 @@ public class TestCommandLineApp {
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        expectedCsv = expectedCsv.replaceAll("\n","");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
                 "CSV"
-        }));
+        }).replaceAll("\n", ""));
     }
 
     @Test
