@@ -46,6 +46,7 @@ public class TestCommandLineApp {
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        expectedCsv = expectedCsv.replaceAll("\n","");
         Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
         tmpFolder.toFile().deleteOnExit();
 
@@ -63,7 +64,8 @@ public class TestCommandLineApp {
 
             Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
             assertTrue(csvPath.toFile().exists());
-            assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
+            assertEquals(expectedCsv,UtilsForTesting.loadCsv(csvPath.toString()).replaceAll("\n", ""));
+            //assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
         }
         //Test has failed if parseException has been thrown...
         catch(ParseException pe){
@@ -183,8 +185,8 @@ public class TestCommandLineApp {
                     "-f",
                     "CSV"
             });
-        } catch (IllegalStateException ie) {
-            assertTrue(ie.toString(), true);
+        } catch (ParseException pe) {
+            assertTrue(pe.toString(), true);
         }
     }
 

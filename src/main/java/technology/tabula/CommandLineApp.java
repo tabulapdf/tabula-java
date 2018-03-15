@@ -46,7 +46,7 @@ public class CommandLineApp {
 
     private Appendable defaultOutput;
     private Rectangle pageArea;
-    private ArrayList<RegexSearch> requestedSearches; //made for use with regex
+    private ArrayList<RequestedSearch> requestedSearches; //made for use with regex
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -55,13 +55,6 @@ public class CommandLineApp {
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException, IOException {
 
         // Retrieve pdf file from command line; throw exception if file doesn't exist
-        if(line.getArgs().length==0){
-            throw new ParseException("Ill-formed program invocation. Check program call.");
-        }
-        File pdfFile = new File(line.getArgs()[0]);
-        if (!pdfFile.exists()) {
-            throw new ParseException("File does not exist. Check file path.");
-        }
 
         this.defaultOutput = defaultOutput;
         this.pageArea = CommandLineApp.whichArea(line);
@@ -72,7 +65,7 @@ public class CommandLineApp {
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
-        this.requestedSearches = CommandLineApp.whichRegexSearches(line, pdfFile,password);
+        this.requestedSearches = CommandLineApp.whichRequestedSearches(line);
     }
 
     public static void main(String[] args) throws IOException {
@@ -101,16 +94,32 @@ public class CommandLineApp {
         System.exit(0);
     }
 
-    public static ArrayList<RegexSearch> whichRegexSearches(CommandLine line, File pdfFile, String password) throws IOException,
+    private static class RequestedSearch{
+
+        String _keyBeforeTable;
+        String _includeKeyBeforeTable;
+        String _keyAfterTable;
+        String _includeKeyAfterTable;
+
+        public RequestedSearch(String keyBeforeTable, String includeKeyBeforeTable,
+                               String keyAfterTable, String includeKeyAfterTable) {
+            _keyBeforeTable = keyBeforeTable;
+            _includeKeyBeforeTable = includeKeyBeforeTable;
+
+            _keyAfterTable = keyAfterTable;
+            _includeKeyAfterTable = includeKeyAfterTable;
+        }
+    }
+
+    public static ArrayList<RequestedSearch> whichRequestedSearches(CommandLine line) throws IOException,
             ParseException {
 
         if (!line.hasOption('r')) {
             return new ArrayList<>();
         }
 
-        System.out.println("Getting to regexAreas");
-        PDDocument regexDoc = (password==null) ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, password);
-        ArrayList<RegexSearch> localRegexSearchArray = new ArrayList<>();
+        //System.out.println("Getting to regexAreas");
+        ArrayList<RequestedSearch> localRequestedSearchArray = new ArrayList<>();
 
         JsonParser parser = new JsonParser();
         try {
@@ -132,21 +141,21 @@ public class CommandLineApp {
                 Boolean patternAfterIsValid = patternAfterAsString != null && !patternAfterAsString.isEmpty();
 
                 if (patternBeforeIsValid && patternAfterIsValid) {
-                    RegexSearch rs = new RegexSearch(patternBeforeAsString, "0",
-                            patternAfterAsString, "0", regexDoc);
-                    localRegexSearchArray.add(rs);
+                    RequestedSearch rs = new RequestedSearch(patternBeforeAsString, "0",
+                            patternAfterAsString, "0");
+                    localRequestedSearchArray.add(rs);
                 } else {
                     throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));
                 }
             }
             //Verifying behavior during implementation...
-            System.out.println("Pattern Before: " + localRegexSearchArray.get(0).getPatternBefore());
-            System.out.println("Pattern After: " + localRegexSearchArray.get(0).getPatternAfter());
+            System.out.println("Pattern Before: " + localRequestedSearchArray.get(0)._keyBeforeTable);
+            System.out.println("Pattern After: " + localRequestedSearchArray.get(0)._keyAfterTable);
         } catch (IllegalStateException ie) {
-            throw new IllegalStateException("Illegal data structure: " + line.getOptionValue('r'));
+            throw new ParseException("Illegal data structure: " + line.getOptionValue('r'));
         }
 
-        return localRegexSearchArray;
+        return localRequestedSearchArray;
     }
 
         //After all RegexSearch objects created, extract the areas
@@ -176,32 +185,6 @@ public class CommandLineApp {
         }
 
         extractFileTables(line, pdfFile);
-     /*
-            try {
-                PDDocument pdDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
-                PageIterator pageIterator = getPageIterator(pdDocument);
-                List<Table> tables = new ArrayList<>();
-
-                while (pageIterator.hasNext()) {
-                    Page page = pageIterator.next();
-                    if (page != null) {
-                        //System.out.println("Do I get here?");
-                        for (RegexSearch rs : this.requestedSearches) {
-                            ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
-                            for (Rectangle subSection : subSections) {
-                                Page selectionArea = page.getArea(subSection);
-                                System.out.println("Selection Area:");
-                                System.out.println(selectionArea.toString());
-                                tables.addAll(tableExtractor.extractTables(selectionArea));
-                            }
-                        }
-                    }
-                }
-                writeTables(tables, this.defaultOutput);
-            }
-            catch(IOException ie){}
-        }
-        */
     }
 
     public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
@@ -272,16 +255,20 @@ public class CommandLineApp {
 
                 //Moved here from the extractTables(line) method...
                 if(page!=null){
-                    for (RegexSearch rs: this.requestedSearches){
+                    for (RequestedSearch requestedSearch: this.requestedSearches){
                         System.out.println("Processing a requested search...");
-                        ArrayList<Rectangle> subSections = rs.getMatchingAreasForPage(page.getPageNumber());
+                        RegexSearch performedSearch = new RegexSearch(requestedSearch._keyBeforeTable,
+                                requestedSearch._includeKeyBeforeTable,
+                                requestedSearch._keyAfterTable,
+                                requestedSearch._includeKeyAfterTable,
+                                pdfDocument);
+                        ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
                         for(Rectangle subSection: subSections){
                             Page selectionSubArea=page.getArea(subSection);
                             System.out.println("Selection Area:");
                             System.out.println(selectionSubArea.toString());
                             tables.addAll(tableExtractor.extractTables(selectionSubArea));
                         }
-
                     }
                 }
             }
