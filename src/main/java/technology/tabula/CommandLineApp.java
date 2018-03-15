@@ -35,6 +35,10 @@ public class CommandLineApp {
     private static String VERSION = "1.0.2";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2017 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
+    
+    private static final int RELATIVE_AREA_CALCULATION_MODE = 0;
+    private static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
+
 
     private Appendable defaultOutput;
     
@@ -162,7 +166,13 @@ public class CommandLineApp {
 
                 if (pageAreas != null) {
                     for (Pair<Integer, Rectangle> areaPair : pageAreas) {
-                        tables.addAll(tableExtractor.extractTables(page.getArea(areaPair.getRight(), areaPair.getLeft())));
+                        Rectangle area = areaPair.getRight();
+                        if (areaPair.getLeft() == RELATIVE_AREA_CALCULATION_MODE) { 
+                            area  = new Rectangle((float) (area.getTop() / 100 * page.getHeight()),
+                                    (float) (area.getLeft() / 100 * page.getWidth()), (float) (area.getWidth() / 100 * page.getWidth()),
+                                    (float) (area.getHeight() / 100 * page.getHeight()));                            
+                        }
+                        tables.addAll(tableExtractor.extractTables(page.getArea(area)));
                     }
                 } else {
                     tables.addAll(tableExtractor.extractTables(page));
@@ -215,11 +225,11 @@ public class CommandLineApp {
 
         List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>(); 
         for (String optionValue: optionValues) {
-            int areaCalculationMode = Page.ABSOLUTE_AREA_CALCULATION_MODE;
+            int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
             int startIndex = 0;
             if (optionValue.startsWith("%")) {
                 startIndex = 1;
-                areaCalculationMode = Page.RELATIVE_AREA_CALCULATION_MODE;
+                areaCalculationMode = RELATIVE_AREA_CALCULATION_MODE;
             }
             List<Float> f = parseFloatList(optionValue.substring(startIndex));
             if (f.size() != 4) {
