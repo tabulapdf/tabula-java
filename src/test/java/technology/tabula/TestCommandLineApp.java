@@ -74,14 +74,15 @@ public class TestCommandLineApp {
     public void testExtractSpreadsheetWithAreaAndNewFile() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
-
+        expectedCsv = expectedCsv.replaceAll("\n", "");
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
                 "CSV", "-o", "outputFile"
         });
-        //assertEquals(expectedCsv,);
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 
 
@@ -218,9 +219,27 @@ public class TestCommandLineApp {
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
-                "-f",
-                "CSV"
+                "-f", "CSV"
         }));
+    }
+
+
+    @Test
+    public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractRegexArea.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 /*
     public void testBeforeAndAfterRegexData() throws IOException, ParseException {
