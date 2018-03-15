@@ -233,7 +233,7 @@ public class CommandLineApp {
     }
 
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
-        System.out.println("In extractFile:");
+
         PDDocument pdfDocument = null;
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
@@ -261,7 +261,8 @@ public class CommandLineApp {
                                 requestedSearch._includeKeyBeforeTable,
                                 requestedSearch._keyAfterTable,
                                 requestedSearch._includeKeyAfterTable,
-                                pdfDocument);
+                                pdfDocument,
+                                null); //TODO: add in filtered-area capability...
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
                         for(Rectangle subSection: subSections){
                             Page selectionSubArea=page.getArea(subSection);
