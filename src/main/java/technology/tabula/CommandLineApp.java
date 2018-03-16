@@ -360,7 +360,6 @@ public class CommandLineApp {
         private boolean useLineReturns = false;
         private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
         private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
-        private List<Float> verticalRulingPositions = null;
         private ExtractionMethod method = ExtractionMethod.BASIC;
 
         public TableExtractor() {
