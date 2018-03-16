@@ -6,10 +6,7 @@ import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -47,6 +44,7 @@ public class CommandLineApp {
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
+    private List<Float> verticalRulingPositions;
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
@@ -58,6 +56,10 @@ public class CommandLineApp {
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
+        if (line.hasOption('c')) {
+            this.verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
+        }
+
     }
 
     public static void main(String[] args) {
@@ -123,7 +125,6 @@ public class CommandLineApp {
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
-        Appendable outFile = this.defaultOutput;
         if (!line.hasOption('o')) {
             extractFile(pdfFile, this.defaultOutput);
             return;
@@ -163,6 +164,12 @@ public class CommandLineApp {
 
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
+
+                if (verticalRulingPositions != null) {
+                    for (Float verticalRulingPosition: verticalRulingPositions) {
+                        page.addRuling(new Ruling(0, verticalRulingPosition, 0.0f, (float) page.getHeight()));
+                    }
+                }
 
                 if (pageAreas != null) {
                     for (Pair<Integer, Rectangle> areaPair : pageAreas) {
@@ -264,9 +271,6 @@ public class CommandLineApp {
         extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
         extractor.setUseLineReturns(line.hasOption('u'));
 
-        if (line.hasOption('c')) {
-            extractor.setVerticalRulingPositions(parseFloatList(line.getOptionValue('c')));
-        }
         return extractor;
     }
 
@@ -362,10 +366,6 @@ public class CommandLineApp {
         public TableExtractor() {
         }
 
-        public void setVerticalRulingPositions(List<Float> positions) {
-            this.verticalRulingPositions = positions;
-        }
-
         public void setGuess(boolean guess) {
             this.guess = guess;
         }
@@ -410,9 +410,6 @@ public class CommandLineApp {
                 return tables;
             }
 
-            if (verticalRulingPositions != null) {
-                return basicExtractor.extract(page, verticalRulingPositions);
-            }
             return basicExtractor.extract(page);
         }
 

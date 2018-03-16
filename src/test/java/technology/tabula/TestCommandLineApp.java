@@ -185,4 +185,31 @@ public class TestCommandLineApp {
         }));
     }
 
+    @Test
+    public void testLatticeModeWithColumnOption() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/AnimalSounds.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/AnimalSounds.pdf",
+                "-p", "1", "-c",
+                "59,218,331,551", "-l",
+                "-f", "CSV"
+        }));
+    }
+
+    @Test
+    public void testLatticeModeWithColumnAndMultipleAreasOption() throws ParseException, IOException {
+
+        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/AnimalSounds1.json");
+        String resultJson = this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/AnimalSounds1.pdf",
+                "-p", "1", "-c", "57,136,197,296,314,391,457,553",
+                "-a", "%0,0,100,50", "-a", "%0,50,100,100",
+                 "-l", "-f", "JSON"
+        });
+        System.out.println("Returned Json: \n" + resultJson);
+        assertEquals(expectedJson, resultJson);
+    }
+
 }
