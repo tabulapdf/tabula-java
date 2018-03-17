@@ -246,6 +246,18 @@ public class CommandLineApp {
             PageIterator pageIterator = getPageIterator(pdfDocument);
             List<Table> tables = new ArrayList<>();
 
+            ArrayList<RegexSearch> performedSearches = new ArrayList<>();
+
+            for(RequestedSearch requestedSearch: this.requestedSearches){
+                performedSearches.add(new RegexSearch(requestedSearch._keyBeforeTable,
+                        requestedSearch._includeKeyBeforeTable,
+                        requestedSearch._keyAfterTable,
+                        requestedSearch._includeKeyAfterTable,
+                        pdfDocument,
+                        null));
+            }
+
+
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
@@ -258,16 +270,8 @@ public class CommandLineApp {
                     tables.addAll(tableExtractor.extractTables(page.getArea(page)));
                 }
 
-                //Moved here from the extractTables(line) method...
                 if(page!=null){
-                    for (RequestedSearch requestedSearch: this.requestedSearches){
-                        System.out.println("Processing a requested search...");
-                        RegexSearch performedSearch = new RegexSearch(requestedSearch._keyBeforeTable,
-                                requestedSearch._includeKeyBeforeTable,
-                                requestedSearch._keyAfterTable,
-                                requestedSearch._includeKeyAfterTable,
-                                pdfDocument,
-                                null); //TODO: add in filtered-area capability...
+                    for (RegexSearch performedSearch: performedSearches){
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
                         for(Rectangle subSection: subSections){
                             Page selectionSubArea=page.getArea(subSection);
