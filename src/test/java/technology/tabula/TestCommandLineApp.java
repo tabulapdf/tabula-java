@@ -226,6 +226,22 @@ public class TestCommandLineApp {
         }));
     }
 
+    @Test
+    public void testExtractMultipleRegexSearches() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractTwoRegexSearches.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"}," +
+                        "{\"pattern_before\" : \"Social\"," +
+                        "\"pattern_after\" : \"Self\"} ]}",
+                "-f", "CSV"
+        }));
+    }
 
     @Test
     public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {
