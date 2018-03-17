@@ -2,6 +2,7 @@ package technology.tabula;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
+
 import org.junit.Test;
 
 public class TestCommandLineApp {
@@ -244,29 +246,52 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
-/*
-    public void testBeforeAndAfterRegexData() throws IOException, ParseException {
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
-        String[] args = new String[]{"src/test/resources/technology/tabula/spanning_cells.pdf",
-                "-p", "1", "-r",
-                "{\"queries\": " +
-                        "[ {\"pattern_before\" : \"Table 5\"," +
-                        "\"pattern_after\" : \"Table 6\"} ]}",
-                "-f",
-                "CSV"};
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(CommandLineApp.buildOptions(), args);
-        StringBuilder stringBuilder = new StringBuilder();
-        new CommandLineApp(stringBuilder, cmd).extractTables(cmd);
 
+    @Test
+    public void testExtractBatchSpreadsheetWithRegex() throws ParseException, IOException {
+        FileSystem fs = FileSystems.getDefault();
+        String expectedCsv = "";
+        //String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/regex_batch_process_files");
+        //expectedCsv = expectedCsv.replaceAll("\n","");
+        Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
+        Path srcFolder = fs.getPath("src/test/resources/technology/tabula/regex_batch_process_files");
+
+        File[] srcFiles = srcFolder.toFile().listFiles();
+
+        for(File srcFile: srcFiles){
+            Path copiedPDF = tmpFolder.resolve(srcFile.getName());
+            Files.copy(srcFile.toPath(),copiedPDF);
+            System.out.println(srcFile.getAbsolutePath());
+            System.out.println(copiedPDF.toAbsolutePath());
+            //TODO: figure out how to structure argument....
+        }
+
+        tmpFolder.toFile().deleteOnExit();
+
+//        Path copiedPDF = tmpFolder.resolve(fs.getPath("spreadsheet.pdf"));
+//        System.out.println(copiedPDF.toAbsolutePath().toString());
+//        Path sourcePDF = fs.getPath("src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf");
+//        Files.copy(sourcePDF, copiedPDF);
+        /*
+        copiedPDF.toFile().deleteOnExit();
         try {
+            this.csvFromCommandLineArgs(new String[]{
+                    "-b", tmpFolder.toString(),
+                    "-p", "1", "-a",
+                    "150.56,58.9,654.7,536.12", "-f",
+                    "CSV"
+            });
 
-
-            };
+            Path csvPath = tmpFolder.resolve(fs.getPath("spreadsheet.csv"));
+            assertTrue(csvPath.toFile().exists());
+            assertEquals(expectedCsv,UtilsForTesting.loadCsv(csvPath.toString()).replaceAll("\n", ""));
+            //assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(csvPath));
         }
-        catch (IllegalStateException ie) {
-            assertTrue(ie.toString(), true);
+        //Test has failed if parseException has been thrown...
+        catch(ParseException pe){
+            assertTrue(pe.getMessage(),false);
         }
+        */
     }
-    */
+
 }
