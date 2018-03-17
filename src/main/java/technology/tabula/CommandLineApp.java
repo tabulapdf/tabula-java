@@ -6,6 +6,8 @@ import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -271,15 +273,28 @@ public class CommandLineApp {
                 }
 
                 if(page!=null){
+                    ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
-                        for(Rectangle subSection: subSections){
-                            Page selectionSubArea=page.getArea(subSection);
-                            System.out.println("Selection Area:");
-                            System.out.println(selectionSubArea.toString());
-                            tables.addAll(tableExtractor.extractTables(selectionSubArea));
-                        }
+                       // for(Rectangle subSection: subSections){
+                       //     Page selectionSubArea=page.getArea(subSection);
+                       //     System.out.println("Selection Area:");
+                       //     System.out.println(selectionSubArea.toString());
+                       //     tables.addAll(tableExtractor.extractTables(selectionSubArea));
+                       // }
+                        totalSubsections.addAll(subSections);
                     }
+                    //Sorting subsections based on height...
+                    Collections.sort(totalSubsections, new Comparator<Rectangle>() {
+                        public int compare(Rectangle r1, Rectangle r2){
+                            return (int)(r1.getMinY() - r2.getMinY());
+                        }
+                    });
+                    for(Rectangle subSection: totalSubsections){
+                        Page selectionSubArea = page.getArea(subSection);
+                        tables.addAll(tableExtractor.extractTables(selectionSubArea));
+                    }
+
                 }
             }
             writeTables(tables, outFile);
