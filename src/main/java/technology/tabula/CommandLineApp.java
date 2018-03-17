@@ -276,12 +276,6 @@ public class CommandLineApp {
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
-                       // for(Rectangle subSection: subSections){
-                       //     Page selectionSubArea=page.getArea(subSection);
-                       //     System.out.println("Selection Area:");
-                       //     System.out.println(selectionSubArea.toString());
-                       //     tables.addAll(tableExtractor.extractTables(selectionSubArea));
-                       // }
                         totalSubsections.addAll(subSections);
                     }
                     //Sorting subsections based on height...
@@ -294,7 +288,7 @@ public class CommandLineApp {
                         Page selectionSubArea = page.getArea(subSection);
                         tables.addAll(tableExtractor.extractTables(selectionSubArea));
                     }
-
+                    //TODO: Figure out where overlap detection will occur in this process...
                 }
             }
             writeTables(tables, outFile);
