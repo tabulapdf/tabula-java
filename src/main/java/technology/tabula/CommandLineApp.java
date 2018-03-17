@@ -196,7 +196,13 @@ public class CommandLineApp {
 
         for (File pdfFile : pdfs) {
             File outputFile = new File(getOutputFilename(pdfFile));
-            extractFileInto(pdfFile, outputFile);
+            try{
+                extractFileInto(pdfFile, outputFile);
+            }
+            catch(ParseException pe){
+                System.out.println(pe.getMessage());
+                //TODO: NOTE: these sort of errors should be taken into consideration when logging....
+            }
         }
     }
 
@@ -251,7 +257,6 @@ public class CommandLineApp {
                 else if((pageArea==null) && (this.requestedSearches.size()==0)){
                     tables.addAll(tableExtractor.extractTables(page.getArea(page)));
                 }
-
 
                 //Moved here from the extractTables(line) method...
                 if(page!=null){

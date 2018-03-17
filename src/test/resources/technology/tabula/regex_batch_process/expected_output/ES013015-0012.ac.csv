@@ -1,0 +1,21 @@
+Arsenic,< 0.005,0.010,mg/L
+Barium,< 0.1,2.00,mg/L
+Cadmium,< 0.001,0.005,mg/L
+Calcium,7,,mg/L
+Chloride,< 5.00,250,mg/L
+Chromium,< 0.01,0.10,mg/L
+Copper,< 0.05,1.3,mg/L
+Fluoride,< 0.20,4.00,mg/L
+Iron,< 0.10,0.30,mg/L
+Lead,< 0.005,0.015,mg/L
+Magnesium,2,,mg/L
+Manganese,< 0.03,0.05,mg/L
+Mercury,< 0.0005,0.002,mg/L
+pH,6.8,,N/A
+Selenium,< 0.005,0.05,mg/L
+Silver,< 0.05,0.10,mg/L
+Sodium,< 1.0,,mg/L
+Sulfate,< 5.00,250,mg/L
+Total Alkalinity,27,,mg/L
+Total Hardness,27,,mg/L
+Zinc,< 0.05,5.00,mg/L
