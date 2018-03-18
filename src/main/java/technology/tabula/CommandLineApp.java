@@ -49,6 +49,7 @@ public class CommandLineApp {
     private Appendable defaultOutput;
     private Rectangle pageArea;
     private ArrayList<RequestedSearch> requestedSearches; //made for use with regex
+    private RegexSearch.FilteredArea pageMargins;
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -68,6 +69,8 @@ public class CommandLineApp {
             this.password = line.getOptionValue('s');
         }
         this.requestedSearches = CommandLineApp.whichRequestedSearches(line);
+        this.pageMargins = CommandLineApp.whichPageMargins(line);
+        System.out.println("Header Height: "+ this.pageMargins.getHeaderHeightScale());
     }
 
     public static void main(String[] args) throws IOException {
@@ -110,6 +113,27 @@ public class CommandLineApp {
 
             _keyAfterTable = keyAfterTable;
             _includeKeyAfterTable = includeKeyAfterTable;
+        }
+    }
+
+    public static RegexSearch.FilteredArea whichPageMargins(CommandLine line) throws IOException,ParseException{
+        if(!line.hasOption("m")){
+            return null;
+        }
+
+        try{
+            JsonObject jo = new JsonParser().parse(line.getOptionValue('m')).getAsJsonObject();
+            JsonElement header_scale = jo.get("header_scale");
+            JsonElement footer_scale = jo.get("footer_scale");
+
+            if(header_scale==null || footer_scale==null){
+                throw new IllegalStateException();
+            }
+
+            return new RegexSearch.FilteredArea(header_scale.getAsFloat(),footer_scale.getAsFloat());
+        }
+        catch (IllegalStateException ie) {
+            throw new ParseException("Illegal data structure: " + line.getOptionValue('m'));
         }
     }
 
@@ -256,7 +280,7 @@ public class CommandLineApp {
                         requestedSearch._keyAfterTable,
                         requestedSearch._includeKeyAfterTable,
                         pdfDocument,
-                        null));
+                        this.pageMargins));
             }
 
 
@@ -455,6 +479,12 @@ public class CommandLineApp {
                 .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
                 .hasArg()
                 .argName("REGEX")
+                .build());
+        o.addOption(Option.builder("m")
+                .longOpt("margins")
+                .desc("Define the header and footer margins for the document")
+                .hasArg()
+                .argName("MARGINS")
                 .build());
 
         return o;

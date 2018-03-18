@@ -246,6 +246,27 @@ public class TestCommandLineApp {
         }));
     }
 
+
+    @Test
+    /*
+     * Verify that header can be specified on CLI when performing regex search...
+     */
+    public void testHeaderSpecifications() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractRegexArea.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-m","{\"header_scale\" : 0.9," +
+                      "\"footer_scale\" : \"0\" }"
+        }));
+    }
+
     @Test
     public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {
 

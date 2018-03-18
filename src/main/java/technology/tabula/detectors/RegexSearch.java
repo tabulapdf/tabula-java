@@ -308,6 +308,11 @@ public class RegexSearch {
 		private Float  scaleOfHeaderHeight;
 		private Float  scaleOfFooterHeight;
 
+		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio){
+			scaleOfHeaderHeight=headerHeightRatio;
+			scaleOfFooterHeight=footerHeightRatio;
+		}
+
 		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer guiHeightOfPage){
 			guiPageHeight = guiHeightOfPage;
 
@@ -384,7 +389,9 @@ public class RegexSearch {
 		Integer top = (int)page.getTextBounds().getTop();
 
 		if(areaToFilter!=null){
+			System.out.println("Do I get here?");
 			top = Math.round(areaToFilter.getHeaderHeightScale()* page.height);
+			System.out.println("Top:"+top);
 		}
 
 
@@ -394,6 +401,8 @@ public class RegexSearch {
 					-areaToFilter.getFooterHeightScale()* page.height);
 		}
 		height -= top;
+
+		System.out.println("Height:"+height);
 
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
 				new Rectangle(top,0, page.width, height));
