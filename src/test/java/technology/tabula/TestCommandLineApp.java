@@ -251,9 +251,9 @@ public class TestCommandLineApp {
     /*
      * Verify that header can be specified on CLI when performing regex search...
      */
-    public void testHeaderSpecifications() throws ParseException, IOException {
+    public void testHeaderSpecificationsOnCLI() throws ParseException, IOException {
 
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractRegexArea.csv");
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestHeaderSpecificationsOnCLI.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
@@ -262,10 +262,73 @@ public class TestCommandLineApp {
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
                 "-f", "CSV",
-                "-m","{\"header_scale\" : 0.9," +
+                "-m","{\"header_scale\" : 0.5," +
                       "\"footer_scale\" : \"0\" }"
         }));
     }
+
+
+    @Test
+    /*
+     * Verify that footer can be specified on CLI when performing regex search...
+     */
+    public void testFooterSpecificationsOnCLI() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestFooterSpecificationsOnCLI.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-m","{\"header_scale\" : 0," +
+                "\"footer_scale\" : 0.5 }"
+        }));
+    }
+
+    @Test
+    /*
+     * Verify that both header and footer can be specified on CLI when performing regex search...
+     */
+    public void testHeaderAndFooterSpecificationsOnCLI() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestHeaderAndFooterSpecificationsOnCLI.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-m","{\"header_scale\" : 0.25," +
+                "\"footer_scale\" : 0.25 }"
+        }));
+    }
+
+    @Test
+    /*
+     * Verify that when no header and footer is specified on CLI regex search is still performed correctly...
+     */
+    public void testNoHeaderAndFooterSpecificationsOnCLI() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestNoHeaderAndFooterSpecificationsOnCLI.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"} ]}",
+                "-f", "CSV",
+                "-m","{\"header_scale\" : 0," +
+                "\"footer_scale\" : 0 }"
+        }));
+    }
+
+
 
     @Test
     public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {

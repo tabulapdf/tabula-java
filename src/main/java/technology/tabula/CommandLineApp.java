@@ -70,7 +70,6 @@ public class CommandLineApp {
         }
         this.requestedSearches = CommandLineApp.whichRequestedSearches(line);
         this.pageMargins = CommandLineApp.whichPageMargins(line);
-        System.out.println("Header Height: "+ this.pageMargins.getHeaderHeightScale());
     }
 
     public static void main(String[] args) throws IOException {

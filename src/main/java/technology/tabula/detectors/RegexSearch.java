@@ -389,20 +389,16 @@ public class RegexSearch {
 		Integer top = (int)page.getTextBounds().getTop();
 
 		if(areaToFilter!=null){
-			System.out.println("Do I get here?");
 			top = Math.round(areaToFilter.getHeaderHeightScale()* page.height);
-			System.out.println("Top:"+top);
 		}
 
 
 		Integer height = Math.round(page.height);
 		if(areaToFilter!=null){
-			height = Math.round(page.height-areaToFilter.getHeaderHeightScale()*page.height
-					-areaToFilter.getFooterHeightScale()* page.height);
+			height = Math.round(page.height -areaToFilter.getFooterHeightScale()* page.height);
 		}
-		height -= top;
 
-		System.out.println("Height:"+height);
+		height -= top;
 
 		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
 				new Rectangle(top,0, page.width, height));
