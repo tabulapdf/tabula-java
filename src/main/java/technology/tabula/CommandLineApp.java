@@ -321,7 +321,6 @@ public class CommandLineApp {
                  if(page!=null){
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
-                        System.out.println("SHOULD NOT SEE THIS:");
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
                         totalSubsections.addAll(subSections);
                     }
