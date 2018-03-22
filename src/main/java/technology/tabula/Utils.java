@@ -162,11 +162,15 @@ public class Utils {
             return null;
         }
 
+        System.out.println("PAGESSPEC:");
+        System.out.println(pagesSpec);
+
         List<Integer> rv = new ArrayList<>();
 
         String[] ranges = pagesSpec.split(",");
+
         for (int i = 0; i < ranges.length; i++) {
-            String[] r = ranges[i].split("-");
+            String[] r = ranges[i].trim().split("-");
             if (r.length == 0 || !Utils.isNumeric(r[0]) || r.length > 1 && !Utils.isNumeric(r[1])) {
                 throw new ParseException("Syntax error in page range specification");
             }

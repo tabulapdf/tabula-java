@@ -11,6 +11,7 @@ public class PageIterator implements Iterator<Page> {
     public PageIterator(ObjectExtractor oe, Iterable<Integer> pages) {
         super();
         this.oe = oe;
+
         this.pageIndexIterator = pages.iterator();
     }
 

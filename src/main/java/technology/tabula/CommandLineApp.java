@@ -5,10 +5,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -20,6 +17,9 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import com.google.gson.*;
 
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.RegexSearch;
@@ -47,10 +47,10 @@ public class CommandLineApp {
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
     private Appendable defaultOutput;
-    private Rectangle pageArea;
+    private List<Rectangle> pageAreas;
     private ArrayList<RequestedSearch> requestedSearches; //made for use with regex
     private RegexSearch.FilteredArea pageMargins;
-    private List<Integer> pages;
+    private List<List<Integer>> pages;
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
@@ -60,10 +60,14 @@ public class CommandLineApp {
         // Retrieve pdf file from command line; throw exception if file doesn't exist
 
         this.defaultOutput = defaultOutput;
-        this.pageArea = CommandLineApp.whichArea(line);
-        this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
+        this.pageAreas = CommandLineApp.whichAreas(line);
+        this.pages = CommandLineApp.whichPages(line);
+
+
+
+        System.out.println("BUT WHAT ABOUT HERE???");
 
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
@@ -268,9 +272,33 @@ public class CommandLineApp {
         PDDocument pdfDocument = null;
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
-            PageIterator pageIterator = getPageIterator(pdfDocument);
             List<Table> tables = new ArrayList<>();
 
+            //Extract all user-drawn rectangles in the document...
+            if(this.pageAreas.isEmpty()){ //no selections drawn <-- whole page is treated as drawn area
+                for(List<Integer> pageListPerOption: this.pages){
+                    Iterator<Page> pagesToExtract = getPageIteratorForDrawnSelection(pdfDocument,pageListPerOption);
+                    while(pagesToExtract.hasNext()){
+                        Page pageToExtract = pagesToExtract.next();
+                        tables.addAll(tableExtractor.extractTables(pageToExtract));
+                    }
+                }
+            }
+            else{ //only extract the sections of the page corresponding to the drawn areas
+                System.out.println("Do I get here???");
+                for(int index=0;index<this.pageAreas.size();index++){
+                    Iterator<Page> pagesPerArea = getPageIteratorForDrawnSelection(pdfDocument,this.pages.get(index));
+                    while(pagesPerArea.hasNext()){
+                        Page drawnSelection = pagesPerArea.next();
+                        drawnSelection = drawnSelection.getArea(this.pageAreas.get(index));
+                        tables.addAll(tableExtractor.extractTables(drawnSelection));
+                    }
+                }
+            }
+
+
+
+            //Extract all tables corresponding to regex searches in the document...
             ArrayList<RegexSearch> performedSearches = new ArrayList<>();
 
             for(RequestedSearch requestedSearch: this.requestedSearches){
@@ -283,21 +311,17 @@ public class CommandLineApp {
             }
 
 
+            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument);
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
-                Page drawnSelection=page;
-                if (pageArea != null) {
-                    tables.addAll(tableExtractor.extractTables(page.getArea(this.pageArea)));
-                }
-                //Attempt to extract entire page as table ONLY if user provides no other means of extraction...
-                else if((pageArea==null) && (this.requestedSearches.size()==0)){
-                    tables.addAll(tableExtractor.extractTables(page.getArea(page)));
-                }
+                System.out.println("PAGE NUMBER:");
+                System.out.println(page.getPageNumber());
 
-                if(page!=null){
+                 if(page!=null){
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
+                        System.out.println("SHOULD NOT SEE THIS:");
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
                         totalSubsections.addAll(subSections);
                     }
@@ -314,12 +338,14 @@ public class CommandLineApp {
                     //TODO: Figure out where overlap detection will occur in this process...
                 }
             }
+            System.out.println("At writeTables...");
             writeTables(tables, outFile);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         } finally {
             try {
                 if (pdfDocument != null) {
+                    System.out.println("DOCUMENT IS BEING CLOSED....");
                     pdfDocument.close();
                 }
             } catch (IOException e) {
@@ -328,11 +354,19 @@ public class CommandLineApp {
         }
     }
 
-    private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
+    private PageIterator getPageIteratorForDocument(PDDocument pdfDocument) throws IOException {
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
-        return (pages == null) ?
+        return extractor.extract();
+    }
+
+    private PageIterator getPageIteratorForDrawnSelection(PDDocument pdfDocument,
+                                                          List<Integer> pageList) throws IOException {
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+
+
+        return (pageList==null || pageList.isEmpty()) ?
                 extractor.extract() :
-                extractor.extract(pages);
+                extractor.extract(pageList);
     }
 
     // CommandLine parsing methods
@@ -352,21 +386,53 @@ public class CommandLineApp {
         }
     }
 
-    private static Rectangle whichArea(CommandLine line) throws ParseException {
+    private static List<Rectangle> whichAreas(CommandLine line) throws ParseException {
         if (!line.hasOption('a')) {
-            return null;
+            return new ArrayList<>();
         }
 
-        List<Float> f = parseFloatList(line.getOptionValue('a'));
-        if (f.size() != 4) {
+        List<Float> f = parseFloatList(Arrays.asList(line.getOptionValues('a')).toString());
+
+        //List<Float> f = parseFloatList(line.getOptionValue('a'));
+
+        if((f.size()%4)!=0){
             throw new ParseException("area parameters must be top,left,bottom,right");
         }
-        return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+
+       // if (f.size() != 4) {
+       //     throw new ParseException("area parameters must be top,left,bottom,right");
+       // }
+
+        ArrayList<Rectangle> pageAreas = new ArrayList<>();
+
+        for(Integer i=0; i<f.size(); i+=4){
+            pageAreas.add(new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(0)));
+        }
+
+        //return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+        return pageAreas;
     }
 
-    private static List<Integer> whichPages(CommandLine line) throws ParseException {
-        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
-        return Utils.parsePagesOption(pagesOption);
+    private static List<List<Integer>> whichPages(CommandLine line) throws ParseException {
+        if(line.hasOption('p')){
+            String[] foo = Arrays.asList(line.getOptionValues('p')).toString().trim().replaceAll("[\\[\\]]","").split(",");
+
+            ArrayList<List<Integer>> allPagesWithAreas = new ArrayList<>();
+            for(String bar : foo){
+                System.out.println("WHAT IS THIS:");
+                System.out.println(bar);
+                allPagesWithAreas.add(Utils.parsePagesOption(bar));
+            }
+            System.out.println("DO I GET BACK TO HERE???");
+            return allPagesWithAreas;
+        }
+       else{
+            return new ArrayList<>();
+        }
+        //String pagesOption = line.hasOption('p') ? foo : "1";
+        //System.out.println(pagesOption);
+        //return Utils.parsePagesOption(pagesOption);
+
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
@@ -402,7 +468,10 @@ public class CommandLineApp {
 
     // utilities, etc.
     public static List<Float> parseFloatList(String option) throws ParseException {
-        String[] f = option.split(",");
+        //Remove array brackets as necessary...
+        String sanitized_options = option.replaceAll("[\\[\\]]","");
+        String[] f = sanitized_options.split(",");
+
         List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
@@ -413,6 +482,7 @@ public class CommandLineApp {
             throw new ParseException("Wrong number syntax");
         }
     }
+
 
     private static void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
@@ -485,7 +555,7 @@ public class CommandLineApp {
                 .hasArg()
                 .argName("MARGINS")
                 .build());
-
+//TODO: Need a note in the help section to specify that area-page option pairs are supported....
         return o;
     }
 
