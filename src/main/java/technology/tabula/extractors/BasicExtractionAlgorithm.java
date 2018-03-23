@@ -36,7 +36,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 
     @Override
     public List<Table> extract(Page page) {
-        
+
         List<TextElement> textElements = page.getText();
         
         if (textElements.size() == 0) {

@@ -65,10 +65,6 @@ public class CommandLineApp {
         this.pageAreas = CommandLineApp.whichAreas(line);
         this.pages = CommandLineApp.whichPages(line);
 
-
-
-        System.out.println("BUT WHAT ABOUT HERE???");
-
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
@@ -193,6 +189,7 @@ public class CommandLineApp {
 
     // begin the table extraction
     public void extractTables(CommandLine line) throws ParseException {
+
         if (line.hasOption('b')) {
             if (line.getArgs().length != 0) {
                 throw new ParseException("Filename specified with batch\nTry --help for help");
@@ -236,6 +233,7 @@ public class CommandLineApp {
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
+
         Appendable outFile = this.defaultOutput;
         if (!line.hasOption('o')) {
             extractFile(pdfFile, this.defaultOutput);
@@ -282,10 +280,10 @@ public class CommandLineApp {
                         Page pageToExtract = pagesToExtract.next();
                         tables.addAll(tableExtractor.extractTables(pageToExtract));
                     }
+
                 }
             }
             else{ //only extract the sections of the page corresponding to the drawn areas
-                System.out.println("Do I get here???");
                 for(int index=0;index<this.pageAreas.size();index++){
                     Iterator<Page> pagesPerArea = getPageIteratorForDrawnSelection(pdfDocument,this.pages.get(index));
                     while(pagesPerArea.hasNext()){
@@ -296,6 +294,10 @@ public class CommandLineApp {
                 }
             }
 
+
+            //Reset pdfDocument so that a new page iterator can be generated for the regex searches...
+            pdfDocument.close();
+            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
 
 
             //Extract all tables corresponding to regex searches in the document...
@@ -311,13 +313,10 @@ public class CommandLineApp {
             }
 
 
-            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument);
+            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument,pdfFile);
+
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
-
-                System.out.println("PAGE NUMBER:");
-                System.out.println(page.getPageNumber());
-
                  if(page!=null){
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
@@ -336,15 +335,14 @@ public class CommandLineApp {
                     }
                     //TODO: Figure out where overlap detection will occur in this process...
                 }
+
             }
-            System.out.println("At writeTables...");
             writeTables(tables, outFile);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         } finally {
             try {
                 if (pdfDocument != null) {
-                    System.out.println("DOCUMENT IS BEING CLOSED....");
                     pdfDocument.close();
                 }
             } catch (IOException e) {
@@ -353,16 +351,16 @@ public class CommandLineApp {
         }
     }
 
-    private PageIterator getPageIteratorForDocument(PDDocument pdfDocument) throws IOException {
+    private PageIterator getPageIteratorForDocument(PDDocument pdfDocument,File pdfFile) throws IOException {
+
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
         return extractor.extract();
     }
 
     private PageIterator getPageIteratorForDrawnSelection(PDDocument pdfDocument,
                                                           List<Integer> pageList) throws IOException {
+
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
-
-
         return (pageList==null || pageList.isEmpty()) ?
                 extractor.extract() :
                 extractor.extract(pageList);
@@ -418,11 +416,9 @@ public class CommandLineApp {
 
             ArrayList<List<Integer>> allPagesWithAreas = new ArrayList<>();
             for(String bar : foo){
-                System.out.println("WHAT IS THIS:");
-                System.out.println(bar);
                 allPagesWithAreas.add(Utils.parsePagesOption(bar));
             }
-            System.out.println("DO I GET BACK TO HERE???");
+
             return allPagesWithAreas;
         }
        else{
@@ -586,6 +582,7 @@ public class CommandLineApp {
         }
 
         public List<Table> extractTables(Page page) {
+
             ExtractionMethod effectiveMethod = this.method;
             if (effectiveMethod == ExtractionMethod.DECIDE) {
                 effectiveMethod = spreadsheetExtractor.isTabular(page) ?
@@ -603,6 +600,7 @@ public class CommandLineApp {
         }
 
         public List<Table> extractTablesBasic(Page page) {
+
             if (guess) {
                 // guess the page areas to extract using a detection algorithm
                 // currently we only have a detector that uses spreadsheets to find table areas
@@ -614,6 +612,7 @@ public class CommandLineApp {
                     Page guess = page.getArea(guessRect);
                     tables.addAll(basicExtractor.extract(guess));
                 }
+
                 return tables;
             }
 
