@@ -162,9 +162,6 @@ public class Utils {
             return null;
         }
 
-        System.out.println("PAGESSPEC:");
-        System.out.println(pagesSpec);
-
         List<Integer> rv = new ArrayList<>();
 
         String[] ranges = pagesSpec.split(",");

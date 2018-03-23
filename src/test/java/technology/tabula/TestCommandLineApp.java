@@ -40,7 +40,7 @@ public class TestCommandLineApp {
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
-                "150.56,58.9,654.7,536.12", "-p", "1","-a", "129.78,46.3,678.9,987.6", "-f",
+                "150.56,58.9,654.7,536.12", "-f",
                 "CSV"
         }).replaceAll("\n", ""));
     }
@@ -132,7 +132,7 @@ public class TestCommandLineApp {
                 "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-eu/eu-001.pdf",
                 "-p", "1",
                 "-f", "CSV",
-                //"-g"
+                "-g"
         }));
     }
 
