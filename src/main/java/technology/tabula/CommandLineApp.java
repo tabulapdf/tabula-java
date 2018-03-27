@@ -270,6 +270,7 @@ public class CommandLineApp {
         PDDocument pdfDocument = null;
         try {
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+            pdfDocument.getDocumentInformation().setTitle(pdfFile.getName());
             List<Table> tables = new ArrayList<>();
 
             //Extract all user-drawn rectangles in the document...
@@ -298,7 +299,7 @@ public class CommandLineApp {
             //Reset pdfDocument so that a new page iterator can be generated for the regex searches...
             pdfDocument.close();
             pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
-
+            pdfDocument.getDocumentInformation().setTitle(pdfFile.getName());
 
             //Extract all tables corresponding to regex searches in the document...
             ArrayList<RegexSearch> performedSearches = new ArrayList<>();
