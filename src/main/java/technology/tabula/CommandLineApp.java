@@ -101,12 +101,12 @@ public class CommandLineApp {
     private static class RequestedSearch{
 
         String _keyBeforeTable;
-        String _includeKeyBeforeTable;
+        Boolean _includeKeyBeforeTable;
         String _keyAfterTable;
-        String _includeKeyAfterTable;
+        Boolean _includeKeyAfterTable;
 
-        public RequestedSearch(String keyBeforeTable, String includeKeyBeforeTable,
-                               String keyAfterTable, String includeKeyAfterTable) {
+        public RequestedSearch(String keyBeforeTable, Boolean includeKeyBeforeTable,
+                               String keyAfterTable, Boolean includeKeyAfterTable) {
             _keyBeforeTable = keyBeforeTable;
             _includeKeyBeforeTable = includeKeyBeforeTable;
 
@@ -159,15 +159,23 @@ public class CommandLineApp {
                 JsonElement patternBeforeData = queryAsObject.get("pattern_before");
                 JsonElement patternAfterData = queryAsObject.get("pattern_after");
 
+                JsonElement includePatternBeforeData = queryAsObject.get("include_pattern_before");
+                JsonElement includePatternAfterData = queryAsObject.get("include_pattern_after");
+
                 String patternBeforeAsString = patternBeforeData.getAsString();
                 String patternAfterAsString = patternAfterData.getAsString();
+
+                Boolean includePatternBefore = (includePatternBeforeData==null) ?
+                        false : includePatternBeforeData.getAsBoolean();
+                Boolean includePatternAfter = (includePatternAfterData==null) ?
+                        false: includePatternAfterData.getAsBoolean();
 
                 Boolean patternBeforeIsValid = patternBeforeAsString != null && !patternBeforeAsString.isEmpty();
                 Boolean patternAfterIsValid = patternAfterAsString != null && !patternAfterAsString.isEmpty();
 
                 if (patternBeforeIsValid && patternAfterIsValid) {
-                    RequestedSearch rs = new RequestedSearch(patternBeforeAsString, "0",
-                            patternAfterAsString, "0");
+                    RequestedSearch rs = new RequestedSearch(patternBeforeAsString, includePatternBefore,
+                            patternAfterAsString, includePatternAfter);
                     localRequestedSearchArray.add(rs);
                 } else {
                     throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));

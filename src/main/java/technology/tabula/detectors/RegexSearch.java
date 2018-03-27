@@ -114,10 +114,16 @@ public class RegexSearch {
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
 					   String includeRegexAfterTable, PDDocument document, FilteredArea areaToFilter) {
-		
+
+
+
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
 			Boolean.valueOf(includeRegexAfterTable),document,areaToFilter);
-		
+		System.out.println("Do I get here?");
+		System.out.println(includeRegexBeforeTable);
+		System.out.println(includeRegexAfterTable);
+		System.out.println(Boolean.valueOf(includeRegexBeforeTable));
+		System.out.println(Boolean.valueOf(includeRegexAfterTable));
 	}
 
 	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
