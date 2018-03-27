@@ -611,8 +611,6 @@ public class TestCommandLineApp {
         }));
     }
 
-
-
     @Test
     public void testExtractRegexAreaAndNewFile() throws ParseException, IOException {
 
