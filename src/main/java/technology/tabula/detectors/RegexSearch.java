@@ -119,7 +119,7 @@ public class RegexSearch {
 
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
 			Boolean.valueOf(includeRegexAfterTable),document,areaToFilter);
-		System.out.println("Do I get here?");
+
 		System.out.println(includeRegexBeforeTable);
 		System.out.println(includeRegexAfterTable);
 		System.out.println(Boolean.valueOf(includeRegexBeforeTable));
@@ -602,14 +602,16 @@ public class RegexSearch {
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
-            			subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
+            			//subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
 					}
 
 
             		tableSubArea = new LinkedList<>();
+
             		tableSubArea.add(new TableArea(currentPage.getPageNumber(),
 							new Rectangle(subAreaTop,0,currentPage.width,
-									currentPage.height-(subAreaTop+areaToFilter.getFooterHeightScale()))));
+									currentPage.height-(subAreaTop))));
+									//currentPage.height-(subAreaTop+areaToFilter.getFooterHeightScale()))));
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
             	}
                 
