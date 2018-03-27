@@ -31,7 +31,7 @@ public class TestCommandLineApp {
     }
 
     @Test
-    //Test fails with identical expected and actual results
+    //Test no longer fails with identical expected and actual results
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
@@ -324,10 +324,10 @@ public class TestCommandLineApp {
 
     @Test
     /*
-     * Test to verify that a single, basic Regex search capturing a multi-page table into an output file works
+     * Test to verify that a single, basic Regex search capturing a multi-page (spanning 2 pages) table into an output file works
      * Note that this test DOES NOT explicitly account for page HEADER and FOOTER
      */
-    public void testExtractMultiplePageTableRegexAndNewFile() throws ParseException, IOException {
+    public void testExtractMultiplePageTableRegexAndNewFile1() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable.csv");
         expectedCsv = expectedCsv.replaceAll("\n", "");
@@ -344,6 +344,31 @@ public class TestCommandLineApp {
         });
 
         assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+    }
+
+    @Test
+    /*
+     * Test to verify that a single, basic Regex search capturing a multi-page (spanning 6 pages) table does not throw an error
+     * Note that there is not an expected output
+     * Note that this test DOES NOT explicitly account for page HEADER and FOOTER
+     */
+    public void testExtractMultiplePageTableRegexAndNewFile2() throws ParseException, IOException {
+
+        //String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable.csv");
+        //expectedCsv = expectedCsv.replaceAll("\n", "");
+
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
+                "--stream",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"ANSON\"," +
+                        "\"pattern_after\" : \"BURKE\"}]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        //assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 
     @Test
