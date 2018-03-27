@@ -273,25 +273,6 @@ public class TestCommandLineApp {
         }));
     }
 
-    @Test
-    /*
-     * Test to verify that a single, basic Regex search capturing a multi-page table works
-     * Note that this test DOES NOT explicitly account for page HEADER and FOOTER
-     */
-    public void testExtractMultiplePageTableRegex() throws ParseException, IOException {
-
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable.csv");
-        expectedCsv = expectedCsv.replaceAll("\n", "");
-
-        assertEquals(expectedCsv,this.csvFromCommandLineArgs(new String[]{
-                "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
-                "-r",
-                "{\"queries\": " +
-                        "[ {\"pattern_before\" : \"39\"," +
-                        "\"pattern_after\" : \"44\"} ]}",
-                "-f", "CSV"
-        }));
-    }
 
     @Test
     public void testExtractTwoRegexSearchesAndNewFile() throws ParseException, IOException {
@@ -353,6 +334,7 @@ public class TestCommandLineApp {
 
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
+                "--stream",
                 "-r",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"39\"," +
