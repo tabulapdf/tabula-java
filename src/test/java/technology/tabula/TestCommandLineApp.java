@@ -230,7 +230,10 @@ public class TestCommandLineApp {
     }
 
     @Test
-    public void testExtractMultipleRegexSearches() throws ParseException, IOException {
+    /*
+     * Test to verify that at least two pairs of regex searches can be run in one instance
+     */
+    public void testExtractTwoRegexSearches() throws ParseException, IOException {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractTwoRegexSearches.csv");
 
@@ -246,6 +249,120 @@ public class TestCommandLineApp {
         }));
     }
 
+    @Test
+    /*
+     * Test to verify that at least three pairs of regex searche can be run in one instance
+     * Mainly wanted to see if the CLI would output an overlap error like the GUI did
+     * CLI did -not- output overlap error
+     */
+    public void testExtractThreeRegexSearches() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractThreeRegexSearches.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"}," +
+                        "{\"pattern_before\" : \"Social\"," +
+                        "\"pattern_after\" : \"Self\"}," +
+                        "{\"pattern_before\" : \"Foreign\"," +
+                        "\"pattern_after\" : \"Acquaintance\"} ]}",
+                "-f", "CSV"
+        }));
+    }
+
+    @Test
+    /*
+     * Test to verify that a single, basic Regex search capturing a multi-page table works
+     * Note that this test DOES NOT explicitly account for page HEADER and FOOTER
+     */
+    public void testExtractMultiplePageTableRegex() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+
+        assertEquals(expectedCsv,this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"39\"," +
+                        "\"pattern_after\" : \"44\"} ]}",
+                "-f", "CSV"
+        }));
+    }
+
+    @Test
+    public void testExtractTwoRegexSearchesAndNewFile() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractTwoRegexSearches.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"}," +
+                        "{\"pattern_before\" : \"Social\"," +
+                        "\"pattern_after\" : \"Self\"} ]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+    }
+
+    @Test
+    /*
+     * Test to verify that at least three pairs of regex searche can be run in one instance
+     * Mainly wanted to see if the CLI would output an overlap error like the GUI did
+     * CLI did -not- output overlap error
+     */
+    public void testExtractThreeRegexSearchesAndNewFile() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractThreeRegexSearches.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"Knowledge\"," +
+                        "\"pattern_after\" : \"Social\"}," +
+                        "{\"pattern_before\" : \"Social\"," +
+                        "\"pattern_after\" : \"Self\"}," +
+                        "{\"pattern_before\" : \"Foreign\"," +
+                        "\"pattern_after\" : \"Acquaintance\"} ]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+    }
+
+    @Test
+    /*
+     * Test to verify that a single, basic Regex search capturing a multi-page table into an output file works
+     * Note that this test DOES NOT explicitly account for page HEADER and FOOTER
+     */
+    public void testExtractMultiplePageTableRegexAndNewFile() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable.csv");
+        expectedCsv = expectedCsv.replaceAll("\n", "");
+
+        this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"39\"," +
+                        "\"pattern_after\" : \"44\"}]}",
+                "-f", "CSV",
+                "-o", "outputFile"
+        });
+
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+    }
 
     @Test
     /*
