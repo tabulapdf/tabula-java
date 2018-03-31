@@ -602,6 +602,7 @@ public class RegexSearch {
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
+            			subAreaHeight -=(float)(currentPage.getHeight()-((0.5)*currentPage.getTextBounds().getBottom()));
             			//subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
 					}
 

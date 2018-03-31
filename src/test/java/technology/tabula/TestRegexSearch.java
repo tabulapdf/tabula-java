@@ -138,16 +138,14 @@ public class TestRegexSearch {
 			for(Integer iter=1; iter<=numDataPages; iter++) {
 				dataPages.add(UtilsForTesting.getPage(docName, iter));
 			}
-			HashMap<Integer,RegexSearch.FilteredArea> areasToFilter = new HashMap<Integer, RegexSearch.FilteredArea>(){
-				{put(1,new RegexSearch.FilteredArea(0,0,842	));
-				put(2,new RegexSearch.FilteredArea(0,0,842));}};
 
-			RegexSearch regexSearch = new RegexSearch("9\\.","false","10\\.","false",
-					PDDocument.load(multiPageTable),areasToFilter.get(1));
+
+			RegexSearch regexSearchNoFilter = new RegexSearch("9\\.","false","10\\.","false",
+					PDDocument.load(multiPageTable),null);
 			
 			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
 			//to facilitate future regression testing
-			String expectedTableContent = "tendering and a summary of the criteria against which the various "+
+			String expectedTableContentNoFilter = "tendering and a summary of the criteria against which the various "+
 					                      "tenders were assessed: Open Tender  Tender evaluation criteria "+
 					                      "included: - The schedule of prices - Compliance with technical "+
 					                      "specifications/Technical assessment - Operational Plan including "+
@@ -158,18 +156,48 @@ public class TestRegexSearch {
 					                      "Proposed installation plan including Pedestrian & Traffic Management - "+
 					                      "Environmental Management  - Work Health & Safety - Financial and commercial trading integrity/insurances  ";
 			
-			String extractedTableContent = "";
+			String extractedTableContentNoFilter = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearchNoFilter.getMatchingAreasForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
-						extractedTableContent += element.getText();
+						extractedTableContentNoFilter += element.getText();
 					}
 				}
 			}
             statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
-					expectedTableContent,extractedTableContent,"Failure in multi-page detection");
-			
-			
+					expectedTableContentNoFilter,extractedTableContentNoFilter,"Failure in multi-page detection, no filtered area..");
+
+
+			String expectedTableContentWithFilter = "tendering and a summary of the criteria against which the various "+
+					"tenders were assessed: Open Tender  Tender evaluation criteria "+
+					"included: - The schedule of prices - Compliance with technical "+
+					"specifications/Technical assessment - Operational Plan including "+
+					"maintenance procedures - Transition in/out plans - Demonstrated "+
+					"experience in works and services of a similar nature and quality - "+
+					"Adequate resources and personnel to fulfil requirements of the contract "+
+					"including subcontractors - Data Management Procedures and reporting capabilities - "+
+					"Proposed installation plan including Pedestrian & Traffic Management - "+
+					"Environmental Management  - Work Health & Safety - Financial and commercial trading integrity/insurances  ";
+
+
+			RegexSearch.FilteredArea areaToFilter = new RegexSearch.FilteredArea(0,80,842	);
+
+			RegexSearch regexSearchWithFilter = new RegexSearch("9\\.","false","10\\.","false",
+					PDDocument.load(multiPageTable),areaToFilter);
+
+			String extractedTableContentWithFilter = "";
+			for(Integer iter=0; iter<numDataPages; iter++) {
+				for(Rectangle tableArea : regexSearchWithFilter.getMatchingAreasForPage(iter+1)) {
+					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
+						extractedTableContentWithFilter += element.getText();
+					}
+				}
+			}
+
+			statusReport(Thread.currentThread().getStackTrace()[CLIENT_CODE_STACK_INDEX].getMethodName(),
+					expectedTableContentWithFilter,extractedTableContentWithFilter,"Failure in multi-page detection with defined footer");
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
