@@ -597,7 +597,7 @@ public class RegexSearch {
 					else{
             			;
             			subAreaHeight -=(float)(0.5)*(currentPage.getTextBounds().getBottom()-currentPage.getTextBounds().getTop());
-            			//subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
+
 					}
 
 
@@ -605,8 +605,7 @@ public class RegexSearch {
 
             		tableSubArea.add(new TableArea(currentPage.getPageNumber(),
 							new Rectangle(subAreaTop,0,currentPage.width,
-									currentPage.height-(subAreaTop))));
-									//currentPage.height-(subAreaTop+areaToFilter.getFooterHeightScale()))));
+									subAreaHeight)));
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
             	}
                 
