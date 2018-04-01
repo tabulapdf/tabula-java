@@ -59,7 +59,7 @@ public class RegexSearch {
 		System.out.println("In checkSearchesOnFilterResize:");
 
 		System.out.println("FilterArea height scale:" + filterArea.getHeaderHeightScale());
-
+		System.out.println("FilterArea footer scale:" + filterArea.getFooterHeightScale());
 
 
 		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<>();
@@ -310,24 +310,17 @@ public class RegexSearch {
 
 
 	public static class FilteredArea{
-		private Integer guiPageHeight;   //The height of the page AS IT APPEARS IN THE GUI
+
 		private Float  scaleOfHeaderHeight;
 		private Float  scaleOfFooterHeight;
 
 		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio){
+			System.out.println("Height of header:"+headerHeightRatio.toString());
+			System.out.print(("Height of footer:"+footerHeightRatio.toString()));
 			scaleOfHeaderHeight=headerHeightRatio;
 			scaleOfFooterHeight=footerHeightRatio;
 		}
 
-		public FilteredArea(Integer heightOfHeader, Integer heightOfFooter, Integer guiHeightOfPage){
-			guiPageHeight = guiHeightOfPage;
-
-			scaleOfFooterHeight = ((float)heightOfFooter)/guiPageHeight;
-			scaleOfHeaderHeight = ((float)heightOfHeader)/guiPageHeight;
-	//		System.out.println("Height of header:" + heightOfHeader);
-	//		System.out.println("Height of page in gui:" + guiPageHeight);
-	//		System.out.println("Height of page in back-end:" + absolutePageHeight);
-		}
 
 		public Float getHeaderHeightScale(){ return scaleOfHeaderHeight;}
 		public Float getFooterHeightScale(){ return scaleOfFooterHeight;}
@@ -602,7 +595,8 @@ public class RegexSearch {
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
-            			subAreaHeight -=(float)(currentPage.getHeight()-((0.5)*currentPage.getTextBounds().getBottom()));
+            			;
+            			subAreaHeight -=(float)(0.5)*(currentPage.getTextBounds().getBottom()-currentPage.getTextBounds().getTop());
             			//subAreaHeight -= (float)((0.5) * currentPage.getTextBounds().getBottom());
 					}
 
