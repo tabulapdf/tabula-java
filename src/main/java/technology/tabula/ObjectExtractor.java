@@ -52,9 +52,11 @@ public class ObjectExtractor {
                 se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
 
         for (PDAnnotation ann: this.getAnnotations(p)) {
+            System.out.println(ann.getSubtype());
             System.out.println(ann.getContents());
             System.out.println(ann.getRectangle());
             System.out.println(ann.getRectangle().toGeneralPath().createTransformedShape(se.getPageTransform()).getBounds2D());
+            System.out.println();
         }
 
         return page;

@@ -17,6 +17,8 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationSquareCircle;
 import org.apache.pdfbox.util.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
     private static final String NBSP = "\u00A0";
+    private final List<PDAnnotation> annotations = new ArrayList<>();
 
     protected List<Ruling> rulings;
     private AffineTransform pageTransform;
@@ -56,6 +59,18 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         }
 
         this.pageTransform.translate(-cb.getLowerLeftX(), -cb.getLowerLeftY());
+
+        // collect annotations
+        try {
+            for (PDAnnotation a: page.getAnnotations()) {
+                if (a.getSubtype().equals("Square")) {
+                    annotations.add(a);
+                }
+            }
+        } catch (IOException e) {
+
+        }
+
     }
 
     @Override
