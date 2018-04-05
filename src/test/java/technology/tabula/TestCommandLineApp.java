@@ -45,6 +45,76 @@ public class TestCommandLineApp {
         }).replaceAll("\n", ""));
     }
 
+
+
+    @Test
+    //Test if multiple user drawn selections specifications on the CLI are processed correctly...
+    public void testMultipleUserDrawnSelections() throws ParseException, IOException {
+
+        String expectedOutput="Table 5\n" +
+                "Correlations between the extent of participation of pupils in project activities and the\n" +
+                "perceived  impacts on pupils (Pearsons correlation coefficient*)\n" +
+                "Involvement of pupils in\n" +
+                "Preperation and Production of Presentation and\n" +
+                "planing materials evaluation\n" +
+                "\"Knowledge and awareness of different cultures 0,2885 0,3974 0,3904\"\n" +
+                "\"Foreign language competence 0,3057 0,4184 0,3899\"\n" +
+                "\"Social skills and abilities 0,3416 0,3369 0,4303\"\n" +
+                "\"Acquaintance of special knowledge 0,2569 0,2909 0,3557\"\n" +
+                "\"Self competence 0,3791 0,3320 0,4617\"\n" +
+                "\"* Significance p = 0,000\"\n" +
+                "Table 6\n" +
+                "\"Correlations between the difficulties encounters and the perceived impacts on pupils,\"\n" +
+                "teachers and the school as a whole (Pearsons correlation coefficient*)\n" +
+                "Difficulties encountered with respect to\n" +
+                "Lack of interest/ Lack of interest of Lack of interest of\n" +
+                "acceptance from pupils parents\n" +
+                "Impacts on participating pupils colleagues\n" +
+                "\"Knowledge and awareness of different cultures -0,1651 -0,2742 -0,1618\"\n" +
+                "\"Foreign language competence -0,0857 -0,1804 -0,1337\"\n" +
+                "\"Social skills and abilities -0,1237 -0,2328 -0,1473\"\n";
+
+        //Removing line returns for easier comparisons...
+        expectedOutput=expectedOutput.replaceAll("\\r|\\n", "");
+
+
+        assertEquals(expectedOutput, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-a",
+                "65.822,60.657,259.197,528.476",
+                "-p","1",
+                "-a",
+                "273.328,67.351,422.822,526.988",
+                "-p","1",
+                "-f",
+                "CSV"
+        }).replaceAll("\\r|\\n", ""));
+    }
+
+
+    @Test
+    //Test if incorrectly specified user drawn selections specifications on the CLI are detected...
+    //The second user-drawn selection overlaps the first--therefore it will not be processed
+    public void testOverlapDetectionOfUserDrawnSelections() throws ParseException, IOException {
+
+
+        assertEquals(UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/testOverlapDetectionOfUserDrawnSelections.csv"),
+                this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-a",
+                "65.822,60.657,259.197,528.476",
+                "-p","1",
+                "-a",
+                "73.328,67.351,422.822,526.988",
+                "-p","1",
+                "-f",
+                "CSV"
+        }));
+    }
+
+
+
+
     @Test
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();

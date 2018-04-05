@@ -5,10 +5,11 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -19,9 +20,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import com.google.gson.*;
 
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.detectors.RegexSearch;
@@ -328,24 +326,70 @@ public class CommandLineApp {
             pdfDocument.getDocumentInformation().setTitle(pdfFile.getName());
             List<Table> tables = new ArrayList<>();
 
+            //     Page #   Selections on page
+            HashMap<Integer,ArrayList<Rectangle>> nonOverlappingSections = new HashMap<Integer,ArrayList<Rectangle>>();
+
             //Extract all user-drawn rectangles in the document...
             if(this.pageAreas.isEmpty()){ //no selections drawn <-- whole page is treated as drawn area
                 for(List<Integer> pageListPerOption: this.pages){
                     Iterator<Page> pagesToExtract = getPageIteratorForDrawnSelection(pdfDocument,pageListPerOption);
                     while(pagesToExtract.hasNext()){
                         Page pageToExtract = pagesToExtract.next();
+
+                        if(nonOverlappingSections.get(pageToExtract)==null){
+                            nonOverlappingSections.put(pageToExtract.getPageNumber(),new ArrayList<Rectangle>());
+                        }
+
+
+                        nonOverlappingSections.get(pageToExtract.getPageNumber()).add(pageToExtract);
                         tables.addAll(tableExtractor.extractTables(pageToExtract));
                     }
-
+                    //TODO: Document how this can lead to overlap detection errors if used in conjunction with regex searches
                 }
             }
             else{ //only extract the sections of the page corresponding to the drawn areas
+
+                System.out.println("Page Areas:");
+                System.out.println(this.pageAreas);
+
                 for(int index=0;index<this.pageAreas.size();index++){
+
                     Iterator<Page> pagesPerArea = getPageIteratorForDrawnSelection(pdfDocument,this.pages.get(index));
                     while(pagesPerArea.hasNext()){
                         Page drawnSelection = pagesPerArea.next();
                         drawnSelection = drawnSelection.getArea(this.pageAreas.get(index));
-                        tables.addAll(tableExtractor.extractTables(drawnSelection));
+
+                        System.out.println("Drawn Selection:");
+                        System.out.println(drawnSelection);
+
+                        if(nonOverlappingSections.get(drawnSelection.getPageNumber())==null){
+                            nonOverlappingSections.put(drawnSelection.getPageNumber(),new ArrayList<Rectangle>());
+                        }
+
+
+                        Boolean overlapDetected = false;
+
+                        for( Rectangle confirmedSelection: nonOverlappingSections.get(drawnSelection.getPageNumber())){
+                            System.out.println("Confirmed Section:");
+                            System.out.println(confirmedSelection);
+
+                            overlapDetected = confirmedSelection.verticallyOverlaps(drawnSelection);
+
+                            System.out.println("Potential Selection:");
+                            System.out.println(drawnSelection);
+
+                            if(overlapDetected){
+                                break;
+                            }
+                        }
+
+                        if(overlapDetected==false){
+                            nonOverlappingSections.get(drawnSelection.getPageNumber()).add(drawnSelection);
+                            tables.addAll(tableExtractor.extractTables(drawnSelection));
+                        }
+                        else{
+                            System.out.println("OVERLAP DETECTED!!"); //TODO:Figure out how this would go in logging/if it would??
+                        }
                     }
                 }
             }
@@ -389,6 +433,7 @@ public class CommandLineApp {
                         }
                     });
                     for(Rectangle subSection: totalSubsections){
+
                         Page selectionSubArea = page.getArea(subSection);
                         tables.addAll(tableExtractor.extractTables(selectionSubArea));
                     }
@@ -475,8 +520,12 @@ public class CommandLineApp {
         ArrayList<Rectangle> pageAreas = new ArrayList<>();
 
         for(Integer i=0; i<f.size(); i+=4){
-            pageAreas.add(new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(0)));
+
+            pageAreas.add(new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(i)));
         }
+
+        System.out.println("Specified Page Areas:");
+        System.out.println(pageAreas);
 
         //return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
         return pageAreas;
