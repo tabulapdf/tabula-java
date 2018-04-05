@@ -112,6 +112,20 @@ public class TestCommandLineApp {
         }));
     }
 
+    @Test
+    //Test if incorrectly specified user drawn selections specifications on the CLI are detected...
+    //The second user-drawn selection overlaps the first--therefore it will not be processed
+    public void testOverlapDetectionOfMultiplePageSpecifications() throws ParseException, IOException {
+
+        assertEquals(UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/testOverlapDetectionOfUserDrawnSelections.csv"),
+                this.csvFromCommandLineArgs(new String[]{
+                        "src/test/resources/technology/tabula/eu-002.pdf",
+                        "-p","1",
+                        "-p","1",
+                        "-f",
+                        "CSV"
+                }));
+    }
 
 
 

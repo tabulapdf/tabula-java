@@ -331,6 +331,7 @@ public class CommandLineApp {
 
             //Extract all user-drawn rectangles in the document...
             if(this.pageAreas.isEmpty()){ //no selections drawn <-- whole page is treated as drawn area
+                System.out.println("DO I GET HERE??");
                 for(List<Integer> pageListPerOption: this.pages){
                     Iterator<Page> pagesToExtract = getPageIteratorForDrawnSelection(pdfDocument,pageListPerOption);
                     while(pagesToExtract.hasNext()){
@@ -338,11 +339,14 @@ public class CommandLineApp {
 
                         if(nonOverlappingSections.get(pageToExtract)==null){
                             nonOverlappingSections.put(pageToExtract.getPageNumber(),new ArrayList<Rectangle>());
+                            nonOverlappingSections.get(pageToExtract.getPageNumber()).add(pageToExtract);
+                            tables.addAll(tableExtractor.extractTables(pageToExtract));
+                        }
+                        else{
+                            System.out.println("OVERLAP DETECTED.."); //If whole page is treated as drawn area, same page shouldn't be parsed twice
                         }
 
 
-                        nonOverlappingSections.get(pageToExtract.getPageNumber()).add(pageToExtract);
-                        tables.addAll(tableExtractor.extractTables(pageToExtract));
                     }
                     //TODO: Document how this can lead to overlap detection errors if used in conjunction with regex searches
                 }
@@ -367,18 +371,18 @@ public class CommandLineApp {
                         }
 
 
+                        //Detect (and ignore at this time (4/5/18) user-drawn rectangles that overlap previously
+                        //specified user-drawn rectangles
                         Boolean overlapDetected = false;
 
                         for( Rectangle confirmedSelection: nonOverlappingSections.get(drawnSelection.getPageNumber())){
                             System.out.println("Confirmed Section:");
                             System.out.println(confirmedSelection);
 
-                            overlapDetected = confirmedSelection.verticallyOverlaps(drawnSelection);
-
                             System.out.println("Potential Selection:");
                             System.out.println(drawnSelection);
 
-                            if(overlapDetected){
+                            if((overlapDetected = confirmedSelection.verticallyOverlaps(drawnSelection))){
                                 break;
                             }
                         }
