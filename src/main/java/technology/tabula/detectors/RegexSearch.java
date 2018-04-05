@@ -188,24 +188,6 @@ public class RegexSearch {
 		public MatchingArea(Integer startPageNum, Integer endPageNum){
 			_startPageNum = startPageNum;
 			_endPageNum = endPageNum;
-
-			/*
-			// Logging Additions
-			try {
-				String timeStamp = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
-				FileWriter fw = new FileWriter("./" + "ExtractionLog_" + timeStamp + ".txt",true);	// APPEND mode
-				BufferedWriter bw = new BufferedWriter(fw);
-				if (startPageNum == endPageNum)
-					bw.write("\tMATCH FOUND - page #" + startPageNum);
-				else
-					bw.write("\tMATCH FOUND - pages #" + startPageNum + "-" + endPageNum);
-				bw.newLine();
-				bw.close();
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-			*/
 		}
 	}
 
@@ -214,11 +196,10 @@ public class RegexSearch {
 	 * @return ArrayList<Rectangle> The values stored in _matchingAreas for a given page	
 	 */
 
-
-
+	// Logging - seem to need a function copy without loggingBufferedWriter (to be discussed with REM - DBM)
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
 
-        ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
+		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
 
 		for( MatchingArea matchingArea : _matchingAreas) {
 			for( int currentPageNumber : matchingArea.keySet()){
@@ -230,10 +211,9 @@ public class RegexSearch {
 			}
 		}
 
-		 return allMatchingAreas;
+		return allMatchingAreas;
 	}
 
-	// Copy for testing FIXME MAYBE TEMPORARY IF GETALLMATCHINGAREAS IS IMPLEMENTED
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber, BufferedWriter loggingBufferedWriter){
 
 		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
@@ -246,11 +226,13 @@ public class RegexSearch {
 					}
 				}
 			}
+
+			// Logging - Match Found Notification Added to Log File
 			try {
 				if (matchingArea._startPageNum == matchingArea._endPageNum)
-					loggingBufferedWriter.write("\tMATCH FOUND - page #" + matchingArea._startPageNum);
+					loggingBufferedWriter.write("\tMatch Found - page #" + matchingArea._startPageNum);
 				else
-					loggingBufferedWriter.write("\tMATCH FOUND - pages #" + matchingArea._startPageNum + "-" + matchingArea._endPageNum);
+					loggingBufferedWriter.write("\tMatch Found - pages #" + matchingArea._startPageNum + "-" + matchingArea._endPageNum);
 				loggingBufferedWriter.newLine();
 			}
 			catch (IOException e) {
@@ -279,36 +261,6 @@ public class RegexSearch {
 
         return allPagesMatchingAreas;
     }
-
-    // Copy for testing FIXME NOT TESTED YET
-	public ArrayList<Rectangle> getAllMatchingAreas(BufferedWriter loggingBufferedWriter){
-
-		ArrayList<TableArea> allPagesMatchData = new ArrayList<>();
-		ArrayList<Rectangle> allPagesMatchingAreas = new ArrayList<>();
-
-		for(MatchingArea matchingArea : _matchingAreas){
-			for( int i : matchingArea.keySet()){
-				allPagesMatchData.addAll(matchingArea.get(i));
-			}
-
-			try {
-				if (matchingArea._startPageNum == matchingArea._endPageNum)
-					loggingBufferedWriter.write("\tMATCH FOUND - page #" + matchingArea._startPageNum);
-				else
-					loggingBufferedWriter.write("\tMATCH FOUND - pages #" + matchingArea._startPageNum + "-" + matchingArea._endPageNum);
-				loggingBufferedWriter.newLine();
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		for(TableArea matchData : allPagesMatchData){
-			allPagesMatchingAreas.add(matchData.getArea());
-		}
-
-		return allPagesMatchingAreas;
-	}
 	
 	  /*
      * Inner class to retain information about a potential matching area while
@@ -422,23 +374,6 @@ public class RegexSearch {
 	Integer totalNumPages = document.getNumberOfPages();
 	LinkedList<DetectionData> potentialMatches = new LinkedList<>();
 	potentialMatches.add(new DetectionData());
-
-
-		// Logging Additions
-		try {
-			String timeStamp = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
-			FileWriter fw = new FileWriter("./" + "ExtractionLog_" + timeStamp + ".txt",true);	// APPEND mode
-			BufferedWriter bw = new BufferedWriter(fw);
-
-			bw.newLine();
-			bw.write("Document Processed: " + document.getDocumentInformation().getTitle());
-			bw.newLine();
-			bw.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
 
 		for(Integer currentPage=1;currentPage<=totalNumPages;currentPage++) {
 		/*
