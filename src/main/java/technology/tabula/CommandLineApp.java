@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -254,12 +256,22 @@ public class CommandLineApp {
 
     public void extractFileInto(File pdfFile, File outputFile) throws ParseException {
         BufferedWriter bufferedWriter = null;
+        BufferedWriter loggingBufferedWriter = null;
         try {
             FileWriter fileWriter = new FileWriter(outputFile.getAbsoluteFile());
             bufferedWriter = new BufferedWriter(fileWriter);
 
+            // Primary Logging Additions
+            FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOGGING_RESULTS" + ".txt");
+            loggingBufferedWriter = new BufferedWriter(loggingFileWriter);
+            loggingBufferedWriter.write("File Name: " + pdfFile.getName());
+            loggingBufferedWriter.newLine();
+            loggingBufferedWriter.write("Date Processed: " + new SimpleDateFormat("MMMM dd, yyyy - hh:mma").format(Calendar.getInstance().getTime()));
+            loggingBufferedWriter.newLine();
+            loggingBufferedWriter.newLine();
+
             outputFile.createNewFile();
-            extractFile(pdfFile, bufferedWriter);
+            extractFile(pdfFile, bufferedWriter, loggingBufferedWriter);
         } catch (IOException e) {
             throw new ParseException("Cannot create file " + outputFile);
         } finally {
@@ -268,6 +280,13 @@ public class CommandLineApp {
                     bufferedWriter.close();
                 } catch (IOException e) {
                     System.out.println("Error in closing the BufferedWriter" + e);
+                }
+            }
+            if (loggingBufferedWriter != null) {
+                try {
+                    loggingBufferedWriter.close();
+                } catch (IOException e) {
+                    System.out.println("Error in closing the 2nd BufferedWriter" + e);
                 }
             }
         }
@@ -330,6 +349,97 @@ public class CommandLineApp {
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
                     for (RegexSearch performedSearch: performedSearches){
                         ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber());
+                        totalSubsections.addAll(subSections);
+                    }
+                    //Sorting subsections based on height...
+                    Collections.sort(totalSubsections, new Comparator<Rectangle>() {
+                        public int compare(Rectangle r1, Rectangle r2){
+                            return (int)(r1.getMinY() - r2.getMinY());
+                        }
+                    });
+                    for(Rectangle subSection: totalSubsections){
+                        Page selectionSubArea = page.getArea(subSection);
+                        tables.addAll(tableExtractor.extractTables(selectionSubArea));
+                    }
+                    //TODO: Figure out where overlap detection will occur in this process...
+                }
+
+            }
+            writeTables(tables, outFile);
+        } catch (IOException e) {
+            throw new ParseException(e.getMessage());
+        } finally {
+            try {
+                if (pdfDocument != null) {
+                    pdfDocument.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error in closing pdf document" + e);
+            }
+        }
+    }
+
+    // Copy for testing FIXME MAY NOT BE NECESSARY TO HAVE TWO
+    private void extractFile(File pdfFile, Appendable outFile, BufferedWriter loggingBufferedWriter) throws ParseException {
+
+        PDDocument pdfDocument = null;
+        try {
+            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+            pdfDocument.getDocumentInformation().setTitle(pdfFile.getName());
+            List<Table> tables = new ArrayList<>();
+
+            //Extract all user-drawn rectangles in the document...
+            if(this.pageAreas.isEmpty()){ //no selections drawn <-- whole page is treated as drawn area
+                for(List<Integer> pageListPerOption: this.pages){
+                    Iterator<Page> pagesToExtract = getPageIteratorForDrawnSelection(pdfDocument,pageListPerOption);
+                    while(pagesToExtract.hasNext()){
+                        Page pageToExtract = pagesToExtract.next();
+                        tables.addAll(tableExtractor.extractTables(pageToExtract));
+                    }
+
+                }
+            }
+            else{ //only extract the sections of the page corresponding to the drawn areas
+                for(int index=0;index<this.pageAreas.size();index++){
+                    Iterator<Page> pagesPerArea = getPageIteratorForDrawnSelection(pdfDocument,this.pages.get(index));
+                    while(pagesPerArea.hasNext()){
+                        Page drawnSelection = pagesPerArea.next();
+                        drawnSelection = drawnSelection.getArea(this.pageAreas.get(index));
+                        tables.addAll(tableExtractor.extractTables(drawnSelection));
+                    }
+                }
+            }
+
+
+            //Reset pdfDocument so that a new page iterator can be generated for the regex searches...
+            pdfDocument.close();
+            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+            pdfDocument.getDocumentInformation().setTitle(pdfFile.getName());
+
+            //Extract all tables corresponding to regex searches in the document...
+            ArrayList<RegexSearch> performedSearches = new ArrayList<>();
+
+            for(RequestedSearch requestedSearch: this.requestedSearches){
+                performedSearches.add(new RegexSearch(requestedSearch._keyBeforeTable,
+                        requestedSearch._includeKeyBeforeTable,
+                        requestedSearch._keyAfterTable,
+                        requestedSearch._includeKeyAfterTable,
+                        pdfDocument,
+                        this.pageMargins));
+            }
+
+
+            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument,pdfFile);
+
+            while (pageIterator.hasNext()) {
+                Page page = pageIterator.next();
+                if(page!=null){
+                    ArrayList<Rectangle> totalSubsections = new ArrayList<>();
+                    for (RegexSearch performedSearch: performedSearches){
+                        loggingBufferedWriter.write("START REGEX: " + performedSearch.getRegexBeforeTable() + "\t\t");
+                        loggingBufferedWriter.write("END REGEX: " + performedSearch.getRegexAfterTable());
+                        loggingBufferedWriter.newLine();
+                        ArrayList<Rectangle> subSections = performedSearch.getMatchingAreasForPage(page.getPageNumber(),loggingBufferedWriter);
                         totalSubsections.addAll(subSections);
                     }
                     //Sorting subsections based on height...

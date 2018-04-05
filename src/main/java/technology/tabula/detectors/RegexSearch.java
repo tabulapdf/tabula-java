@@ -3,6 +3,7 @@ package technology.tabula.detectors;
 import java.awt.geom.Point2D;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -134,7 +135,8 @@ public class RegexSearch {
 		_includeRegexBeforeTable = includeRegexBeforeTable;
 		_includeRegexAfterTable = includeRegexAfterTable;
 
-		_matchingAreas = detectMatchingAreas(document,filterArea);
+		_matchingAreas = detectMatchingAreas(document, filterArea);
+
 
 	}
 
@@ -187,7 +189,7 @@ public class RegexSearch {
 			_startPageNum = startPageNum;
 			_endPageNum = endPageNum;
 
-
+			/*
 			// Logging Additions
 			try {
 				String timeStamp = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
@@ -203,6 +205,7 @@ public class RegexSearch {
 			catch (IOException e) {
 				e.printStackTrace();
 			}
+			*/
 		}
 	}
 
@@ -214,9 +217,9 @@ public class RegexSearch {
 
 
 	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
-		
+
         ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
-		
+
 		for( MatchingArea matchingArea : _matchingAreas) {
 			for( int currentPageNumber : matchingArea.keySet()){
 				if(currentPageNumber == pageNumber){
@@ -227,7 +230,35 @@ public class RegexSearch {
 			}
 		}
 
-		 return allMatchingAreas;	
+		 return allMatchingAreas;
+	}
+
+	// Copy for testing FIXME MAYBE TEMPORARY IF GETALLMATCHINGAREAS IS IMPLEMENTED
+	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber, BufferedWriter loggingBufferedWriter){
+
+		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
+
+		for( MatchingArea matchingArea : _matchingAreas) {
+			for( int currentPageNumber : matchingArea.keySet()){
+				if(currentPageNumber == pageNumber){
+					for(TableArea tableArea : matchingArea.get(currentPageNumber)){
+						allMatchingAreas.add(tableArea.getArea());
+					}
+				}
+			}
+			try {
+				if (matchingArea._startPageNum == matchingArea._endPageNum)
+					loggingBufferedWriter.write("\tMATCH FOUND - page #" + matchingArea._startPageNum);
+				else
+					loggingBufferedWriter.write("\tMATCH FOUND - pages #" + matchingArea._startPageNum + "-" + matchingArea._endPageNum);
+				loggingBufferedWriter.newLine();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return allMatchingAreas;
 	}
 
 	// TODO: New code added to accommodate for for CLI Regex, see if it works
@@ -248,6 +279,36 @@ public class RegexSearch {
 
         return allPagesMatchingAreas;
     }
+
+    // Copy for testing FIXME NOT TESTED YET
+	public ArrayList<Rectangle> getAllMatchingAreas(BufferedWriter loggingBufferedWriter){
+
+		ArrayList<TableArea> allPagesMatchData = new ArrayList<>();
+		ArrayList<Rectangle> allPagesMatchingAreas = new ArrayList<>();
+
+		for(MatchingArea matchingArea : _matchingAreas){
+			for( int i : matchingArea.keySet()){
+				allPagesMatchData.addAll(matchingArea.get(i));
+			}
+
+			try {
+				if (matchingArea._startPageNum == matchingArea._endPageNum)
+					loggingBufferedWriter.write("\tMATCH FOUND - page #" + matchingArea._startPageNum);
+				else
+					loggingBufferedWriter.write("\tMATCH FOUND - pages #" + matchingArea._startPageNum + "-" + matchingArea._endPageNum);
+				loggingBufferedWriter.newLine();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		for(TableArea matchData : allPagesMatchData){
+			allPagesMatchingAreas.add(matchData.getArea());
+		}
+
+		return allPagesMatchingAreas;
+	}
 	
 	  /*
      * Inner class to retain information about a potential matching area while
