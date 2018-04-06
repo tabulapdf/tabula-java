@@ -580,6 +580,7 @@ public class RegexSearch {
             	/*
             	 * Create sub-areas for table that span the entire page
             	 */
+
             	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
             		Integer subAreaTop = (areaToFilter!=null) ? Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height) :
@@ -587,15 +588,26 @@ public class RegexSearch {
 
             		Float subAreaHeight = currentPage.height-subAreaTop;
 
+            		System.out.println("Sub Area Height Before Subtraction:" + subAreaHeight);
+
             		if(areaToFilter!=null){
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
-            			;
-            			subAreaHeight -=(float)(0.5)*(currentPage.getTextBounds().getBottom()-currentPage.getTextBounds().getTop());
+						System.out.println("Last Page: " + foundTable._pageEndMatch.get());
+            			System.out.println("Page #: "+currentPage.getPageNumber());
+            			System.out.println("area to filter == null");
+            			System.out.println("Current Page Height: "+ currentPage.height);
+            			System.out.println("Bottom Text Bounds of Current Page: " + currentPage.getTextBounds().getBottom());
+            			System.out.println("Current Height - Bottom Text Bound"+ (currentPage.height- currentPage.getTextBounds().getBottom()));
+
+            			subAreaHeight -= (float)(0.5)*(currentPage.height - (currentPage.getTextBounds().getBottom()));//-currentPage.getTextBounds().getTop());
 
 					}
 
+
+					System.out.println("Sub Area Height: "+subAreaHeight);
+            		System.out.println("Sub Area Top: " +subAreaTop);
 
             		tableSubArea = new LinkedList<>();
 
