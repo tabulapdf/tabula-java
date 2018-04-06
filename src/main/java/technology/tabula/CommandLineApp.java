@@ -336,13 +336,15 @@ public class CommandLineApp {
                     while(pagesToExtract.hasNext()){
                         Page pageToExtract = pagesToExtract.next();
 
-                        if(nonOverlappingSections.get(pageToExtract)==null){
+                        if(nonOverlappingSections.get(pageToExtract.getPageNumber())==null){
+
                             nonOverlappingSections.put(pageToExtract.getPageNumber(),new ArrayList<Rectangle>());
                             nonOverlappingSections.get(pageToExtract.getPageNumber()).add(pageToExtract);
                             tables.addAll(tableExtractor.extractTables(pageToExtract));
                         }
                         else{
                             System.out.println("OVERLAP DETECTED.."); //If whole page is treated as drawn area, same page shouldn't be parsed twice
+                            //TODO: Should this be recorded in a logging file somewheres??
                         }
 
 

@@ -95,7 +95,7 @@ public class TestCommandLineApp {
     public void testOverlapDetectionOfUserDrawnSelections() throws ParseException, IOException {
 
 
-        assertEquals(UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/testOverlapDetectionOfUserDrawnSelections.csv"),
+        assertEquals(UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestOverlapDetectionOfUserDrawnSelections.csv"),
                 this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
                 "-a",
@@ -109,13 +109,14 @@ public class TestCommandLineApp {
         }));
     }
 
-/*  Code still under construction...will un-comment this once development is complete
+
     @Test
     //Test if incorrectly specified user drawn selections specifications on the CLI are detected...
     //The second user-drawn selection overlaps the first--therefore it will not be processed
     public void testOverlapDetectionOfMultiplePageSpecifications() throws ParseException, IOException {
 
-        assertEquals(UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/testOverlapDetectionOfUserDrawnSelections.csv"),
+        assertEquals(UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/expectedOutput_TestOverlapDetectionOfMultiplePageSpecifications.csv"),
                 this.csvFromCommandLineArgs(new String[]{
                         "src/test/resources/technology/tabula/eu-002.pdf",
                         "-p","1",
@@ -125,7 +126,7 @@ public class TestCommandLineApp {
                 }));
     }
 
-*/
+
     @Test
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();
