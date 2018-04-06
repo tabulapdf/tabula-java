@@ -197,7 +197,7 @@ public class RegexSearch {
 	 */
 
 	// Logging - seem to need a function copy without loggingBufferedWriter (to be discussed with REM - DBM)
-	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber){
+	public ArrayList<Rectangle> getSubSectionsForPage(Integer pageNumber){
 
 		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
 
@@ -214,7 +214,7 @@ public class RegexSearch {
 		return allMatchingAreas;
 	}
 
-	public ArrayList<Rectangle> getMatchingAreasForPage(Integer pageNumber, BufferedWriter loggingBufferedWriter){
+	public ArrayList<Rectangle> getSubSectionsForPage(Integer pageNumber, BufferedWriter loggingBufferedWriter){
 
 		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
 

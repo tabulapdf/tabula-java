@@ -5,8 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
-import org.apache.pdfbox.pdmodel.*;
+
 import org.apache.pdfbox.pdmodel.*;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -158,7 +157,7 @@ public class TestRegexSearch {
 			
 			String extractedTableContentNoFilter = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearchNoFilter.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearchNoFilter.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContentNoFilter += element.getText();
 					}
@@ -187,7 +186,7 @@ public class TestRegexSearch {
 
 			String extractedTableContentWithFilter = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearchWithFilter.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearchWithFilter.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContentWithFilter += element.getText();
 					}
@@ -232,7 +231,7 @@ public class TestRegexSearch {
 
 			String expectedTableContent = "";
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 				extractedTableContent += data.getText(tableArea);
 			}
 
@@ -280,7 +279,7 @@ public class TestRegexSearch {
 			expectedTableContent.trim();
 			
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
 				}
@@ -333,7 +332,7 @@ public void testIncludePatternAfterOption() {
 		expectedTableContent = expectedTableContent.trim();
 		
 		String extractedTableContent = "";
-		for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+		for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 			
 			for(TextElement element : data.getText(tableArea)) {
 				extractedTableContent += element.getText();
@@ -399,7 +398,7 @@ public void testIncludePatternBeforeOption() {
 		
 		
 		String extractedTableContent = "";
-		for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+		for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 			
 			
 			for(TextElement element : data.getText(tableArea)) {
@@ -468,7 +467,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 		
 		
 		String extractedTableContent = "";
-		for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+		for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 			
 			
 			for(TextElement element : data.getText(tableArea)) {
@@ -535,7 +534,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
@@ -617,7 +616,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -685,7 +684,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -749,7 +748,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -808,7 +807,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -882,7 +881,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+				for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 					for(TextElement element : data.getText(tableArea)) {
 							extractedTableContent += element.getText();
 						}
@@ -954,7 +953,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			expectedTableContent = expectedTableContent.trim();
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -1024,7 +1023,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
@@ -1093,7 +1092,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
@@ -1176,7 +1175,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearch.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContent += element.getText();
 					}
@@ -1258,7 +1257,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearch.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContent += element.getText();
 					}
@@ -1332,7 +1331,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
 				}
@@ -1400,7 +1399,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
@@ -1483,7 +1482,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearch.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContent += element.getText();
 					}
@@ -1557,7 +1556,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 			expectedTableContent = expectedTableContent.trim();
 
 			String extractedTableContent = "";
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 
 				for(TextElement element : data.getText(tableArea)) {
@@ -1641,7 +1640,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(iter+1)) {
+				for(Rectangle tableArea : regexSearch.getSubSectionsForPage(iter+1)) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContent += element.getText();
 					}
@@ -1710,7 +1709,7 @@ public void testIncludePatternBeforeAndPatternAfterOption() {
 
 			String extractedTableContent = "";
 
-			for(Rectangle tableArea : regexSearch.getMatchingAreasForPage(1)) {
+			for(Rectangle tableArea : regexSearch.getSubSectionsForPage(1)) {
 
 				for(TextElement element : data.getText(tableArea)) {
 					extractedTableContent += element.getText();
