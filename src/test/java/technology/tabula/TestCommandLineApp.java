@@ -739,7 +739,7 @@ public class TestCommandLineApp {
      * Test to verify that basic regex search can be run in batch mode
      * (This test is intended to check if a regex search can be run at the directory-level)
      */
-    public void testExtractBatchSpreadsheetWithRegex() throws ParseException, IOException {
+    public void testExtractBatchSpreadsheetWithRegex1() throws ParseException, IOException {
 
         FileSystem fs = FileSystems.getDefault();
         Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
@@ -800,6 +800,88 @@ public class TestCommandLineApp {
                         System.out.println(extractedValue);
                         assertEquals(expectedValue,extractedValue);
                     }
+            }
+        }
+        //test has failed if ParseException has been thrown.
+        catch(ParseException pe){
+            assertTrue(pe.getMessage(),false);
+        }
+    }
+
+    @Test
+    /*
+     * Test to verify that basic regex search can be run in batch mode
+     * (This test is intended to check if a regex search can be run at the directory-level)
+     * Similar to testExtractBatchSpreadsheetWithRegex1, but is includes 'inclusive'/'exclusive' options
+     * as well as two pairs of regex searches to emulate what Bill was looking for in "Shall" pdfs
+     */
+    public void testExtractBatchSpreadsheetWithRegex2() throws ParseException, IOException {
+
+        FileSystem fs = FileSystems.getDefault();
+        Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
+        Path srcFolder = fs.getPath("src/test/resources/technology/tabula/regex_batch_process/shall_pdfs_input_files");
+        Path expectedValsFolder = fs.getPath("src/test/resources/technology/tabula/regex_batch_process/shall_pdfs_expected_output");
+
+        File[] srcFiles = srcFolder.toFile().listFiles();
+
+        for(File srcFile: srcFiles){
+            Path copiedPDF = tmpFolder.resolve(srcFile.getName());
+            Files.copy(srcFile.toPath(),copiedPDF);
+        }
+
+        System.out.println("Temp FOLDER as string:"+tmpFolder.toString());
+
+        tmpFolder.toFile().deleteOnExit();
+        try{
+            this.csvFromCommandLineArgs(new String[]{
+                    "-b", tmpFolder.toString(),
+                    "-r",
+                    "{\"queries\": " +
+                            "[ {\"pattern_before\" : \"Report To:\"," +
+                            "\"include_pattern_before\": \"false\"," +
+                            "\"pattern_after\" : \"Sample Type:\"," +
+                            "\"include_pattern_after\" : \"true\"}," +
+                            "{\"pattern_before\" : \"Analyte\"," +
+                            "\"include_pattern_before\": \"true\"," +
+                            "\"pattern_after\" : \"Report Date:\"," +
+                            "\"include_pattern_after\" : \"true\"} ]}",
+                    "-f","CSV",
+                    "-o","testResults.csv"
+            });
+
+            for(final File extractedOutputFile : tmpFolder.toFile().listFiles(new FilenameFilter(){
+                public boolean accept(File f, String s){
+                    return s.endsWith(".csv");
+                }
+            })){
+
+                // System.out.println(extractedOutputFile.getName());
+                String extractedValue = UtilsForTesting.loadCsv(extractedOutputFile.getAbsolutePath());
+                String expectedValue = "";
+
+                File[] expectedOutput = expectedValsFolder.toFile().listFiles(new FilenameFilter(){
+                    public boolean accept(File f, String s){
+                        //System.out.println("S:"+s);
+                        //System.out.println("Extracted Output File Name:"+ extractedOutputFile.getName());
+                        return s.equals(extractedOutputFile.getName());
+                    }
+                });
+
+                if(expectedOutput.length==0){
+                    System.out.println("Expected Value for " + extractedOutputFile.getName() + ":");
+                    System.out.println(expectedValue);
+                    System.out.println("Extracted Value for " + extractedOutputFile.getName() + ":");
+                    System.out.println(extractedValue);
+                    assertEquals(expectedValue,extractedValue);
+                }
+                else{
+                    expectedValue= UtilsForTesting.loadCsv(expectedOutput[0].getAbsolutePath());
+                    System.out.println("Expected Value for " + extractedOutputFile.getName() + ":");
+                    System.out.println(expectedValue);
+                    System.out.println("Extracted Value for " + extractedOutputFile.getName() + ":");
+                    System.out.println(extractedValue);
+                    assertEquals(expectedValue,extractedValue);
+                }
             }
         }
         //test has failed if ParseException has been thrown.
