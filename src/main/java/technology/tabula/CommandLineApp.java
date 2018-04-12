@@ -442,7 +442,7 @@ public class CommandLineApp {
                         //Detect (and ignore at this time (4/5/18) user-drawn rectangles that overlap previously
                         //specified user-drawn rectangles
                         Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(Arrays.asList((Rectangle)drawnSelection),
-                                nonOverlappingSections.get(drawnSelection.getPageNumber()),null,drawnSelection.getPageNumber());
+                                nonOverlappingSections.get(drawnSelection.getPageNumber()),new ArrayList<RegexSearch>(),drawnSelection.getPageNumber());
                         if(overlapDetectionStatus.getKey()){
                             System.out.println(overlapDetectionStatus.getValue());
                         }
