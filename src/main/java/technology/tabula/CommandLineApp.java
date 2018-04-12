@@ -5,11 +5,11 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
-//import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-//import com.sun.org.apache.regexp.internal.RE;
+import javafx.util.Pair;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -307,15 +307,66 @@ public class CommandLineApp {
     }
 
 
-    private Boolean overlapDetected(List<Rectangle> potAreas, List<Rectangle> verifiedAreas){
+    private Pair<Boolean,String> subSectionOverlapDetected(List<Rectangle> potAreas, List<Rectangle> verifiedAreas,
+                                                           ArrayList<RegexSearch> verifiedSearches, Integer pageNum){
+
+        String overlapStatus = "";
+
         for(Rectangle potArea:potAreas){
             for(Rectangle verifiedArea: verifiedAreas){
                 if(verifiedArea.verticallyOverlaps(potArea)){
-                    return true;
+                    for(RegexSearch verifiedSearch : verifiedSearches){
+                        if(verifiedSearch.getSubSectionsForPage(pageNum).contains(verifiedArea)){
+                            overlapStatus += "Overlap detected with Search ("+verifiedSearch.getRegexBeforeTable()+", "+
+                                    verifiedSearch.getRegexAfterTable()+") on page " + pageNum + "\n";
+                            return new Pair<Boolean,String>(true,overlapStatus);
+                        }
+                    }
+
+
                 }
             }
         }
-        return false;
+        return new Pair<Boolean,String>(false,"");
+    }
+
+
+    private Boolean noSearchesOverlap(ArrayList<RegexSearch> performedSearches,
+                                      HashMap<Integer,ArrayList<Rectangle>> nonOverlappingSections,
+                                      ArrayList<Rectangle> totalSubsections, Integer pageNum,
+                                      BufferedWriter loggingBufferedWriter){
+
+        ArrayList<RegexSearch> verifiedSearches = new ArrayList<RegexSearch>();
+
+        for (RegexSearch performedSearch: performedSearches){
+
+            try {
+                loggingBufferedWriter.write("START REGEX: " + performedSearch.getRegexBeforeTable() + "\t\t");
+                loggingBufferedWriter.write("END REGEX: " + performedSearch.getRegexAfterTable());
+                loggingBufferedWriter.newLine();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            List<Rectangle> potSubsections = performedSearch.getSubSectionsForPage(pageNum, loggingBufferedWriter);
+
+            Pair<Boolean,String> overlapDetectionStatus =
+                    subSectionOverlapDetected(potSubsections,nonOverlappingSections.get(pageNum),verifiedSearches,pageNum);
+
+            if(overlapDetectionStatus.getKey()){
+                System.out.println("For Search: (" + performedSearch.getRegexBeforeTable() + "," +
+                        performedSearch.getRegexAfterTable() + ")");
+                System.out.println(overlapDetectionStatus.getValue());
+                return false;
+            }
+            else{
+                verifiedSearches.add(performedSearch);
+                nonOverlappingSections.get(pageNum).addAll(potSubsections);
+                totalSubsections.addAll(potSubsections);
+            }
+        }
+        return true;
     }
 
 
@@ -390,8 +441,10 @@ public class CommandLineApp {
 
                         //Detect (and ignore at this time (4/5/18) user-drawn rectangles that overlap previously
                         //specified user-drawn rectangles
-                        if(overlapDetected(Arrays.asList((Rectangle)drawnSelection),nonOverlappingSections.get(drawnSelection.getPageNumber()))){
-                            System.out.println("OVERLAP DETECTED!!");
+                        Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(Arrays.asList((Rectangle)drawnSelection),
+                                nonOverlappingSections.get(drawnSelection.getPageNumber()),null,drawnSelection.getPageNumber());
+                        if(overlapDetectionStatus.getKey()){
+                            System.out.println(overlapDetectionStatus.getValue());
                         }
                         else{
                             nonOverlappingSections.get(drawnSelection.getPageNumber()).add(drawnSelection);
@@ -431,23 +484,11 @@ public class CommandLineApp {
                     }
 
                     ArrayList<Rectangle> totalSubsections = new ArrayList<>();
-                    for (RegexSearch performedSearch: performedSearches){
 
-                        loggingBufferedWriter.write("START REGEX: " + performedSearch.getRegexBeforeTable() + "\t\t");
-                        loggingBufferedWriter.write("END REGEX: " + performedSearch.getRegexAfterTable());
-                        loggingBufferedWriter.newLine();
-
-
-                        Integer pageNum=page.getPageNumber();
-                        List<Rectangle> potSubsections = performedSearch.getSubSectionsForPage(pageNum, loggingBufferedWriter);
-
-                        if(overlapDetected(potSubsections,nonOverlappingSections.get(pageNum))){
-                            System.out.println("OVERLAP DETECTED...");
-                        }
-                        else{
-                            nonOverlappingSections.get(pageNum).addAll(potSubsections);
-                            totalSubsections.addAll(potSubsections);
-                        }
+                    if(noSearchesOverlap(performedSearches,nonOverlappingSections,totalSubsections,
+                            page.getPageNumber(),loggingBufferedWriter)==false){
+                        tables.clear();
+                        break;
                     }
 
                     //Sorting subsections based on height...
@@ -460,11 +501,12 @@ public class CommandLineApp {
                         Page selectionSubArea = page.getArea(subSection);
                         tables.addAll(tableExtractor.extractTables(selectionSubArea));
                     }
-                    //TODO: Figure out where overlap detection will occur in this process...
                 }
 
             }
-            writeTables(tables, outFile);
+            if(tables.isEmpty()==false){
+                writeTables(tables, outFile);
+            }
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         } finally {
