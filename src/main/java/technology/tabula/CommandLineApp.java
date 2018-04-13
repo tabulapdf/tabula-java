@@ -46,8 +46,12 @@ public class CommandLineApp {
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2017 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
+    private static final int RELATIVE_AREA_CALCULATION_MODE = 0;
+    private static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
+
+
     private Appendable defaultOutput;
-    private List<Rectangle> pageAreas;
+    private List<technology.tabula.Pair<Integer, Rectangle>> pageAreas;
     private ArrayList<RequestedSearch> requestedSearches; //made for use with regex
     private RegexSearch.FilteredArea pageMargins;
     private List<List<Integer>> pages;
@@ -127,6 +131,18 @@ public class CommandLineApp {
 
             if(header_scale==null || footer_scale==null){
                 throw new IllegalStateException();
+            }
+
+
+            Float potHeaderScale=header_scale.getAsFloat();
+            Float potFooterScale=footer_scale.getAsFloat();
+
+            if(potHeaderScale<0 || potFooterScale<0){
+                throw new IllegalStateException("Header/Footer Margin Values must be greater than 0");
+            }
+
+            if(potHeaderScale+potFooterScale>=1){
+                throw new IllegalStateException("The combination of Header and Footer Margin Values must be less than 1");
             }
 
             return new RegexSearch.FilteredArea(header_scale.getAsFloat(),footer_scale.getAsFloat());
@@ -311,23 +327,29 @@ public class CommandLineApp {
                                                            ArrayList<RegexSearch> verifiedSearches, Integer pageNum){
 
         String overlapStatus = "";
+        Integer numOverlappedSearches = 0;
 
         for(Rectangle potArea:potAreas){
             for(Rectangle verifiedArea: verifiedAreas){
                 if(verifiedArea.verticallyOverlaps(potArea)){
                     for(RegexSearch verifiedSearch : verifiedSearches){
                         if(verifiedSearch.getSubSectionsForPage(pageNum).contains(verifiedArea)){
+                            numOverlappedSearches++;
                             overlapStatus += "Overlap detected with Search ("+verifiedSearch.getRegexBeforeTable()+", "+
                                     verifiedSearch.getRegexAfterTable()+") on page " + pageNum + "\n";
-                            return new Pair<Boolean,String>(true,overlapStatus);
                         }
                     }
-
+                    //If no regexSearch is overlapped, it must have been a user-drawn area that it vertically overlapped with
+                    //NOTE: An entire page can be specified as a user-drawn area...
+                    if(numOverlappedSearches==0 && verifiedArea.horizontallyOverlaps(potArea)){
+                        overlapStatus += "Overlap detected with User-Drawn Area " + verifiedArea.toString() + " on page "
+                                + pageNum +"\n";
+                    }
 
                 }
             }
         }
-        return new Pair<Boolean,String>(false,"");
+        return new Pair<Boolean,String>(overlapStatus.isEmpty()==false,overlapStatus);
     }
 
 
@@ -355,6 +377,7 @@ public class CommandLineApp {
                     subSectionOverlapDetected(potSubsections,nonOverlappingSections.get(pageNum),verifiedSearches,pageNum);
 
             if(overlapDetectionStatus.getKey()){
+                //NOTE: This is a simulation of what I assume would be desirable in a logging file...
                 System.out.println("For Search: (" + performedSearch.getRegexBeforeTable() + "," +
                         performedSearch.getRegexAfterTable() + ")");
                 System.out.println(overlapDetectionStatus.getValue());
@@ -411,13 +434,32 @@ public class CommandLineApp {
                 for(List<Integer> pageListPerOption: this.pages){
                     Iterator<Page> pagesToExtract = getPageIteratorForDrawnSelection(pdfDocument,pageListPerOption);
                     while(pagesToExtract.hasNext()){
+
                         Page pageToExtract = pagesToExtract.next();
+
+                        Rectangle areaToExtract = pageToExtract;
+
+                        if(pageMargins!=null){
+                            Double header_margin = pageToExtract.getHeight()* pageMargins.getHeaderHeightScale();
+                            Double footer_margin = pageToExtract.getHeight()* pageMargins.getFooterHeightScale();
+
+                            Float extractionTop = header_margin.floatValue();
+                            Float extractionHeight = (float)(pageToExtract.getHeight()-header_margin-footer_margin);
+
+                            areaToExtract = new Rectangle( extractionTop,
+                                    pageToExtract.getLeft(),
+                                    pageToExtract.getRight(),
+                                    extractionHeight);
+                        }
+
+
 
                         if(nonOverlappingSections.get(pageToExtract.getPageNumber())==null){
 
                             nonOverlappingSections.put(pageToExtract.getPageNumber(),new ArrayList<Rectangle>());
                             nonOverlappingSections.get(pageToExtract.getPageNumber()).add(pageToExtract);
-                            tables.addAll(tableExtractor.extractTables(pageToExtract));
+
+                            tables.addAll(tableExtractor.extractTables( pageToExtract.getArea(areaToExtract)));
                         }
                         else{
                             System.out.println("OVERLAP DETECTED.."); //If whole page is treated as drawn area, same page shouldn't be parsed twice
@@ -438,7 +480,37 @@ public class CommandLineApp {
                     Iterator<Page> pagesPerArea = getPageIteratorForDrawnSelection(pdfDocument,this.pages.get(index));
                     while(pagesPerArea.hasNext()){
                         Page drawnSelection = pagesPerArea.next();
-                        drawnSelection = drawnSelection.getArea(this.pageAreas.get(index));
+
+
+                        Double header_margin = (pageMargins==null) ? 0 : drawnSelection.getHeight()* pageMargins.getHeaderHeightScale();
+                        Double footer_margin = (pageMargins==null) ? 0 : drawnSelection.getHeight()* pageMargins.getFooterHeightScale();
+
+
+                        Rectangle absoluteArea = this.pageAreas.get(index).getRight();
+
+                        Rectangle requestedArea = absoluteArea;
+
+                        if(this.pageAreas.get(index).getLeft()==RELATIVE_AREA_CALCULATION_MODE){
+                            requestedArea = new Rectangle((float) (absoluteArea.getTop() / 100 * drawnSelection.getHeight()),
+                                    (float) (absoluteArea.getLeft() / 100 * drawnSelection.getWidth()), (float) (absoluteArea.getWidth() / 100 * drawnSelection.getWidth()),
+                                    (float) (absoluteArea.getHeight() / 100 * drawnSelection.getHeight()));
+                        }
+
+
+                        Float croppedTop = (requestedArea.getTop()<header_margin) ?
+                                header_margin.floatValue() : requestedArea.getTop();
+
+                        Float croppedBottom = (drawnSelection.getHeight()-requestedArea.getMaxY()< (footer_margin)) ?
+                                footer_margin.floatValue() : (float)(drawnSelection.getHeight()-requestedArea.getMaxY());
+
+                        Float croppedHeight = (float)(drawnSelection.getHeight()-croppedTop-croppedBottom);
+
+                        Rectangle croppedArea = new Rectangle(croppedTop,
+                                requestedArea.getLeft(),requestedArea.width,
+                                croppedHeight);
+
+
+                        drawnSelection = drawnSelection.getArea(croppedArea);
 
                         System.out.println("Drawn Selection:");
                         System.out.println(drawnSelection);
@@ -447,11 +519,11 @@ public class CommandLineApp {
                             nonOverlappingSections.put(drawnSelection.getPageNumber(),new ArrayList<Rectangle>());
                         }
 
-                        //Detect (and ignore at this time (4/5/18) user-drawn rectangles that overlap previously
-                        //specified user-drawn rectangles
-                        Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(Arrays.asList((Rectangle)drawnSelection),
-                                nonOverlappingSections.get(drawnSelection.getPageNumber()),new ArrayList<RegexSearch>(),drawnSelection.getPageNumber());
+                        Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(
+                                Arrays.asList((Rectangle)drawnSelection), nonOverlappingSections.get(drawnSelection.getPageNumber()),
+                                new ArrayList<RegexSearch>(),drawnSelection.getPageNumber());
                         if(overlapDetectionStatus.getKey()){
+                            System.out.println("User-Drawn Area " + drawnSelection +" cannot be extracted: Overlap detected\n");
                             System.out.println(overlapDetectionStatus.getValue());
                         }
                         else{
@@ -573,28 +645,58 @@ public class CommandLineApp {
         }
     }
 
-    private static List<Rectangle> whichAreas(CommandLine line) throws ParseException {
+    private static List<technology.tabula.Pair<Integer, Rectangle>> whichAreas(CommandLine line) throws ParseException {
         if (!line.hasOption('a')) {
             return new ArrayList<>();
         }
 
-        List<Float> f = parseFloatList(Arrays.asList(line.getOptionValues('a')).toString());
 
-        //List<Float> f = parseFloatList(line.getOptionValue('a'));
+        System.out.println("What I'm getting...");
+
+        String[] areaArgs = line.getOptionValues('a');
+
+        ArrayList<String> sanitizedAreaArgs = new ArrayList<String>();
+        ArrayList<Integer> areaType = new ArrayList<Integer>();
+
+
+        for(int index=0; index<areaArgs.length; index++){
+            System.out.println("DO I GET HERE?");
+            System.out.println(areaArgs[index]);
+
+            if(areaArgs[index].startsWith("%")){
+                System.out.println("RELATIVE ARGUMENT");
+                areaType.add(RELATIVE_AREA_CALCULATION_MODE);
+                sanitizedAreaArgs.add(areaArgs[index].substring(1));
+            }
+            else{
+                System.out.println("ABSOLUTE ARGUMENT");
+                areaType.add(ABSOLUTE_AREA_CALCULATION_MODE);
+                sanitizedAreaArgs.add(areaArgs[index]);
+            }
+        }
+
+
+        System.out.println("Sanitized Options...");
+        System.out.println(sanitizedAreaArgs.toString());
+
+        //List<Float> f = parseFloatList(Arrays.asList(line.getOptionValues('a')).toString());
+
+        List<Float> f = parseFloatList(sanitizedAreaArgs.toString());
+
+        //throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
 
         if((f.size()%4)!=0){
             throw new ParseException("area parameters must be top,left,bottom,right");
         }
 
-       // if (f.size() != 4) {
-       //     throw new ParseException("area parameters must be top,left,bottom,right");
-       // }
+        ArrayList<technology.tabula.Pair<Integer,Rectangle>> pageAreas = new ArrayList<>();
 
-        ArrayList<Rectangle> pageAreas = new ArrayList<>();
+
 
         for(Integer i=0; i<f.size(); i+=4){
 
-            pageAreas.add(new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(i)));
+            pageAreas.add(new technology.tabula.Pair<Integer,Rectangle>(
+                    areaType.remove(0), new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(i))));
         }
 
         System.out.println("Specified Page Areas:");
@@ -658,16 +760,24 @@ public class CommandLineApp {
     // utilities, etc.
     public static List<Float> parseFloatList(String option) throws ParseException {
         //Remove array brackets as necessary...
+
+        System.out.println("In parseFloatList...");
+        System.out.println("Input:"+option);
+
         String sanitized_options = option.replaceAll("[\\[\\]]","");
         String[] f = sanitized_options.split(",");
 
         List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
+                System.out.println(f[i]);
+                System.out.println("What's happening??");
                 rv.add(Float.parseFloat(f[i]));
             }
             return rv;
         } catch (NumberFormatException e) {
+            System.out.println(e.getLocalizedMessage());
+            System.out.println(e.getStackTrace());
             throw new ParseException("Wrong number syntax");
         }
     }

@@ -329,7 +329,7 @@ public class RegexSearch {
 
 		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio){
 			System.out.println("Height of header:"+headerHeightRatio.toString());
-			System.out.print(("Height of footer:"+footerHeightRatio.toString()));
+			System.out.println(("Height of footer:"+footerHeightRatio.toString()));
 			scaleOfHeaderHeight=headerHeightRatio;
 			scaleOfFooterHeight=footerHeightRatio;
 		}
