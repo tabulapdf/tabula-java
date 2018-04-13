@@ -378,12 +378,13 @@ public class TestCommandLineApp {
     /*
      * Test to see if overlapping regex searches are 1) Being detected
      *                                               2) The offending regex search is not included in the extracted output
+     * UPDATE (4/13/2018 BHT) -- The program should not output any CSV file, due to the offending regex search
      */
     public void testOverlapDetectionForMultipleRegexExtractions() throws ParseException, IOException {
 
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestOverlapDetectionForMultipleRegexExtractions.csv");
+        //String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestOverlapDetectionForMultipleRegexExtractions.csv");
 
-        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+        assertEquals("", this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
                 "-r",
                 "{\"queries\": " +
@@ -440,7 +441,7 @@ public class TestCommandLineApp {
                 "-f", "CSV",
                 "-m", "{\"header_scale\" : 0.095," +
                 "\"footer_scale\" : 0.0096 }",
-                "--pages", "1,4"
+                //"--pages", "1,4"
 
         }));
     }
@@ -472,12 +473,12 @@ public class TestCommandLineApp {
      * Test to verify that at least three pairs of regex searches can be run in one instance
      * Mainly wanted to see if the CLI would output an overlap error like the GUI did
      * CLI did -not- output overlap error
+     *
+     * Update (4/13/2018): Program should not output a CSV file due to the offending regex; this is the intended function
      */
     public void testExtractThreeRegexSearches() throws ParseException, IOException {
 
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractThreeRegexSearchesWithOverlap.csv");
-
-        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+        assertEquals("", this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
                 "-r",
                 "{\"queries\": " +
@@ -516,12 +517,10 @@ public class TestCommandLineApp {
      * Test to verify that at least three pairs of regex searches can be run in one instance
      * Mainly wanted to see if the CLI would output an overlap error like the GUI did
      * CLI did -not- output overlap error
-     * UPDATE (4/6/2018 REM) --CLI should  now output Overlap Detection message + not extract overlapping areas...
+     * UPDATE (4/6/2018 REM) -- CLI should  now output Overlap Detection message + not extract overlapping areas...
+     * UPDATE (4/13/2018 BHT) -- CLI should not output a CSV, due to the offending overlapping regex search
      */
     public void testExtractThreeRegexSearchesAndNewFile() throws ParseException, IOException {
-
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestExtractThreeRegexSearchesWithOverlap.csv");
-        expectedCsv = expectedCsv.replaceAll("\n", "");
 
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
@@ -537,7 +536,7 @@ public class TestCommandLineApp {
                 "-o", "outputFile"
         });
 
-        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+        assertEquals("",UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 
     @Test
