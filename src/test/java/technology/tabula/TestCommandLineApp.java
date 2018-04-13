@@ -90,6 +90,68 @@ public class TestCommandLineApp {
     }
 
     @Test
+    //Test if multiple user drawn selections specifications (on different pages of the document)
+    // on the CLI are processed correctly...
+    public void testMultipleUserDrawnSelectionsOnDifferentPages() throws ParseException, IOException {
+
+        String expectedOutput=UtilsForTesting.loadCsv(
+         "src/test/resources/technology/tabula/csv/expectedOutput_TestMultipleUserDrawnSelectionsOnDifferentPages.csv");
+
+
+        assertEquals(expectedOutput, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-a",
+                "65.822,60.657,259.197,528.476",
+                "-p","1",
+                "-a",
+                "65.822,60.657,259.197,528.476",
+                "-p","2",
+                "-f",
+                "CSV"
+        }));
+    }
+
+    @Test
+    //Test if the page margins options are being processed on full page extraction...
+    public void testPageExtractionWithHeaderAndFooter() throws ParseException, IOException {
+
+        String expectedOutput=UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/expectedOutput_TestPageExtractionWithHeaderAndFooter.csv");
+
+
+        assertEquals(expectedOutput, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-p","1",
+                "-p","2",
+                "-m", "{\"header_scale\" : 0.25," +
+                "\"footer_scale\" : 0.25 }",
+                "-f",
+                "CSV"
+        }));
+    }
+
+    @Test
+    //Test if the page margins options 'crop' areas that extend into header/footer...
+    public void testUserDefinedAreaExtractionWithHeaderAndFooter() throws ParseException, IOException {
+
+        String expectedOutput=UtilsForTesting.loadCsv(
+       "src/test/resources/technology/tabula/csv/expectedOutput_TestUserDefinedAreaExtractionWithHeaderAndFooter.csv");
+
+
+        assertEquals(expectedOutput, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-p","1",
+                "-a",
+                "0,58.9,654.7,536.12",
+                "-m", "{\"header_scale\" : 0.15," +
+                "\"footer_scale\" : 0.25 }",
+                "-f",
+                "CSV"
+        }));
+    }
+
+
+    @Test
     //Test if incorrectly specified user drawn selections specifications on the CLI are detected...
     //The second user-drawn selection overlaps the first--therefore it will not be processed
     public void testOverlapDetectionOfUserDrawnSelections() throws ParseException, IOException {
@@ -334,7 +396,28 @@ public class TestCommandLineApp {
     }
 
 
-    //TODO: Add test where overlap is with a multi-page match...
+
+    @Test
+    /*
+     * Test 2 to see if overlapping regex searches     1) Being detected
+     *                                                 2) The offending regex search is not included in the extracted output
+     * NOTE: This test was deemed necessary due to the complexity of implementing multi-page matches
+     */
+    public void testOverlapDetectionForMultiPageMatchRegexExtractions() throws ParseException, IOException {
+
+        assertEquals("", this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/eu-002.pdf",
+                "-r",
+                "{\"queries\": " +
+                        "[ {\"pattern_before\" : \"International\"," +
+                        "\"pattern_after\" : \"Turkey\"}," +
+                        "{\"pattern_before\" : \"Total\"," +
+                        "\"pattern_after\" : \"New EU-25\"} ]}",
+                "-f", "CSV"
+        }));
+    }
+
+    //TODO-Incorporate parsing of extraction log file into unit test to verify meta-data accuracy...
 
     @Test
     /*
