@@ -128,10 +128,12 @@ public class TestCommandLineApp {
                 "CSV"
         });
 
-        assertEquals(expectedOutput, actualValue);
-
         System.out.println("Actual Value:"+actualValue);
         System.out.println("Expected Value:" + expectedOutput);
+
+        assertEquals(expectedOutput, actualValue);
+
+
 
     }
 
