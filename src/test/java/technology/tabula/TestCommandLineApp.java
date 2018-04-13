@@ -132,8 +132,6 @@ public class TestCommandLineApp {
 
         assertEquals(expectedOutput, actualValue);
 
-
-
     }
 
     @Test
@@ -1080,6 +1078,30 @@ public class TestCommandLineApp {
                 "-f", "CSV"
         }));
     }
+
+    @Test
+    public void testAreaArgWithoutPageArg() throws ParseException, IOException {
+
+       Boolean parseExceptionThrown = false;
+
+        try {
+            this.csvFromCommandLineArgs(new String[]{
+                    "src/test/resources/technology/tabula/MultiColumn.pdf",
+                    "-p", "1", "-a",
+                    "%0,0,100, 49", //at 50 horizontal overlap occurs...
+                    "-a",
+                    "0,212,451,425",
+                    "-f", "CSV"
+            });
+        }
+        catch(ParseException pe){
+            parseExceptionThrown = true;
+        }
+
+        assertTrue(parseExceptionThrown);
+
+    }
+
 }
 
 
