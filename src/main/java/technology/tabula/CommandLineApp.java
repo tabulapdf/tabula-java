@@ -494,6 +494,8 @@ public class CommandLineApp {
                             requestedArea = new Rectangle((float) (absoluteArea.getTop() / 100 * drawnSelection.getHeight()),
                                     (float) (absoluteArea.getLeft() / 100 * drawnSelection.getWidth()), (float) (absoluteArea.getWidth() / 100 * drawnSelection.getWidth()),
                                     (float) (absoluteArea.getHeight() / 100 * drawnSelection.getHeight()));
+                            System.out.println("Relative rectangle:");
+                            System.out.println(requestedArea);
                         }
 
 
@@ -660,7 +662,7 @@ public class CommandLineApp {
 
 
         for(int index=0; index<areaArgs.length; index++){
-            System.out.println("DO I GET HERE?");
+            //System.out.println("DO I GET HERE?");
             System.out.println(areaArgs[index]);
 
             if(areaArgs[index].startsWith("%")){
@@ -770,8 +772,8 @@ public class CommandLineApp {
         List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
-                System.out.println(f[i]);
-                System.out.println("What's happening??");
+                //System.out.println(f[i]);
+                //System.out.println("What's happening??");
                 rv.add(Float.parseFloat(f[i]));
             }
             return rv;
