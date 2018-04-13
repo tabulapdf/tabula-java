@@ -118,8 +118,7 @@ public class TestCommandLineApp {
         String expectedOutput=UtilsForTesting.loadCsv(
                 "src/test/resources/technology/tabula/csv/expectedOutput_TestPageExtractionWithHeaderAndFooter.csv");
 
-
-        assertEquals(expectedOutput, this.csvFromCommandLineArgs(new String[]{
+        String actualValue=this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
                 "-p","1",
                 "-p","2",
@@ -127,7 +126,13 @@ public class TestCommandLineApp {
                 "\"footer_scale\" : 0.25 }",
                 "-f",
                 "CSV"
-        }));
+        });
+
+        assertEquals(expectedOutput, actualValue);
+
+        System.out.println("Actual Value:"+actualValue);
+        System.out.println("Expected Value:" + expectedOutput);
+
     }
 
     @Test
