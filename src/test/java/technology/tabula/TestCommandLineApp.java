@@ -1008,7 +1008,7 @@ public class TestCommandLineApp {
 
         String expectedCsvForStream = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable_stream.csv");
 
-        assertEquals(expectedCsvForStream,this.csvFromCommandLineArgs(new String[]{
+        assertEquals(expectedCsvForStream, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                 "--stream",
                 "-r",
@@ -1020,15 +1020,59 @@ public class TestCommandLineApp {
 
         String expectedCsvForLattice = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable_lattice.csv");
 
-        assertEquals(expectedCsvForLattice,this.csvFromCommandLineArgs(new String[]{
+        assertEquals(expectedCsvForLattice, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                 "--lattice",
                 "-r",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"39\"," +
                         "\"pattern_after\" : \"44\"} ]}",
+                "-f", "CSV"}));
+    }
+
+
+
+    public void testExtractWithMultiplePercentArea() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/MultiColumn.pdf",
+                "-p", "1", "-a",
+                "%0,0,100,50", "-a",
+                "%0,50,100,100", "-f",
+                "CSV"
+        }));
+    }
+
+    @Test
+    public void testExtractWithMultipleAbsoluteArea() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/MultiColumn.pdf",
+                "-p", "1", "-a",
+                "0,0,451,212", "-a",
+                "0,212,451,425", "-p", "1",
                 "-f", "CSV"
         }));
     }
 
+    @Test
+    public void testExtractWithPercentAndAbsoluteArea() throws ParseException, IOException {
+
+        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
+
+        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+                "src/test/resources/technology/tabula/MultiColumn.pdf",
+                "-p", "1", "-a",
+                "%0,0,100, 50",
+                "-p", "1","-a",
+                "0,212,451,425",
+                "-f", "CSV"
+        }));
+    }
 }
+
+

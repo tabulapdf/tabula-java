@@ -47,7 +47,6 @@ public class Page extends Rectangle {
         this.spatial_index = index;
     }
 
-    
     public Page getArea(Rectangle area) {
         List<TextElement> t = getText(area);
         float min_char_width  = 7;
