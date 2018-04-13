@@ -121,7 +121,6 @@ public class TestCommandLineApp {
         String actualValue=this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
                 "-p","1",
-                "-p","2",
                 "-m", "{\"header_scale\" : 0.25," +
                 "\"footer_scale\" : 0.25 }",
                 "-f",
