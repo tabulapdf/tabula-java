@@ -358,6 +358,15 @@ public class CommandLineApp {
                 System.out.println("For Search: (" + performedSearch.getRegexBeforeTable() + "," +
                         performedSearch.getRegexAfterTable() + ")");
                 System.out.println(overlapDetectionStatus.getValue());
+
+                // Log Overlap Instance
+                try {
+                    loggingBufferedWriter.write(overlapDetectionStatus.getValue());
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 return false;
             }
             else{
@@ -377,7 +386,7 @@ public class CommandLineApp {
         // Logging - Initialize Log File and Include Identifying Processing Information
         BufferedWriter loggingBufferedWriter = null;
         try {
-            FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_PASS_RESULTS" + ".txt", true);
+            FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_PASS" + ".txt", true);
             loggingBufferedWriter = new BufferedWriter(loggingFileWriter);
             loggingBufferedWriter.write("---------- START OF LOG ----------");
             loggingBufferedWriter.newLine();
@@ -412,7 +421,6 @@ public class CommandLineApp {
                         }
                         else{
                             System.out.println("OVERLAP DETECTED.."); //If whole page is treated as drawn area, same page shouldn't be parsed twice
-                            //TODO: Should this be recorded in a logging file somewheres??
                         }
 
 
