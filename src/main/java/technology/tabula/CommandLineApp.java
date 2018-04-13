@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import javafx.util.Pair;
 import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -373,18 +372,18 @@ public class CommandLineApp {
 
             List<Rectangle> potSubsections = performedSearch.getSubSectionsForPage(pageNum, loggingBufferedWriter);
 
-            Pair<Boolean,String> overlapDetectionStatus =
+            technology.tabula.Pair<Boolean,String> overlapDetectionStatus =
                     subSectionOverlapDetected(potSubsections,nonOverlappingSections.get(pageNum),verifiedSearches,pageNum);
 
-            if(overlapDetectionStatus.getKey()){
+            if(overlapDetectionStatus.getLeft()){
                 //NOTE: This is a simulation of what I assume would be desirable in a logging file...
                 System.out.println("For Search: (" + performedSearch.getRegexBeforeTable() + "," +
                         performedSearch.getRegexAfterTable() + ")");
-                System.out.println(overlapDetectionStatus.getValue());
+                System.out.println(overlapDetectionStatus.getRight());
 
                 // Log Overlap Instance
                 try {
-                    loggingBufferedWriter.write(overlapDetectionStatus.getValue());
+                    loggingBufferedWriter.write(overlapDetectionStatus.getRight());
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -524,9 +523,9 @@ public class CommandLineApp {
                         Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(
                                 Arrays.asList((Rectangle)drawnSelection), nonOverlappingSections.get(drawnSelection.getPageNumber()),
                                 new ArrayList<RegexSearch>(),drawnSelection.getPageNumber());
-                        if(overlapDetectionStatus.getKey()){
+                        if(overlapDetectionStatus.getLeft()){
                             System.out.println("User-Drawn Area " + drawnSelection +" cannot be extracted: Overlap detected\n");
-                            System.out.println(overlapDetectionStatus.getValue());
+                            System.out.println(overlapDetectionStatus.getRight());
                         }
                         else{
                             nonOverlappingSections.get(drawnSelection.getPageNumber()).add(drawnSelection);
