@@ -571,7 +571,11 @@ public class TestCommandLineApp {
         });
 
 
-        assertTrue(expectedCsv.equals(UtilsForTesting.loadCsv("outputFile").replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", "")));
+
+
+        int resultOfComparison = expectedCsv.compareTo(UtilsForTesting.loadCsv("outputFile").replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", ""));
+
+        assertEquals("Actual Value: "+resultOfComparison,0,resultOfComparison);
     }
 
     @Test
