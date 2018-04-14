@@ -23,12 +23,40 @@ import java.io.BufferedWriter;
  * 
  *    This class supports regex-based content extraction from PDF Documents
  *    
- *    TODO: Large blurb about this class
+ *    RegexSearch uses Apache's PDDocument class in conjunction with Java's standard Matcher and Pattern classes
+ *    to provide a document-wide regex-based table search upon initialization. The areas of the document that correspond
+ *    to the regex search can be obtained for a given page with the method getSubSectionsForPage(page #).
+ *    NOTE: The term matching area is used to denote the entire region that the search spans,
+ *    whereas the term subsection is used to denote a component of the matching area corresponding to a given search.
+ *    Consider the following example:
+ *
+ *    	-Pattern Before Table: A
+ *    	-Pattern After Table: B
+ *
+ *      data data data data data
+ *		A                           <-- Start of area to extract                                         | Subsection #1
+ *	    data data data data data	<-- Start of area to extract if(includeRegexBeforeTable==false)      | Subsection #1
+ *      data data data data data                                                                         | Subsection #1
+ *      data data data data data                                                                         | Subsection #1
+ *      ----------------------------------------(end of page)
+ *      data data data data data                                                                     | Subsection #2
+ *      data data data data data                                                                     | Subsection #2
+ *      data data data data data    <-- End of area to extract if(includeRegexAfterTable==false)     | Subsection #2
+ *      B                           <-- End of area to extract if(includeRegexAfterTable==true)      | Subsection #2
+ *      data data data data data
+ *
+ *
+ *    In the above example, there is one matching area corresponding to the provided regex table delimiters
+ *    which is composed of two subsections. The above search would be invoked as follows:
+ *    RegexSearch("A",false,"B",false,docName,pageMargins), where pageMargins is a reference to a FilteredArea object
+ *    corresponding to the header and footer margins of the document (this value can be initialized to null).
+ *
  *    10/29/2017 REM; created.
  *    1/13/2018  REM; updated detectMatchingAreas to resolve pattern-detection bug
  *    1/27/2018  REM; added constructors to facilitate header/footer functionality as well as CLI work
  *    1/30/2018  REM; added static method skeleton for proof-of-concept header work, also added documentation
  *    2/4/2018   REM; added UpdatesOnResize so that the appropriate data can be passed back to the front-end
+ *    4/14/2018  REM; updated documentation in file to reflect changes in last 2 months...
  *
  */
 
@@ -94,10 +122,12 @@ public class RegexSearch {
 
 	private static final Integer INIT=0;
 
-
+    //The regular expression denoting the beginning of the area(s) the user is interested in extracting. Given in constructor
 	private Pattern _regexBeforeTable;
+	//The regular expression denoting the end of the area(s) the user is interested in extracting. Given in constructor
 	private Pattern _regexAfterTable;
-	
+
+	//A listing of all areas within the document that correspond to the provided regex search.
 	private ArrayList<MatchingArea> _matchingAreas;
 	
 	private Boolean _includeRegexBeforeTable;
@@ -109,8 +139,11 @@ public class RegexSearch {
 	 * This constructor is designed to be used for parameters originating in JSON and where no header areas are defined
 	 * NOTE: This constructor will soon be deprecated!!
 	 * @param regexBeforeTable The text pattern that occurs in the document directly before the table that is to be extracted
+	 * @param includeRegexBeforeTable Flag used to include the text pattern in the before the tabular data in the extraction zone
 	 * @param regexAfterTable The text pattern that occurs in the document directly after the table that is to be extracted
+	 * @param includeRegexAfterTable Flag used to include the text pattern directly after the tabular data in the extraction zone
 	 * @param PDDocument The PDFBox model of the PDF document uploaded by the user.
+	 * @param FilteredArea The dimensions of the header and footer margins for the document-can be initialized to null
 	 */
 
 	public RegexSearch(String regexBeforeTable, String includeRegexBeforeTable, String regexAfterTable,
@@ -153,12 +186,12 @@ public class RegexSearch {
 		return _regexAfterTable.toString();
 	}
 
-	//TODO-Write up blurb for TableArea...
-	private class TableArea {
-		private Integer _pageNum; //Number of the page that the TableArea is drawn on
-		private Rectangle _area; //Rectangular coordinates defining the boundaries of TableArea
 
-		public TableArea(Integer pageNum, Rectangle area){
+	private class SubSectionOfMatch {
+		private Integer _pageNum; //Number of the page that the SubSectionOfMatch is drawn on
+		private Rectangle _area; //Rectangular coordinates defining the boundaries of SubSectionOfMatch
+
+		public SubSectionOfMatch(Integer pageNum, Rectangle area){
 			_pageNum = pageNum;
 			_area = area;
 		}
@@ -174,12 +207,12 @@ public class RegexSearch {
 
 
     /*
-     * This class maps on a per-page basis the areas (plural) of the PDF document that fall between text matching the
+     * MatchingArea on a per-page basis the areas (plural) of the PDF document that fall between text matching the
      * user-provided regex (this allows for tables that span multiple pages to be considered a single entity).
      * The key is the page number that the areas first begin. The LinkedList of Rectangles allows for multiple
      * areas to be associated with a given match (as in the case of multiple pages)
      */
-	private static class MatchingArea extends HashMap<Integer,LinkedList<TableArea>> {
+	private static class MatchingArea extends HashMap<Integer,LinkedList<SubSectionOfMatch>> {
 
 		private Integer _startPageNum;
 		private Integer _endPageNum;
@@ -195,8 +228,6 @@ public class RegexSearch {
 	 * @param pageNumber The one-based index into the document
 	 * @return ArrayList<Rectangle> The values stored in _matchingAreas for a given page	
 	 */
-
-	// Logging - seem to need a function copy without loggingBufferedWriter (to be discussed with REM - DBM)
 	public ArrayList<Rectangle> getSubSectionsForPage(Integer pageNumber){
 
 		ArrayList<Rectangle> allMatchingAreas = new ArrayList<>();
@@ -204,8 +235,8 @@ public class RegexSearch {
 		for( MatchingArea matchingArea : _matchingAreas) {
 			for( int currentPageNumber : matchingArea.keySet()){
 				if(currentPageNumber == pageNumber){
-					for(TableArea tableArea : matchingArea.get(currentPageNumber)){
-						allMatchingAreas.add(tableArea.getArea());
+					for(SubSectionOfMatch subSectionOfMatch : matchingArea.get(currentPageNumber)){
+						allMatchingAreas.add(subSectionOfMatch.getArea());
 					}
 				}
 			}
@@ -221,8 +252,8 @@ public class RegexSearch {
 		for( MatchingArea matchingArea : _matchingAreas) {
 			for( int currentPageNumber : matchingArea.keySet()){
 				if(currentPageNumber == pageNumber){
-					for(TableArea tableArea : matchingArea.get(currentPageNumber)){
-						allMatchingAreas.add(tableArea.getArea());
+					for(SubSectionOfMatch subSectionOfMatch : matchingArea.get(currentPageNumber)){
+						allMatchingAreas.add(subSectionOfMatch.getArea());
 					}
 				}
 			}
@@ -243,11 +274,11 @@ public class RegexSearch {
 		return allMatchingAreas;
 	}
 
-	// TODO: New code added to accommodate for for CLI Regex, see if it works
-    public ArrayList<Rectangle> getAllMatchingAreas(){
 
-        ArrayList<TableArea> allPagesMatchData = new ArrayList<>();
-        ArrayList<Rectangle> allPagesMatchingAreas = new ArrayList<>();
+    public ArrayList<Rectangle> getAllSubSectionsOfMatches(){
+
+        ArrayList<SubSectionOfMatch> allPagesMatchData = new ArrayList<>();
+        ArrayList<Rectangle> allPagesSubSections = new ArrayList<>();
 
         for(MatchingArea matchingArea : _matchingAreas){
             for( int i : matchingArea.keySet()){
@@ -255,14 +286,14 @@ public class RegexSearch {
 			}
         }
 
-        for(TableArea matchData : allPagesMatchData){
-        	allPagesMatchingAreas.add(matchData.getArea());
+        for(SubSectionOfMatch matchData : allPagesMatchData){
+        	allPagesSubSections.add(matchData.getArea());
 		}
 
-        return allPagesMatchingAreas;
+        return allPagesSubSections;
     }
 	
-	  /*
+    /*
      * Inner class to retain information about a potential matching area while
      * iterating over the document and performing calculations to determine the rectangular 
      * area coordinates for matching areas. This may be overkill...
@@ -288,38 +319,6 @@ public class RegexSearch {
         private static final double NEGATIVE_BUFFER = -.5;
         private static final int NONE = 0;
 	};
-
-
-	public static class PageTextMetaData{
-
-		private String pageAsText;
-		private ArrayList<TextElement> pageMetaData;
-
-		/*
-         * @param page The page of the document containing the section of text desired
-         * @param sectionToConvert The rectangular coordinates of the desired section
-         */
-		public PageTextMetaData(Page page, Rectangle sectionToConvert){
-
-			pageMetaData = (ArrayList<TextElement>) page.getText(sectionToConvert);
-
-			StringBuilder headerTextAsString = new StringBuilder();
-
-			for(TextElement element : pageMetaData ) {
-				headerTextAsString.append(element.getText());
-			}
-
-			pageAsText = headerTextAsString.toString();
-		}
-
-		public String getPageAsText(){
-			return pageAsText;
-		}
-
-		public ArrayList<TextElement> getPageMetaData(){
-			return pageMetaData;
-		}
-	}
 
 
 	public static class FilteredArea{
@@ -527,8 +526,8 @@ public class RegexSearch {
 }
 
 	/*
-	 * calculateMatchingAreas: Determines the rectangular coordinates of the document sections
-	 *                         matching the user-specified regex(_regexBeforeTable,_regexAfterTable)
+	 * calculateMatchingAreas: Determines the rectangular coordinates of the subsections of each
+	 *                         matching area for the user-specified regex(_regexBeforeTable,_regexAfterTable)
 	 * 
 	 * @param foundMatches A list of DetectionData values
 	 * @return ArrayList<MatchingArea> A Hashmap 
@@ -550,11 +549,12 @@ public class RegexSearch {
             	float width = oe.extract(foundTable._pageBeginMatch.get()).width;
             	float height = foundTable._pageEndCoord.y-foundTable._pageBeginCoord.y;
             	
-            	LinkedList<TableArea> tableArea = new LinkedList<>();
-            	tableArea.add(new TableArea(foundTable._pageBeginMatch.get(),new Rectangle(foundTable._pageBeginCoord.y,0,width,height)));
+            	LinkedList<SubSectionOfMatch> matchSubSections = new LinkedList<>();
+            	matchSubSections.add(new SubSectionOfMatch(foundTable._pageBeginMatch.get(),
+						new Rectangle(foundTable._pageBeginCoord.y,0,width,height)));
             	
             	MatchingArea matchingArea = new MatchingArea(foundTable._pageBeginMatch.get(), foundTable._pageEndMatch.get());
-            	matchingArea.put(foundTable._pageBeginMatch.get(), tableArea);
+            	matchingArea.put(foundTable._pageBeginMatch.get(), matchSubSections);
             
             	matchingAreas.add(matchingArea);
             
@@ -566,14 +566,14 @@ public class RegexSearch {
             	 * Create sub-area for table from directly below the pattern-before-table content to the end of the page
             	 */
             	Page currentPage =  oe.extract(foundTable._pageBeginMatch.get());
-            	LinkedList<TableArea> tableSubArea = new LinkedList<>();
+            	LinkedList<SubSectionOfMatch> tableSubArea = new LinkedList<>();
 
             	Float footer_height = (areaToFilter==null) ? (float)0:
 						areaToFilter.getFooterHeightScale()*currentPage.height;
 
             	Float height = currentPage.height-foundTable._pageBeginCoord.y-footer_height;
 
-            	tableSubArea.add( new TableArea(currentPage.getPageNumber(), new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
+            	tableSubArea.add( new SubSectionOfMatch(currentPage.getPageNumber(), new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
             			                        height))); //Note: limitation of this approach is that the entire width of the page is used...could be problematic for multi-column data
             	matchingArea.put(currentPage.getPageNumber(), tableSubArea);
             	
@@ -611,7 +611,7 @@ public class RegexSearch {
 
             		tableSubArea = new LinkedList<>();
 
-            		tableSubArea.add(new TableArea(currentPage.getPageNumber(),
+            		tableSubArea.add(new SubSectionOfMatch(currentPage.getPageNumber(),
 							new Rectangle(subAreaTop,0,currentPage.width,
 									subAreaHeight)));
             		matchingArea.put(currentPage.getPageNumber(), tableSubArea);
@@ -629,7 +629,7 @@ public class RegexSearch {
 
 				System.out.println("Current Page #:"+currentPage.getPageNumber());
 				System.out.println("Top:"+top);
-                tableSubArea.add(new TableArea(currentPage.getPageNumber(), new Rectangle(top,0,currentPage.width,foundTable._pageEndCoord.y-top)));
+                tableSubArea.add(new SubSectionOfMatch(currentPage.getPageNumber(), new Rectangle(top,0,currentPage.width,foundTable._pageEndCoord.y-top)));
 
                 matchingArea.put(currentPage.getPageNumber(), tableSubArea);
                 matchingAreas.add(matchingArea);
