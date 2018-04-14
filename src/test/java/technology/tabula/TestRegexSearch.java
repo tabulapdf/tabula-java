@@ -96,12 +96,10 @@ public class TestRegexSearch {
 			}
 
 			RegexSearch regexSearch = new RegexSearch("Knowledge","false","Social.","false",PDDocument.load(multiPageTable),null);
-			//TODO: The current multi-page regex capabilities WILL NOT FILTER OUT THE FOOTER--this needs to be corrected!! This test simply verifies the current program behavior
-			//to facilitate future regression testing
 			String expectedTableContent = "Foreign language competence 0,3057 0,4184 0,3899 Foreign language competence -0,0857 -0,1804 -0,1337 education in the partner countries Foreign language competence -0,0545 -0,0997 -0,0519 New EU-27 and Turkey73";
 			String extractedTableContent = "";
 			for(Integer iter=0; iter<numDataPages; iter++) {
-				for(Rectangle tableArea : regexSearch.getAllMatchingAreas()) {
+				for(Rectangle tableArea : regexSearch.getAllSubSectionsOfMatches()) {
 					for(TextElement element : dataPages.get(iter).getText(tableArea)) {
 						extractedTableContent += element.getText();
 					}
