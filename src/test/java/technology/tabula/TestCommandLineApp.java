@@ -547,17 +547,17 @@ public class TestCommandLineApp {
         assertEquals("",UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
     }
 
-//    @Test Seeing if commenting out this test will pass the build...
+    @Test
     /*
      * Test to verify that a single, basic Regex search capturing a multi-page (spanning 2 pages) table into an output file works
      */
-    /*
+
     public void testExtractMultiplePageTableRegexAndNewFile1() throws ParseException, IOException {
 
         System.out.println("In testExractMultiplePageTableRegexAndNewFile1...");
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable_1.csv");
-        expectedCsv = expectedCsv.replaceAll("\r","");
+        expectedCsv = expectedCsv.replaceAll("\n|\r|\r\n"," ");
 
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
@@ -571,9 +571,9 @@ public class TestCommandLineApp {
         });
 
 
-        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\r",""));
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n|\r|\r\n"," "));
     }
-*/
+
     @Test
     /*
      * Test to verify that a single, basic Regex search capturing a multi-page (spanning 6 pages) table into an output file works
