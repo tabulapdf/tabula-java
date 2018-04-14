@@ -157,7 +157,6 @@ public class CommandLineApp {
             return new ArrayList<>();
         }
 
-        //System.out.println("Getting to regexAreas");
         ArrayList<RequestedSearch> localRequestedSearchArray = new ArrayList<>();
 
         JsonParser parser = new JsonParser();
@@ -196,11 +195,10 @@ public class CommandLineApp {
                 }
             }
             //Verifying behavior during implementation...
-            System.out.println("Requested Searches:\n");
-            for(RequestedSearch rs : localRequestedSearchArray){
-                System.out.println("\tPattern Before: " + rs._keyBeforeTable);
-                System.out.println("\tPattern After: " + rs._keyAfterTable+"\n");
-            }
+           // for(RequestedSearch rs : localRequestedSearchArray){
+           //     System.out.println("\tPattern Before: " + rs._keyBeforeTable);
+           //     System.out.println("\tPattern After: " + rs._keyAfterTable+"\n");
+           // }
 
         } catch (IllegalStateException ie) {
             throw new ParseException("Illegal data structure: " + line.getOptionValue('r'));
@@ -375,11 +373,6 @@ public class CommandLineApp {
                     subSectionOverlapDetected(potSubsections,nonOverlappingSections.get(pageNum),verifiedSearches,pageNum);
 
             if(overlapDetectionStatus.getLeft()){
-                //NOTE: This is a simulation of what I assume would be desirable in a logging file...
-                System.out.println("For Search: (" + performedSearch.getRegexBeforeTable() + "," +
-                        performedSearch.getRegexAfterTable() + ")");
-                System.out.println(overlapDetectionStatus.getRight());
-
                 // Log Overlap Instance
                 try {
                     loggingBufferedWriter.write(overlapDetectionStatus.getRight());
@@ -459,19 +452,15 @@ public class CommandLineApp {
 
                             tables.addAll(tableExtractor.extractTables( pageToExtract.getArea(areaToExtract)));
                         }
-                        else{
-                            System.out.println("OVERLAP DETECTED.."); //If whole page is treated as drawn area, same page shouldn't be parsed twice
-                        }
+                        //If whole page is treated as drawn area, same page shouldn't be parsed twice
+
 
 
                     }
-                    //TODO: Document how this can lead to overlap detection errors if used in conjunction with regex searches
+
                 }
             }
             else{ //only extract the sections of the page corresponding to the drawn areas
-
-                System.out.println("Page Areas:");
-                System.out.println(this.pageAreas);
 
                 for(int index=0;index<this.pageAreas.size();index++){
 
@@ -492,8 +481,6 @@ public class CommandLineApp {
                             requestedArea = new Rectangle((float) (absoluteArea.getTop() / 100 * drawnSelection.getHeight()),
                                     (float) (absoluteArea.getLeft() / 100 * drawnSelection.getWidth()), (float) (absoluteArea.getWidth() / 100 * drawnSelection.getWidth()),
                                     (float) (absoluteArea.getHeight() / 100 * drawnSelection.getHeight()));
-                            System.out.println("Relative rectangle:");
-                            System.out.println(requestedArea);
                         }
 
 
@@ -512,9 +499,6 @@ public class CommandLineApp {
 
                         drawnSelection = drawnSelection.getArea(croppedArea);
 
-                        System.out.println("Drawn Selection:");
-                        System.out.println(drawnSelection);
-
                         if(nonOverlappingSections.get(drawnSelection.getPageNumber())==null){
                             nonOverlappingSections.put(drawnSelection.getPageNumber(),new ArrayList<Rectangle>());
                         }
@@ -522,11 +506,7 @@ public class CommandLineApp {
                         Pair<Boolean,String> overlapDetectionStatus = subSectionOverlapDetected(
                                 Arrays.asList((Rectangle)drawnSelection), nonOverlappingSections.get(drawnSelection.getPageNumber()),
                                 new ArrayList<RegexSearch>(),drawnSelection.getPageNumber());
-                        if(overlapDetectionStatus.getLeft()){
-                            System.out.println("User-Drawn Area " + drawnSelection +" cannot be extracted: Overlap detected\n");
-                            System.out.println(overlapDetectionStatus.getRight());
-                        }
-                        else{
+                        if(overlapDetectionStatus.getLeft()==false){
                             nonOverlappingSections.get(drawnSelection.getPageNumber()).add(drawnSelection);
                             tables.addAll(tableExtractor.extractTables(drawnSelection));
                         }
@@ -651,7 +631,6 @@ public class CommandLineApp {
         }
 
 
-        System.out.println("What I'm getting...");
 
         String[] areaArgs = line.getOptionValues('a');
 
@@ -660,30 +639,22 @@ public class CommandLineApp {
 
 
         for(int index=0; index<areaArgs.length; index++){
-            //System.out.println("DO I GET HERE?");
-            System.out.println(areaArgs[index]);
+
+            //System.out.println(areaArgs[index]);
 
             if(areaArgs[index].startsWith("%")){
-                System.out.println("RELATIVE ARGUMENT");
                 areaType.add(RELATIVE_AREA_CALCULATION_MODE);
                 sanitizedAreaArgs.add(areaArgs[index].substring(1));
             }
             else{
-                System.out.println("ABSOLUTE ARGUMENT");
                 areaType.add(ABSOLUTE_AREA_CALCULATION_MODE);
                 sanitizedAreaArgs.add(areaArgs[index]);
             }
         }
 
 
-        System.out.println("Sanitized Options...");
-        System.out.println(sanitizedAreaArgs.toString());
-
-        //List<Float> f = parseFloatList(Arrays.asList(line.getOptionValues('a')).toString());
-
         List<Float> f = parseFloatList(sanitizedAreaArgs.toString());
 
-        //throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
 
         if((f.size()%4)!=0){
             throw new ParseException("area parameters must be top,left,bottom,right");
@@ -699,10 +670,6 @@ public class CommandLineApp {
                     areaType.remove(0), new Rectangle(f.get(i),f.get(i+1),f.get(i+3)-f.get(i+1),f.get(i+2)-f.get(i))));
         }
 
-        System.out.println("Specified Page Areas:");
-        System.out.println(pageAreas);
-
-        //return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
         return pageAreas;
     }
 
@@ -761,8 +728,6 @@ public class CommandLineApp {
     public static List<Float> parseFloatList(String option) throws ParseException {
         //Remove array brackets as necessary...
 
-        System.out.println("In parseFloatList...");
-        System.out.println("Input:"+option);
 
         String sanitized_options = option.replaceAll("[\\[\\]]","");
         String[] f = sanitized_options.split(",");
@@ -771,14 +736,12 @@ public class CommandLineApp {
         try {
             for (int i = 0; i < f.length; i++) {
                 //System.out.println(f[i]);
-                //System.out.println("What's happening??");
+
                 rv.add(Float.parseFloat(f[i]));
             }
             return rv;
         } catch (NumberFormatException e) {
-            System.out.println(e.getLocalizedMessage());
-            System.out.println(e.getStackTrace());
-            throw new ParseException("Wrong number syntax");
+            throw new ParseException("Wrong number syntax:"+e.getLocalizedMessage());
         }
     }
 

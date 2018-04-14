@@ -556,11 +556,7 @@ public class TestCommandLineApp {
         System.out.println("In testExractMultiplePageTableRegexAndNewFile1...");
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/expectedOutput_TestMultiplePageTable_1.csv");
-        expectedCsv = expectedCsv.replaceAll("\n", "");
-
-        System.out.println("Expected Output:");
-        System.out.println(expectedCsv);
-
+        expectedCsv = expectedCsv.replaceAll("\r","");
 
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
@@ -573,10 +569,8 @@ public class TestCommandLineApp {
                 "-o", "outputFile"
         });
 
-        System.out.println("Actual Output:");
-        System.out.println(UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
 
-        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\n",""));
+        assertEquals(expectedCsv,UtilsForTesting.loadCsv("outputFile").replaceAll("\r",""));
     }
 
     @Test
