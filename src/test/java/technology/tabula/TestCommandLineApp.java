@@ -574,7 +574,7 @@ public class TestCommandLineApp {
 
         String actualValue = UtilsForTesting.loadCsv("outputFile").replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", "");
 
-        assertEquals("Actual Value: "+actualValue,actualValue,expectedCsv);
+        assertEquals("Actual Value:\n"+actualValue +"\n" + "Expected Value:\n"+expectedCsv,actualValue,expectedCsv);
     }
 
     @Test
