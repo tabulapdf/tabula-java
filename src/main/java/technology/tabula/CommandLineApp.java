@@ -99,24 +99,7 @@ public class CommandLineApp {
         }
         System.exit(0);
     }
-
-    private static class RequestedSearch{
-
-        String _keyBeforeTable;
-        Boolean _includeKeyBeforeTable;
-        String _keyAfterTable;
-        Boolean _includeKeyAfterTable;
-
-        public RequestedSearch(String keyBeforeTable, Boolean includeKeyBeforeTable,
-                               String keyAfterTable, Boolean includeKeyAfterTable) {
-            _keyBeforeTable = keyBeforeTable;
-            _includeKeyBeforeTable = includeKeyBeforeTable;
-
-            _keyAfterTable = keyAfterTable;
-            _includeKeyAfterTable = includeKeyAfterTable;
-        }
-    }
-
+    
     public static RegexSearch.FilteredArea whichPageMargins(CommandLine line) throws IOException,ParseException{
         if(!line.hasOption("m")){
             return null;
