@@ -105,7 +105,7 @@ public class CommandLineApp {
         }
         System.exit(0);
     }
-    
+
     public static RegexSearch.FilteredArea whichPageMargins(CommandLine line) throws IOException,ParseException{
         if(!line.hasOption("m")){
             return null;
@@ -142,7 +142,7 @@ public class CommandLineApp {
     public static ArrayList<RequestedSearch> whichRequestedSearches(CommandLine line) throws IOException,
             ParseException {
 
-        if (!line.hasOption('r')) {
+        if (!line.hasOption('x')) {
             return new ArrayList<>();
         }
 
@@ -150,7 +150,7 @@ public class CommandLineApp {
 
         JsonParser parser = new JsonParser();
         try {
-            JsonObject jo = parser.parse(line.getOptionValue('r')).getAsJsonObject();
+            JsonObject jo = parser.parse(line.getOptionValue('x')).getAsJsonObject();
 
             JsonArray queries = jo.getAsJsonArray("queries");
 
@@ -180,7 +180,7 @@ public class CommandLineApp {
                             patternAfterAsString, includePatternAfter);
                     localRequestedSearchArray.add(rs);
                 } else {
-                    throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));
+                    throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('x'));
                 }
             }
             //Verifying behavior during implementation...
@@ -683,14 +683,14 @@ public class CommandLineApp {
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        // -r/--spreadsheet [deprecated, -r used for regex] or -l/--lattice
-        if (/*line.hasOption('r') || */line.hasOption('l')) {
+        // -r/--spreadsheet  or -l/--lattice
+        if (line.hasOption('r') || line.hasOption('l')) {
             return ExtractionMethod.SPREADSHEET;
         }
 
-        // -n/--no-spreadsheet [deprecated -r used for regex; use -t] or  -c/--columns or -g/--guess or -t/--stream
+        // -n/--no-spreadsheet [deprecated -r  use -t] or  -c/--columns or -g/--guess or -t/--stream
         // NOTE: from personal experience, -g/--guess does not work very well (outputted blank csv files)
-        if (/*line.hasOption('n') || */line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
@@ -794,7 +794,7 @@ public class CommandLineApp {
                 .hasArg()
                 .argName("PAGES")
                 .build());
-        o.addOption(Option.builder("r") //TODO: The description will need to be updated here due to use of JSON...
+        o.addOption(Option.builder("x") //TODO: The description will need to be updated here due to use of JSON...
                 .longOpt("regex")
                 .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
                 .hasArg()

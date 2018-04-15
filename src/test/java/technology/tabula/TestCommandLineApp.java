@@ -313,7 +313,7 @@ public class TestCommandLineApp {
         try {
             this.csvFromCommandLineArgs(new String[]{
                     "src/test/resources/technology/tabula/fakeFile.pdf",
-                    "-p", "1", "-r", "argForR",
+                    "-p", "1", "-x", "argForRegex",
                     "-f",
                     "CSV"
             });
@@ -323,7 +323,7 @@ public class TestCommandLineApp {
     }
 
     @Test
-    // Tests for an invalid input for argument following '-r'
+    // Tests for an invalid input for argument following '-x'
     // Test expects to catch IllegalStateException
     public void testImproperlyFormattedData() throws IOException, ParseException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
@@ -331,7 +331,7 @@ public class TestCommandLineApp {
         try {
             this.csvFromCommandLineArgs(new String[]{
                     "src/test/resources/technology/tabula/spanning_cells.pdf",
-                    "-p", "1", "-r", "invalidInput",
+                    "-p", "1", "-x", "invalidInput",
                     "-f",
                     "CSV"
             });
@@ -349,7 +349,7 @@ public class TestCommandLineApp {
         try {
             this.csvFromCommandLineArgs(new String[]{
                     "src/test/resources/technology/tabula/spanning_cells.pdf",
-                    "-p", "1", "-r",
+                    "-p", "1", "-x",
                     "{\"queries\": " +
                             "[ {\"pattern_before\" : \"Table 5\"," +
                             "\"pattern_after\" : \"Table 6\"} ]}",
@@ -369,7 +369,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -390,7 +390,7 @@ public class TestCommandLineApp {
 
         assertEquals("", this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"}," +
@@ -412,7 +412,7 @@ public class TestCommandLineApp {
 
         assertEquals("", this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"International\"," +
                         "\"pattern_after\" : \"Turkey\"}," +
@@ -438,7 +438,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"CHARLES RIDDLE CENTER\"," +
                         "\"include_pattern_before\": \"true\","+
@@ -464,7 +464,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"}," +
@@ -486,7 +486,7 @@ public class TestCommandLineApp {
 
         assertEquals("", this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"}," +
@@ -505,7 +505,7 @@ public class TestCommandLineApp {
         expectedCsv = expectedCsv.replaceAll("\n", "");
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"}," +
@@ -530,7 +530,7 @@ public class TestCommandLineApp {
 
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"}," +
@@ -560,7 +560,7 @@ public class TestCommandLineApp {
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                 "--stream",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"39\"," +
                         "\"pattern_after\" : \"44\"}]}",
@@ -587,7 +587,7 @@ public class TestCommandLineApp {
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
                 "--stream",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"ANSON\"," +
                         "\"pattern_after\" : \"BURKE\"}]}",
@@ -609,7 +609,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"European/International\"," +
                             "\"include_pattern_before\": \"true\","+
@@ -623,7 +623,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"ALAMANCE\"," +
                         "\"include_pattern_before\": \"true\","+
@@ -647,7 +647,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"European/International\"," +
                         "\"include_pattern_before\": \"false\","+
@@ -661,7 +661,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"ALAMANCE\"," +
                         "\"include_pattern_before\": \"false\","+
@@ -687,7 +687,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"European/International\"," +
                         "\"include_pattern_before\": \"true\","+
@@ -702,7 +702,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"ALAMANCE\"," +
                         "\"include_pattern_before\": \"true\","+
@@ -728,7 +728,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"European/International\"," +
                         "\"include_pattern_before\": \"false\","+
@@ -743,7 +743,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/One_Stop_Voting_Site_List_Nov2012.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"ALAMANCE\"," +
                         "\"include_pattern_before\": \"false\","+
@@ -766,7 +766,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -787,7 +787,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -807,7 +807,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -827,7 +827,7 @@ public class TestCommandLineApp {
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -844,7 +844,7 @@ public class TestCommandLineApp {
         expectedCsv = expectedCsv.replaceAll("\n", "");
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/eu-002.pdf",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"Knowledge\"," +
                         "\"pattern_after\" : \"Social\"} ]}",
@@ -880,7 +880,7 @@ public class TestCommandLineApp {
         try{
             this.csvFromCommandLineArgs(new String[]{
                     "-b", tmpFolder.toString(),
-                    "-r",
+                    "-x",
                     "{\"queries\": " +
                             "[ {\"pattern_before\" : \"Analyte\"," +
                             "\"pattern_after\" : \"Report Date\"} ]}",
@@ -956,7 +956,7 @@ public class TestCommandLineApp {
         try{
             this.csvFromCommandLineArgs(new String[]{
                     "-b", tmpFolder.toString(),
-                    "-r",
+                    "-x",
                     "{\"queries\": " +
                             "[ {\"pattern_before\" : \"Report To:\"," +
                             "\"include_pattern_before\": \"false\"," +
@@ -1023,7 +1023,7 @@ public class TestCommandLineApp {
         assertEquals(expectedCsvForStream, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                 "--stream",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"39\"," +
                         "\"pattern_after\" : \"44\"} ]}",
@@ -1035,7 +1035,7 @@ public class TestCommandLineApp {
         assertEquals(expectedCsvForLattice, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
                 "--lattice",
-                "-r",
+                "-x",
                 "{\"queries\": " +
                         "[ {\"pattern_before\" : \"39\"," +
                         "\"pattern_after\" : \"44\"} ]}",
