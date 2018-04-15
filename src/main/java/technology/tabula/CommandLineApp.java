@@ -67,7 +67,7 @@ public class CommandLineApp {
         this.pageAreas = CommandLineApp.whichAreas(line);
         this.pages = CommandLineApp.whichPages(line);
 
-        if(this.pageAreas.size()!=this.pages.size()){
+        if((this.pageAreas.isEmpty()==false) && (this.pageAreas.size()!=this.pages.size())){
             throw new ParseException("Number of Area Specifications (" + this.pageAreas.size() + ") " +
                     "must equal the number of Page Specifications (" + this.pages.size() );
         }
