@@ -516,7 +516,7 @@ public class CommandLineApp {
             }
 
 
-            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument,pdfFile);
+            PageIterator pageIterator = getPageIteratorForDocument(pdfDocument);
 
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
@@ -576,7 +576,7 @@ public class CommandLineApp {
         }
     }
 
-    private PageIterator getPageIteratorForDocument(PDDocument pdfDocument,File pdfFile) throws IOException {
+    private PageIterator getPageIteratorForDocument(PDDocument pdfDocument) throws IOException {
 
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
         return extractor.extract();
