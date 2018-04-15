@@ -85,19 +85,19 @@ public class RegexSearch {
 													         FilteredArea filterArea,
 															 RegexSearch[] currentRegexSearches) {
 
-		System.out.println("In checkSearchesOnFilterResize:");
+		// System.out.println("In checkSearchesOnFilterResize:");
 
-		System.out.println("FilterArea height scale:" + filterArea.getHeaderHeightScale());
-		System.out.println("FilterArea footer scale:" + filterArea.getFooterHeightScale());
+		// System.out.println("FilterArea height scale:" + filterArea.getHeaderHeightScale());
+		// System.out.println("FilterArea footer scale:" + filterArea.getFooterHeightScale());
 
 
 		ArrayList<UpdatesOnResize> updatedSearches = new ArrayList<>();
 		for (RegexSearch regexSearch : currentRegexSearches){
 			ArrayList<MatchingArea> areasToRemove = new ArrayList<
 					MatchingArea>(regexSearch._matchingAreas);
-			System.out.println("Areas To Remove Length:"+areasToRemove.size());
+			// System.out.println("Areas To Remove Length:"+areasToRemove.size());
 			regexSearch._matchingAreas.clear();
-			System.out.println("Areas To Remove Length:"+areasToRemove.size());
+			// System.out.println("Areas To Remove Length:"+areasToRemove.size());
 			ArrayList<MatchingArea> areasToAdd = regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,filterArea);
 			updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
 		}
@@ -154,10 +154,10 @@ public class RegexSearch {
 		this(regexBeforeTable,Boolean.valueOf(includeRegexBeforeTable),regexAfterTable,
 			Boolean.valueOf(includeRegexAfterTable),document,areaToFilter);
 
-		System.out.println(includeRegexBeforeTable);
-		System.out.println(includeRegexAfterTable);
-		System.out.println(Boolean.valueOf(includeRegexBeforeTable));
-		System.out.println(Boolean.valueOf(includeRegexAfterTable));
+		// System.out.println(includeRegexBeforeTable);
+		// System.out.println(includeRegexAfterTable);
+		// System.out.println(Boolean.valueOf(includeRegexBeforeTable));
+		// System.out.println(Boolean.valueOf(includeRegexAfterTable));
 	}
 
 	public RegexSearch(String regexBeforeTable,Boolean includeRegexBeforeTable, String regexAfterTable,
@@ -327,8 +327,8 @@ public class RegexSearch {
 		private Float  scaleOfFooterHeight;
 
 		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio){
-			System.out.println("Height of header:"+headerHeightRatio.toString());
-			System.out.println(("Height of footer:"+footerHeightRatio.toString()));
+			// System.out.println("Height of header:"+headerHeightRatio.toString());
+			// System.out.println(("Height of footer:"+footerHeightRatio.toString()));
 			scaleOfHeaderHeight=headerHeightRatio;
 			scaleOfFooterHeight=footerHeightRatio;
 		}
@@ -403,8 +403,8 @@ public class RegexSearch {
 			pageAsText.append(element.getText());
 		}
 
-		System.out.println("Area to parse as string:");
-		System.out.println(pageAsText.toString());
+		// System.out.println("Area to parse as string:");
+		// System.out.println(pageAsText.toString());
 
 		/*
 		 * Find each table on each page + tables which span multiple pages
@@ -588,26 +588,26 @@ public class RegexSearch {
 
             		Float subAreaHeight = currentPage.height-subAreaTop;
 
-            		System.out.println("Sub Area Height Before Subtraction:" + subAreaHeight);
+					// System.out.println("Sub Area Height Before Subtraction:" + subAreaHeight);
 
             		if(areaToFilter!=null){
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
-						System.out.println("Last Page: " + foundTable._pageEndMatch.get());
-            			System.out.println("Page #: "+currentPage.getPageNumber());
-            			System.out.println("area to filter == null");
-            			System.out.println("Current Page Height: "+ currentPage.height);
-            			System.out.println("Bottom Text Bounds of Current Page: " + currentPage.getTextBounds().getBottom());
-            			System.out.println("Current Height - Bottom Text Bound"+ (currentPage.height- currentPage.getTextBounds().getBottom()));
+						// System.out.println("Last Page: " + foundTable._pageEndMatch.get());
+						// System.out.println("Page #: "+currentPage.getPageNumber());
+						// System.out.println("area to filter == null");
+						// System.out.println("Current Page Height: "+ currentPage.height);
+						// System.out.println("Bottom Text Bounds of Current Page: " + currentPage.getTextBounds().getBottom());
+						// System.out.println("Current Height - Bottom Text Bound"+ (currentPage.height- currentPage.getTextBounds().getBottom()));
 
             			subAreaHeight -= (float)(0.5)*(currentPage.height - (currentPage.getTextBounds().getBottom()));//-currentPage.getTextBounds().getTop());
 
 					}
 
 
-					System.out.println("Sub Area Height: "+subAreaHeight);
-            		System.out.println("Sub Area Top: " +subAreaTop);
+					// System.out.println("Sub Area Height: "+subAreaHeight);
+					// System.out.println("Sub Area Top: " +subAreaTop);
 
             		tableSubArea = new LinkedList<>();
 
@@ -627,8 +627,8 @@ public class RegexSearch {
 				Integer top = (areaToFilter!=null) ? Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height) :
 						(int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
 
-				System.out.println("Current Page #:"+currentPage.getPageNumber());
-				System.out.println("Top:"+top);
+				// System.out.println("Current Page #:"+currentPage.getPageNumber());
+				// System.out.println("Top:"+top);
                 tableSubArea.add(new SubSectionOfMatch(currentPage.getPageNumber(), new Rectangle(top,0,currentPage.width,foundTable._pageEndCoord.y-top)));
 
                 matchingArea.put(currentPage.getPageNumber(), tableSubArea);

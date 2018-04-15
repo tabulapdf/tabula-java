@@ -87,7 +87,7 @@ public class CommandLineApp {
             }
 
             if (line.hasOption('v')) {
-                System.out.println(VERSION_STRING);
+                // System.out.println(VERSION_STRING);
                 System.exit(0);
             }
 
@@ -233,7 +233,7 @@ public class CommandLineApp {
                 extractFileInto(pdfFile, outputFile);
             }
             catch(ParseException pe){
-                System.out.println(pe.getMessage());
+                // System.out.println(pe.getMessage());
 
                 // Logging - Mirror Correct Logging, but with Failure Identifier
                 BufferedWriter loggingBufferedWriter = null;
@@ -259,7 +259,7 @@ public class CommandLineApp {
                             loggingBufferedWriter.newLine();
                             loggingBufferedWriter.close();
                         } catch (IOException e) {
-                            System.out.println("Error in closing the logging BufferedWriter" + e);
+                            // System.out.println("Error in closing the logging BufferedWriter" + e);
                         }
                     }
                 }
@@ -295,7 +295,7 @@ public class CommandLineApp {
                 try {
                     bufferedWriter.close();
                 } catch (IOException e) {
-                    System.out.println("Error in closing the BufferedWriter" + e);
+                    //System.out.println("Error in closing the BufferedWriter" + e);
                 }
             }
         }
@@ -558,7 +558,7 @@ public class CommandLineApp {
                     pdfDocument.close();
                 }
             } catch (IOException e) {
-                System.out.println("Error in closing pdf document" + e);
+                // System.out.println("Error in closing pdf document" + e);
             }
 
             // Confirm Logging BufferedWriter Closing
@@ -570,7 +570,7 @@ public class CommandLineApp {
                     loggingBufferedWriter.newLine();
                     loggingBufferedWriter.close();
                 } catch (IOException e) {
-                    System.out.println("Error in closing the logging BufferedWriter" + e);
+                    // System.out.println("Error in closing the logging BufferedWriter" + e);
                 }
             }
         }
@@ -622,9 +622,6 @@ public class CommandLineApp {
 
 
         for(int index=0; index<areaArgs.length; index++){
-
-            //System.out.println(areaArgs[index]);
-
             if(areaArgs[index].startsWith("%")){
                 areaType.add(RELATIVE_AREA_CALCULATION_MODE);
                 sanitizedAreaArgs.add(areaArgs[index].substring(1));
@@ -635,17 +632,13 @@ public class CommandLineApp {
             }
         }
 
-
         List<Float> f = parseFloatList(sanitizedAreaArgs.toString());
-
 
         if((f.size()%4)!=0){
             throw new ParseException("area parameters must be top,left,bottom,right");
         }
 
         ArrayList<technology.tabula.Pair<Integer,Rectangle>> pageAreas = new ArrayList<>();
-
-
 
         for(Integer i=0; i<f.size(); i+=4){
 
@@ -670,10 +663,6 @@ public class CommandLineApp {
        else{
             return new ArrayList<>();
         }
-        //String pagesOption = line.hasOption('p') ? foo : "1";
-        //System.out.println(pagesOption);
-        //return Utils.parsePagesOption(pagesOption);
-
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
@@ -718,8 +707,6 @@ public class CommandLineApp {
         List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
-                //System.out.println(f[i]);
-
                 rv.add(Float.parseFloat(f[i]));
             }
             return rv;
