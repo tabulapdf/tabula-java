@@ -136,7 +136,7 @@ public class CommandLineApp {
     public static ArrayList<RequestedSearch> whichRequestedSearches(CommandLine line) throws IOException,
             ParseException {
 
-        if (!line.hasOption('r')) {
+        if (!line.hasOption('x')) {
             return new ArrayList<>();
         }
 
@@ -144,7 +144,7 @@ public class CommandLineApp {
 
         JsonParser parser = new JsonParser();
         try {
-            JsonObject jo = parser.parse(line.getOptionValue('r')).getAsJsonObject();
+            JsonObject jo = parser.parse(line.getOptionValue('x')).getAsJsonObject();
 
             JsonArray queries = jo.getAsJsonArray("queries");
 
@@ -174,7 +174,7 @@ public class CommandLineApp {
                             patternAfterAsString, includePatternAfter);
                     localRequestedSearchArray.add(rs);
                 } else {
-                    throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('r'));
+                    throw new ParseException("Invalid regex pattern(s): " + line.getOptionValue('x'));
                 }
             }
             //Verifying behavior during implementation...
