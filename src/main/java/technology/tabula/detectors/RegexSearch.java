@@ -81,7 +81,7 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file,
+	public static void checkSearchesOnFilterResize( PDDocument file,
 													         FilteredArea filterArea,
 															 RegexSearch[] currentRegexSearches) {
 
@@ -101,7 +101,7 @@ public class RegexSearch {
 			ArrayList<MatchingArea> areasToAdd = regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,filterArea);
 			updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
 		}
-		return updatedSearches;
+		return;
 
 	}
 
@@ -196,7 +196,6 @@ public class RegexSearch {
 			_area = area;
 		}
 
-		public Integer getPageNum(){return _pageNum;}
 		public Rectangle getArea() {return _area;}
 		public Integer getHeight() { return Math.round(_area.height);}
 		public Integer getTop()    { return Math.round(_area.getTop());}
@@ -321,38 +320,27 @@ public class RegexSearch {
 	};
 
 
-	public static class FilteredArea{
+	public static class FilteredArea {
 
-		private Float  scaleOfHeaderHeight;
-		private Float  scaleOfFooterHeight;
+		private Float scaleOfHeaderHeight;
+		private Float scaleOfFooterHeight;
 
-		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio){
+		public FilteredArea(Float headerHeightRatio, Float footerHeightRatio) {
 			// System.out.println("Height of header:"+headerHeightRatio.toString());
 			// System.out.println(("Height of footer:"+footerHeightRatio.toString()));
-			scaleOfHeaderHeight=headerHeightRatio;
-			scaleOfFooterHeight=footerHeightRatio;
+			scaleOfHeaderHeight = headerHeightRatio;
+			scaleOfFooterHeight = footerHeightRatio;
 		}
 
 
-		public Float getHeaderHeightScale(){ return scaleOfHeaderHeight;}
-		public Float getFooterHeightScale(){ return scaleOfFooterHeight;}
+		public Float getHeaderHeightScale() {
+			return scaleOfHeaderHeight;
+		}
 
-	}
+		public Float getFooterHeightScale() {
+			return scaleOfFooterHeight;
+		}
 
-	/*
-	 * containsMatchIn: Checks to see if patternBefore or patternAfter matches a string of text
-	 *
-	 * @param text The string of data we are looking at
-	 * @return Boolean indicating the matching status of text
-	 * that matches the user-provided regex
-	 */
-
-	private Boolean containsMatchIn(String text){
-
-		Matcher beforeTableMatch = _regexBeforeTable.matcher(text);
-		Matcher afterTableMatch = _regexAfterTable.matcher(text);
-
-		return ((beforeTableMatch.find()) || (afterTableMatch.find()));
 	}
 
 
@@ -368,162 +356,154 @@ public class RegexSearch {
 
 	private ArrayList<MatchingArea> detectMatchingAreas(PDDocument document, FilteredArea areaToFilter) {
 
-	ObjectExtractor oe = new ObjectExtractor(document);
+		ObjectExtractor oe = new ObjectExtractor(document);
 
-	Integer totalNumPages = document.getNumberOfPages();
-	LinkedList<DetectionData> potentialMatches = new LinkedList<>();
-	potentialMatches.add(new DetectionData());
+		Integer totalNumPages = document.getNumberOfPages();
+		LinkedList<DetectionData> potentialMatches = new LinkedList<>();
+		potentialMatches.add(new DetectionData());
 
-		for(Integer currentPage=1;currentPage<=totalNumPages;currentPage++) {
-		/*
-		 * Convert PDF page to text
-		 */
-		Page page = oe.extract(currentPage);
+		for (Integer currentPage = 1; currentPage <= totalNumPages; currentPage++) {
+			/*
+			 * Convert PDF page to text
+			 */
+			Page page = oe.extract(currentPage);
 
-		Integer top = (int)page.getTextBounds().getTop();
+			Integer top = (int) page.getTextBounds().getTop();
 
-		if(areaToFilter!=null){
-			top = Math.round(areaToFilter.getHeaderHeightScale()* page.height);
-		}
-
-
-		Integer height = Math.round(page.height);
-		if(areaToFilter!=null){
-			height = Math.round(page.height -areaToFilter.getFooterHeightScale()* page.height);
-		}
-
-		height -= top;
-
-		ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
-				new Rectangle(top,0, page.width, height));
-
-		StringBuilder pageAsText = new StringBuilder();
-
-		for(TextElement element : pageTextElements ) {
-			pageAsText.append(element.getText());
-		}
-
-		// System.out.println("Area to parse as string:");
-		// System.out.println(pageAsText.toString());
-
-		/*
-		 * Find each table on each page + tables which span multiple pages
-		 */
-
-		Integer startMatchingAt = 0;
-		Matcher beforeTableMatches = _regexBeforeTable.matcher(pageAsText);
-		Matcher afterTableMatches  = _regexAfterTable.matcher(pageAsText);
-		
-		while( beforeTableMatches.find(startMatchingAt) || afterTableMatches.find(startMatchingAt)) {
-
-			DetectionData tableUnderDetection;
-			DetectionData lastTableUnderDetection=potentialMatches.getLast();
-
-			if((lastTableUnderDetection._pageBeginMatch.get()==INIT) || (lastTableUnderDetection._pageEndMatch.get()==INIT)){
-			   tableUnderDetection = lastTableUnderDetection;
-			}
-			else if(lastTableUnderDetection._pageEndMatch.get()<lastTableUnderDetection._pageBeginMatch.get()){
-				tableUnderDetection = lastTableUnderDetection;
-			}
-			else if(lastTableUnderDetection._pageEndCoord.getY()<lastTableUnderDetection._pageBeginCoord.getY() &&
-					(lastTableUnderDetection._pageEndMatch.get()==lastTableUnderDetection._pageBeginMatch.get())){
-				tableUnderDetection = lastTableUnderDetection;
+			if (areaToFilter != null) {
+				top = Math.round(areaToFilter.getHeaderHeightScale() * page.height);
 			}
 
-            else{
-				tableUnderDetection = new DetectionData();
-				potentialMatches.add(tableUnderDetection);
+
+			Integer height = Math.round(page.height);
+			if (areaToFilter != null) {
+				height = Math.round(page.height - areaToFilter.getFooterHeightScale() * page.height);
 			}
 
-			Integer beforeTableMatchLoc = (beforeTableMatches.find(startMatchingAt)) ? beforeTableMatches.start() : null;
-			Integer afterTableMatchLoc = (afterTableMatches.find(startMatchingAt))? afterTableMatches.start() : null;
+			height -= top;
 
-			Matcher firstMatchEncountered;
-			double offsetScale;
-			AtomicInteger pageToFind;
-			Point2D.Float coordsToFind;
+			ArrayList<TextElement> pageTextElements = (ArrayList<TextElement>) page.getText(
+					new Rectangle(top, 0, page.width, height));
 
-			Boolean bothMatchesEncountered = (beforeTableMatchLoc!=null) && (afterTableMatchLoc!=null);
-			if(bothMatchesEncountered){
-				//
-				// In the instance the Table Beginning Pattern and Table End Pattern both match a given text element,
-				// the element chosen is dependent on what is currently in the tableUnderDetection
-				//
-				if(beforeTableMatchLoc.intValue() == afterTableMatchLoc.intValue()){
-					Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch.get()==INIT;
-					firstMatchEncountered = (beginNotFoundYet) ? beforeTableMatches : afterTableMatches;
+			StringBuilder pageAsText = new StringBuilder();
 
-					//    --------------------------------
-					//    Table Beginning  <------ |Offset
-					//      Content                          (To include beginning, negative offset added: coords on top-left but buffer is needed)
-					//      Content
- 					//      Content                         (To include end, positive offset added)
-					//    Table End        <------ |Offset
-					//    --------------------------------
+			for (TextElement element : pageTextElements) {
+				pageAsText.append(element.getText());
+			}
 
-                    offsetScale = (beginNotFoundYet) ?
-							                               //Negative offset for inclusion     Positive offset for exclusion
-							 ((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER ):
-							                              //Positive offset for inclusion    No offset for exclusion
-							 ((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE);
-					pageToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
-					coordsToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+			// System.out.println("Area to parse as string:");
+			// System.out.println(pageAsText.toString());
 
+			/*
+			 * Find each table on each page + tables which span multiple pages
+			 */
+
+			Integer startMatchingAt = 0;
+			Matcher beforeTableMatches = _regexBeforeTable.matcher(pageAsText);
+			Matcher afterTableMatches = _regexAfterTable.matcher(pageAsText);
+
+			while (beforeTableMatches.find(startMatchingAt) || afterTableMatches.find(startMatchingAt)) {
+
+				DetectionData tableUnderDetection;
+				DetectionData lastTableUnderDetection = potentialMatches.getLast();
+
+				if ((lastTableUnderDetection._pageBeginMatch.get() == INIT) || (lastTableUnderDetection._pageEndMatch.get() == INIT)) {
+					tableUnderDetection = lastTableUnderDetection;
+				} else if (lastTableUnderDetection._pageEndMatch.get() < lastTableUnderDetection._pageBeginMatch.get()) {
+					tableUnderDetection = lastTableUnderDetection;
+				} else if (lastTableUnderDetection._pageEndCoord.getY() < lastTableUnderDetection._pageBeginCoord.getY() &&
+						(lastTableUnderDetection._pageEndMatch.get() == lastTableUnderDetection._pageBeginMatch.get())) {
+					tableUnderDetection = lastTableUnderDetection;
+				} else {
+					tableUnderDetection = new DetectionData();
+					potentialMatches.add(tableUnderDetection);
 				}
-				else{
 
-					Boolean beginLocFoundFirst = beforeTableMatchLoc<afterTableMatchLoc;
-					firstMatchEncountered = (beginLocFoundFirst)? beforeTableMatches : afterTableMatches;
-					offsetScale = (beginLocFoundFirst) ?
-							((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER ):
-							((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE);
-					pageToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
-					coordsToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+				Integer beforeTableMatchLoc = (beforeTableMatches.find(startMatchingAt)) ? beforeTableMatches.start() : null;
+				Integer afterTableMatchLoc = (afterTableMatches.find(startMatchingAt)) ? afterTableMatches.start() : null;
+
+				Matcher firstMatchEncountered;
+				double offsetScale;
+				AtomicInteger pageToFind;
+				Point2D.Float coordsToFind;
+
+				Boolean bothMatchesEncountered = (beforeTableMatchLoc != null) && (afterTableMatchLoc != null);
+				if (bothMatchesEncountered) {
+					//
+					// In the instance the Table Beginning Pattern and Table End Pattern both match a given text element,
+					// the element chosen is dependent on what is currently in the tableUnderDetection
+					//
+					if (beforeTableMatchLoc.intValue() == afterTableMatchLoc.intValue()) {
+						Boolean beginNotFoundYet = tableUnderDetection._pageBeginMatch.get() == INIT;
+						firstMatchEncountered = (beginNotFoundYet) ? beforeTableMatches : afterTableMatches;
+
+						//    --------------------------------
+						//    Table Beginning  <------ |Offset
+						//      Content                          (To include beginning, negative offset added: coords on top-left but buffer is needed)
+						//      Content
+						//      Content                         (To include end, positive offset added)
+						//    Table End        <------ |Offset
+						//    --------------------------------
+
+						offsetScale = (beginNotFoundYet) ?
+								//Negative offset for inclusion     Positive offset for exclusion
+								((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER) :
+								//Positive offset for inclusion    No offset for exclusion
+								((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER : SignOfOffset.NONE);
+						pageToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
+						coordsToFind = (beginNotFoundYet) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+
+					} else {
+
+						Boolean beginLocFoundFirst = beforeTableMatchLoc < afterTableMatchLoc;
+						firstMatchEncountered = (beginLocFoundFirst) ? beforeTableMatches : afterTableMatches;
+						offsetScale = (beginLocFoundFirst) ?
+								((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER) :
+								((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER : SignOfOffset.NONE);
+						pageToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginMatch : tableUnderDetection._pageEndMatch;
+						coordsToFind = (beginLocFoundFirst) ? tableUnderDetection._pageBeginCoord : tableUnderDetection._pageEndCoord;
+					}
+				} else {
+					Boolean beginLocNotFound = (beforeTableMatchLoc == null);
+					firstMatchEncountered = (beginLocNotFound) ? afterTableMatches : beforeTableMatches;
+					offsetScale = (beginLocNotFound) ?
+							((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER : SignOfOffset.NONE) :
+							((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER);
+					pageToFind = (beginLocNotFound) ? tableUnderDetection._pageEndMatch : tableUnderDetection._pageBeginMatch;
+					coordsToFind = (beginLocNotFound) ? tableUnderDetection._pageEndCoord : tableUnderDetection._pageBeginCoord;
 				}
+
+				Integer firstMatchIndex = firstMatchEncountered.start();
+
+				Float xCoordinate = pageTextElements.get(firstMatchIndex).x;
+				Float yCoordinate = pageTextElements.get(firstMatchIndex).y;
+				Float offset = pageTextElements.get(firstMatchIndex).height;
+				yCoordinate += (float) (offset * offsetScale);
+
+				coordsToFind.setLocation(xCoordinate, yCoordinate);
+				pageToFind.set(currentPage);
+				startMatchingAt = firstMatchEncountered.end();
+
 			}
-			else{
-				Boolean beginLocNotFound = (beforeTableMatchLoc==null);
-				firstMatchEncountered = (beginLocNotFound) ? afterTableMatches : beforeTableMatches;
-				offsetScale = (beginLocNotFound) ?
-						((_includeRegexAfterTable) ? SignOfOffset.POSITIVE_WITH_BUFFER: SignOfOffset.NONE):
-				        ((_includeRegexBeforeTable) ? SignOfOffset.NEGATIVE_BUFFER : SignOfOffset.POSITIVE_NO_BUFFER);
-				pageToFind = (beginLocNotFound) ? tableUnderDetection._pageEndMatch : tableUnderDetection._pageBeginMatch;
-				coordsToFind = (beginLocNotFound) ? tableUnderDetection._pageEndCoord : tableUnderDetection._pageBeginCoord;
-			}
-
-			Integer firstMatchIndex = firstMatchEncountered.start();
-
-			Float xCoordinate = pageTextElements.get(firstMatchIndex).x;
-			Float yCoordinate = pageTextElements.get(firstMatchIndex).y;
-			Float offset = pageTextElements.get(firstMatchIndex).height;
-			yCoordinate += (float)(offset*offsetScale);
-
-			coordsToFind.setLocation(xCoordinate,yCoordinate);
-			pageToFind.set(currentPage);
-            startMatchingAt = firstMatchEncountered.end();
-
 		}
-	}	
 
-	/*
-	 * Remove the last potential match if its data is incomplete
-	 */
-	DetectionData lastPotMatch = potentialMatches.getLast();
-	
-	if((lastPotMatch._pageBeginMatch.get()==INIT) || (lastPotMatch._pageEndMatch.get()==INIT)) {
-		potentialMatches.removeLast();
-	}
-	else if((lastPotMatch._pageEndMatch.get()<lastPotMatch._pageBeginMatch.get())){
-		potentialMatches.removeLast();
-	}
-	else if((lastPotMatch._pageEndMatch.get()==lastPotMatch._pageBeginMatch.get())&&
-			(lastPotMatch._pageEndCoord.getY()<lastPotMatch._pageBeginCoord.getY())){
-		potentialMatches.removeLast();
-	}
+		/*
+		 * Remove the last potential match if its data is incomplete
+		 */
+		DetectionData lastPotMatch = potentialMatches.getLast();
 
-	return calculateMatchingAreas(potentialMatches,document,areaToFilter);
+		if ((lastPotMatch._pageBeginMatch.get() == INIT) || (lastPotMatch._pageEndMatch.get() == INIT)) {
+			potentialMatches.removeLast();
+		} else if ((lastPotMatch._pageEndMatch.get() < lastPotMatch._pageBeginMatch.get())) {
+			potentialMatches.removeLast();
+		} else if ((lastPotMatch._pageEndMatch.get() == lastPotMatch._pageBeginMatch.get()) &&
+				(lastPotMatch._pageEndCoord.getY() < lastPotMatch._pageBeginCoord.getY())) {
+			potentialMatches.removeLast();
+		}
 
-}
+		return calculateMatchingAreas(potentialMatches, document, areaToFilter);
+
+	}
 
 	/*
 	 * calculateMatchingAreas: Determines the rectangular coordinates of the subsections of each
