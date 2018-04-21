@@ -81,7 +81,7 @@ public class RegexSearch {
 	 * @param previousHeaderHeight The previous height of the header filter AS IT APPEARED IN THE GUI
 	 * @return
 	 */
-	public static void checkSearchesOnFilterResize( PDDocument file,
+	public static ArrayList<UpdatesOnResize> checkSearchesOnFilterResize( PDDocument file,
 													         FilteredArea filterArea,
 															 RegexSearch[] currentRegexSearches) {
 
@@ -101,7 +101,7 @@ public class RegexSearch {
 			ArrayList<MatchingArea> areasToAdd = regexSearch._matchingAreas = regexSearch.detectMatchingAreas(file,filterArea);
 			updatedSearches.add(new UpdatesOnResize(regexSearch,areasToAdd,areasToRemove,false));
 		}
-		return;
+		return updatedSearches;
 
 	}
 
