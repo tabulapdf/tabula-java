@@ -67,6 +67,12 @@ public class CommandLineApp {
         this.pageAreas = CommandLineApp.whichAreas(line);
         this.pages = CommandLineApp.whichPages(line);
 
+        if((this.pageAreas.isEmpty()==false) && (this.pageAreas.size()!=this.pages.size())){
+            throw new ParseException("Number of Area Specifications (" + this.pageAreas.size() + ") " +
+                    "must equal the number of Page Specifications (" + this.pages.size() );
+        }
+
+
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
@@ -765,25 +771,31 @@ public class CommandLineApp {
                 .build());
         o.addOption(Option.builder("a")
                 .longOpt("area")
-                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
+                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page." +
+                        "\n Note: --area option must be followed by the --pages option.")
                 .hasArg()
                 .argName("AREA")
                 .build());
         o.addOption(Option.builder("p")
                 .longOpt("pages")
-                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1." +
+                        "\n Note: --pages option can be invoked without the --area option.")
                 .hasArg()
                 .argName("PAGES")
                 .build());
-        o.addOption(Option.builder("x") //TODO: The description will need to be updated here due to use of JSON...
+        o.addOption(Option.builder("x")
                 .longOpt("regex")
-                .desc("Find areas to extract using regex. Example: --regex regexbefore,incl/excl,regexafter,incl/excl")
+                .desc("Find areas to extract using regex. Requires JSON formatting. \n Example: " +
+                        "{\"queries\": [ {\"pattern_before\" : \"CHARLES RIDDLE CENTER\"," +
+                        "\"include_pattern_before\": \"true\"," +
+                        "\"pattern_after\" : \"BUNCOMBE\",\"include_pattern_after\": \"true\"} ]}")
                 .hasArg()
                 .argName("REGEX")
                 .build());
         o.addOption(Option.builder("m")
                 .longOpt("margins")
-                .desc("Define the header and footer margins for the document")
+                .desc("Define the header and footer margins for the document. Requires JSON formatting. \n Example: " +
+                        "{\"header_scale\" : 0.095,\"footer_scale\" : 0.125 }")
                 .hasArg()
                 .argName("MARGINS")
                 .build());
