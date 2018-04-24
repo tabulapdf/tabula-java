@@ -584,7 +584,7 @@ public class RegexSearch {
             			subAreaTop= Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height);
 					}
             		else{
-						subAreaTop= (int)Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+						subAreaTop= (int)Math.round(0.5*(currentPage.getTextBounds().getTop()));
 					}
 
             		System.out.println("Current Page: "+ currentPage.getPageNumber());
