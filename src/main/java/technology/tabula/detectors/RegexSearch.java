@@ -371,14 +371,21 @@ public class RegexSearch {
 			Integer top = (int) page.getTextBounds().getTop();
 
 			if (areaToFilter != null) {
-				top = Math.round(areaToFilter.getHeaderHeightScale() * page.height);
+				if(areaToFilter.getHeaderHeightScale()>0){
+					top = Math.round(areaToFilter.getHeaderHeightScale() * page.height);
+				}
 			}
+
 
 
 			Integer height = Math.round(page.height);
-			if (areaToFilter != null) {
-				height = Math.round(page.height - areaToFilter.getFooterHeightScale() * page.height);
+			if (areaToFilter != null && areaToFilter.getFooterHeightScale()>0) {
+					height = Math.round(page.height - areaToFilter.getFooterHeightScale() * page.height);
 			}
+			else{
+					height = Math.round(height - (page.height-page.getTextBounds().getBottom()));
+			}
+
 
 			height -= top;
 
@@ -551,7 +558,14 @@ public class RegexSearch {
             	Float footer_height = (areaToFilter==null) ? (float)0:
 						areaToFilter.getFooterHeightScale()*currentPage.height;
 
-            	Float height = currentPage.height-foundTable._pageBeginCoord.y-footer_height;
+            	Float height = currentPage.height-foundTable._pageBeginCoord.y;
+
+            	if(footer_height>0){
+            		height-=footer_height;
+				}
+				else{
+            		height= height - (currentPage.height-currentPage.getTextBounds().getBottom());
+				}
 
             	tableSubArea.add( new SubSectionOfMatch(currentPage.getPageNumber(), new Rectangle(foundTable._pageBeginCoord.y,0,currentPage.width,
             			                        height))); //Note: limitation of this approach is that the entire width of the page is used...could be problematic for multi-column data
@@ -563,14 +577,24 @@ public class RegexSearch {
 
             	for (Integer iter=currentPage.getPageNumber()+1; iter<foundTable._pageEndMatch.get(); iter++) {
             		currentPage = oe.extract(iter);
-            		Integer subAreaTop = (areaToFilter!=null) ? Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height) :
-							(int) Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+
+            		Integer subAreaTop;
+
+            		if((areaToFilter!=null) && (areaToFilter.getHeaderHeightScale()>0)){
+            			subAreaTop= Math.round(areaToFilter.getHeaderHeightScale()*currentPage.height);
+					}
+            		else{
+						subAreaTop= (int)Math.round(0.5*(currentPage.getTextBounds().getMinY()));
+					}
+
+            		System.out.println("Current Page: "+ currentPage.getPageNumber());
+            		System.out.println("SubAreaTop: "+ subAreaTop);
 
             		Float subAreaHeight = currentPage.height-subAreaTop;
 
 					// System.out.println("Sub Area Height Before Subtraction:" + subAreaHeight);
 
-            		if(areaToFilter!=null){
+            		if(areaToFilter!=null && areaToFilter.getFooterHeightScale()>0){
 						subAreaHeight -=areaToFilter.getFooterHeightScale()*currentPage.height;
 					}
 					else{
@@ -581,7 +605,7 @@ public class RegexSearch {
 						// System.out.println("Bottom Text Bounds of Current Page: " + currentPage.getTextBounds().getBottom());
 						// System.out.println("Current Height - Bottom Text Bound"+ (currentPage.height- currentPage.getTextBounds().getBottom()));
 
-            			subAreaHeight -= (float)(0.5)*(currentPage.height - (currentPage.getTextBounds().getBottom()));//-currentPage.getTextBounds().getTop());
+            			subAreaHeight -= (float)(0.5)*(currentPage.height - (currentPage.getTextBounds().getBottom()));
 
 					}
 
