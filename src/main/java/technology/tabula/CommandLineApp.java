@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -253,7 +256,12 @@ public class CommandLineApp {
                     loggingBufferedWriter.newLine();
                     loggingBufferedWriter.write("ERROR - UNABLE TO PROCESS DOCUMENT");
                     loggingBufferedWriter.newLine();
-                } catch (IOException e) {
+                    Path logPassPath= Paths.get(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$",
+                            "") + "_LOG_PASS" + ".txt");
+                    if(Files.exists(logPassPath)) {
+                        Files.delete(logPassPath);
+                    }
+                    } catch (IOException e) {
                     throw new ParseException("Cannot create log file.");
                 }
                 finally {
