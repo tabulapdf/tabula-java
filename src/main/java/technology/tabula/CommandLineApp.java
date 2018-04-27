@@ -244,7 +244,7 @@ public class CommandLineApp {
                 // Logging - Mirror Correct Logging, but with Failure Identifier
                 BufferedWriter loggingBufferedWriter = null;
                 try {
-                    FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_FAIL" + ".txt", true);
+                    FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_FAIL_" + new SimpleDateFormat("yyyy-MM-dd_hh-mmaa").format(Calendar.getInstance().getTime()) + ".txt", true);
                     loggingBufferedWriter = new BufferedWriter(loggingFileWriter);
                     loggingBufferedWriter.write("---------- START OF LOG ----------");
                     loggingBufferedWriter.newLine();
@@ -389,7 +389,7 @@ public class CommandLineApp {
         // Logging - Initialize Log File and Include Identifying Processing Information
         BufferedWriter loggingBufferedWriter = null;
         try {
-            FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_PASS" + ".txt", true);
+            FileWriter loggingFileWriter = new FileWriter(pdfFile.getAbsolutePath().replaceFirst("[.][^.]+$", "") + "_LOG_PASS_" + new SimpleDateFormat("yyyy-MM-dd_hh-mmaa").format(Calendar.getInstance().getTime()) + ".txt", true);
             loggingBufferedWriter = new BufferedWriter(loggingFileWriter);
             loggingBufferedWriter.write("---------- START OF LOG ----------");
             loggingBufferedWriter.newLine();
