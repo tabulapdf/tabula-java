@@ -1,79 +1,40 @@
 package technology.tabula;
 
-import gnu.trove.procedure.TIntProcedure;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jsi.SpatialIndex;
-import net.sf.jsi.rtree.RTree;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.strtree.STRtree;
 
 class RectangleSpatialIndex<T extends Rectangle> {
     
-    class SaveToListProcedure implements TIntProcedure {
-        private List<Integer> ids = new ArrayList<>();
 
-        @Override public boolean execute(int id) {
-          ids.add(id);
-          return true;
-        }
+    private final STRtree si = new STRtree();
+    private final List<T> rectangles = new ArrayList<>();
 
-        List<Integer> getIds() {
-          return ids;
-        }
-    }
-
-    private final SpatialIndex si;
-    private final List<T> rectangles;
-    private Rectangle bounds = null;
-    
-    public RectangleSpatialIndex() {
-        si = new RTree();
-        si.init(null);
-        rectangles = new ArrayList<>();
-    }
-    
     public void add(T te) {
         rectangles.add(te);
-        if (bounds == null) {
-            bounds = new Rectangle();
-            bounds.setRect(te);
-        }
-        else {
-            bounds.merge(te);            
-        }
-        si.add(rectangleToSpatialIndexRectangle(te), rectangles.size() - 1);
+        si.insert(new Envelope(te.getLeft(), te.getRight(), te.getBottom(), te.getTop()), te);
     }
     
     public List<T> contains(Rectangle r) {
-        SaveToListProcedure proc = new SaveToListProcedure();
-        si.contains(rectangleToSpatialIndexRectangle(r), proc);
-        ArrayList<T> rv = new ArrayList<>();
-        for (int i : proc.getIds()) {
-            rv.add(rectangles.get(i));
+        List<T> intersection = si.query(new Envelope(r.getLeft(), r.getRight(), r.getTop(), r.getBottom()));
+        List<T> rv = new ArrayList<T>();
+
+        for (T ir: intersection) {
+            if (r.contains(ir)) {
+                rv.add(ir);
+            }
         }
+
         Utils.sort(rv, Rectangle.ILL_DEFINED_ORDER);
         return rv;
     }
     
     public List<T> intersects(Rectangle r) {
-        SaveToListProcedure proc = new SaveToListProcedure();
-        si.intersects(rectangleToSpatialIndexRectangle(r), proc);
-        ArrayList<T> rv = new ArrayList<>();
-        for (int i : proc.getIds()) {
-            rv.add(rectangles.get(i));
-        }
-        Utils.sort(rv, Rectangle.ILL_DEFINED_ORDER);
+        List rv = si.query(new Envelope(r.getLeft(), r.getRight(), r.getTop(), r.getBottom()));
         return rv;
     }
-    
-    private net.sf.jsi.Rectangle rectangleToSpatialIndexRectangle(Rectangle r) {
-        return new net.sf.jsi.Rectangle((float) r.getX(),
-                (float) r.getY(),
-                (float) (r.getX() + r.getWidth()),
-                (float) (r.getY() + r.getHeight()));
-    }
-
     
     /**
      * Minimum bounding box of all the Rectangles contained on this RectangleSpatialIndex
@@ -81,7 +42,7 @@ class RectangleSpatialIndex<T extends Rectangle> {
      * @return a Rectangle
      */
     public Rectangle getBounds() {
-        return bounds;
+        return Rectangle.boundingBoxOf(rectangles);
     }
 
 }
