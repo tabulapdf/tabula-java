@@ -16,7 +16,7 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar target/tabula-1.0.1-jar-with-dependencies.jar --help
+$ java -jar target/tabula-1.0.2-jar-with-dependencies.jar --help
 usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f
        <FORMAT>] [-g] [-h] [-i] [-l] [-n] [-o <OUTFILE>] [-p <PAGES>] [-r]
        [-s <PASSWORD>] [-t] [-u] [-v]
@@ -69,7 +69,7 @@ Tabula helps you extract tables from PDFs
  -v,--version               Print version and exit.
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-1.0.1-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-1.0.2-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 

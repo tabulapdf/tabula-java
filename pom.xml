@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>technology.tabula</groupId>
     <artifactId>tabula</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <name>Tabula</name>
     <description>Extract tables from PDF files</description>
     <url>http://github.com/tabulapdf/tabula-java</url>
@@ -36,16 +36,8 @@
         <connection>scm:git:git@github.com:tabulapdf/tabula-java.git</connection>
         <developerConnection>scm:git:git@github.com:tabulapdf/tabula-java.git</developerConnection>
         <url>git@github.com:tabulapdf/tabula-java.git</url>
-        <tag>tabula-1.0.0-SNAPSHOT</tag>
+        <tag>v1.0.2</tag>
     </scm>
-
-    <repositories>
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
