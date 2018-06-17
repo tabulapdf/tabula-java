@@ -12,9 +12,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class TestCommandLineApp {
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     private String csvFromCommandLineArgs(String[] args) throws ParseException {
         CommandLineParser parser = new DefaultParser();
@@ -72,7 +77,7 @@ public class TestCommandLineApp {
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
-                "CSV", "-o", "outputFile"
+                "CSV", "-o", folder.newFile().getAbsolutePath()
         });
         //assertEquals(expectedCsv,);
     }
