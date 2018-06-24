@@ -2,11 +2,9 @@ package technology.tabula;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
+import java.nio.file.*;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -73,13 +71,15 @@ public class TestCommandLineApp {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
 
+        File newFile = folder.newFile();
         this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
                 "-p", "1", "-a",
                 "150.56,58.9,654.7,536.12", "-f",
-                "CSV", "-o", folder.newFile().getAbsolutePath()
+                "CSV", "-o", newFile.getAbsolutePath()
         });
-        //assertEquals(expectedCsv,);
+
+        assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(Paths.get(newFile.getAbsolutePath())));
     }
 
 
