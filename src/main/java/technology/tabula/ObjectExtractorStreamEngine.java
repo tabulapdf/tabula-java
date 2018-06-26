@@ -179,11 +179,11 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         Point2D.Float end_pos = null;
         Line2D.Float line;
         PointComparator pc = new PointComparator();
-        while (!pi.isDone()) {
+        while (true) {
             pi.next();
-            // This can be the last segment, when pi.isDone, but we need to
-            // process it
-            // otherwise us-017.pdf fails the last value.
+            if (pi.isDone()) {
+                break;
+            }
             try {
                 currentSegment = pi.currentSegment(c);
             } catch (IndexOutOfBoundsException ex) {
