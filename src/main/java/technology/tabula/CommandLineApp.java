@@ -265,7 +265,12 @@ public class CommandLineApp {
         extractor.setUseLineReturns(line.hasOption('u'));
 
         if (line.hasOption('c')) {
-            extractor.setVerticalRulingPositions(parseFloatList(line.getOptionValue('c')));
+            String optionString = line.getOptionValue('c');
+            if (optionString.startsWith("%")) {
+                extractor.setVerticalRulingPositionsRelative(true);
+                optionString = optionString.substring(1);
+            }
+            extractor.setVerticalRulingPositions(parseFloatList(optionString));
         }
         return extractor;
     }
@@ -329,7 +334,9 @@ public class CommandLineApp {
                 .build());
         o.addOption(Option.builder("c")
                 .longOpt("columns")
-                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3")
+                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual width of the page. "
+                        + "Example: --columns %25,50,80.6")
                 .hasArg()
                 .argName("COLUMNS")
                 .build());
@@ -356,6 +363,7 @@ public class CommandLineApp {
         private boolean useLineReturns = false;
         private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
         private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
+        private boolean verticalRulingPositionsRelative = false;
         private List<Float> verticalRulingPositions = null;
         private ExtractionMethod method = ExtractionMethod.BASIC;
 
@@ -364,6 +372,9 @@ public class CommandLineApp {
 
         public void setVerticalRulingPositions(List<Float> positions) {
             this.verticalRulingPositions = positions;
+        }
+        public void setVerticalRulingPositionsRelative(boolean relative) {
+            this.verticalRulingPositionsRelative = relative;
         }
 
         public void setGuess(boolean guess) {
@@ -411,7 +422,19 @@ public class CommandLineApp {
             }
 
             if (verticalRulingPositions != null) {
-                return basicExtractor.extract(page, verticalRulingPositions);
+                List<Float> absoluteRulingPositions;
+
+                if (this.verticalRulingPositionsRelative) {
+                    // convert relative to absolute
+                    absoluteRulingPositions = new ArrayList<>(verticalRulingPositions.size());
+                    for (float relative: this.verticalRulingPositions) {
+                        float absolute = (float)(relative / 100.0 * page.getWidth());
+                        absoluteRulingPositions.add(absolute);
+                    }
+                } else {
+                    absoluteRulingPositions = this.verticalRulingPositions;
+                }
+                return basicExtractor.extract(page, absoluteRulingPositions);
             }
             return basicExtractor.extract(page);
         }
