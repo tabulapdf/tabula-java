@@ -6,7 +6,7 @@ import java.util.List;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.strtree.STRtree;
 
-class RectangleSpatialIndex<T extends Rectangle> {
+public class RectangleSpatialIndex<T extends Rectangle> {
     
 
     private final STRtree si = new STRtree();
