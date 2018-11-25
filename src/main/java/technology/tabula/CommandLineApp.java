@@ -252,7 +252,7 @@ public class CommandLineApp {
         }
 
         // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
