@@ -64,7 +64,8 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         Table table = new Table(this);
-        
+        table.setRect(page.getLeft(), page.getTop(), page.getWidth(), page.getHeight());
+
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             List<TextChunk> elements = line.getTextElements();
