@@ -30,6 +30,8 @@ public final class TableSerializer implements JsonSerializer<Table> {
 		result.addProperty("left",   src.getLeft());
 		result.addProperty("width",  src.getWidth());
 		result.addProperty("height", src.getHeight());
+		result.addProperty("right",  src.getRight());
+		result.addProperty("bottom", src.getBottom());
 
 		JsonArray data;
 		result.add("data", data = new JsonArray());
