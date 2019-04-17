@@ -22,7 +22,13 @@ public class TextElement extends Rectangle implements HasText {
     public TextElement(float y, float x, float width, float height,
                        PDFont font, float fontSize, String c, float widthOfSpace, float dir) {
         super();
-        this.setRect(x, y, width, height);
+
+        if (dir == 90 || dir == 270) {
+            // Swap x and y coordinates and width and height in case of vertical direction
+            this.setRect(y, x, height, width);
+        } else {
+            this.setRect(x, y, width, height);
+        }
         this.text = c;
         this.widthOfSpace = widthOfSpace;
         this.fontSize = fontSize;
