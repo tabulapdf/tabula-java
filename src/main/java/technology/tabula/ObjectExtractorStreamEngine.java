@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
-    private static final String NBSP = "\u00A0";
-
     protected List<Ruling> rulings;
     private AffineTransform pageTransform;
     private boolean debugClippingPaths;
@@ -32,7 +30,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private Logger log;
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
-    public List<Shape> clippingPaths;
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
@@ -247,14 +244,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         Shape transformedClippingPath = this.getPageTransform().createTransformedShape(clippingPath);
 
         return transformedClippingPath.getBounds2D();
-    }
-
-    public boolean isDebugClippingPaths() {
-        return debugClippingPaths;
-    }
-
-    public void setDebugClippingPaths(boolean debugClippingPaths) {
-        this.debugClippingPaths = debugClippingPaths;
     }
 
     class PointComparator implements Comparator<Point2D> {
