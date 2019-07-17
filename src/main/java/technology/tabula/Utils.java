@@ -211,7 +211,7 @@ public class Utils {
         List<List<Point2D>> groupedPoints = new ArrayList<>();
         groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
 
-        for (Point2D p : points.subList(1, points.size() - 1)) {
+        for (Point2D p : points.subList(1, points.size())) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getX() - last.get(0).getX()) < xThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
@@ -243,7 +243,7 @@ public class Utils {
         groupedPoints = new ArrayList<>();
         groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
 
-        for (Point2D p : points.subList(1, points.size() - 1)) {
+        for (Point2D p : points.subList(1, points.size())) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getY() - last.get(0).getY()) < yThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
