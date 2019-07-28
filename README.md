@@ -25,7 +25,9 @@ Tabula helps you extract tables from PDFs
 
  -a,--area <AREA>           Portion of the page to analyze. Accepts top,
                             left,bottom,right.
+                            Portion of the page to analyze. 
                             Example: --area 269.875,12.75,790.5,561.
+                            Accepts top,left,bottom,right i.e. y1,x1,y2,x2
                             If all values are between 0-100 (inclusive)
                             and preceded by '%', input will be taken as
                             % of actual height or width of the page.
