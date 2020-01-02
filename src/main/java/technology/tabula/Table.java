@@ -1,5 +1,6 @@
 package technology.tabula;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -46,7 +47,7 @@ public class Table extends Rectangle {
 		this.memoizedRows = null;
 	}
 
-	private List<List<RectangularTextContainer>> memoizedRows = null;
+	private transient List<List<RectangularTextContainer>> memoizedRows = null;
 
 	public List<List<RectangularTextContainer>> getRows() {
 		if (this.memoizedRows == null) this.memoizedRows = computeRows();
@@ -73,7 +74,8 @@ public class Table extends Rectangle {
 
 }
 
-class CellPosition implements Comparable<CellPosition> {
+@SuppressWarnings("serial")
+class CellPosition implements Serializable, Comparable<CellPosition> {
 
 	CellPosition(int row, int col) {
 		this.row = row;

@@ -9,7 +9,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 public class TextElement extends Rectangle implements HasText {
 
     private final String text;
-    private final PDFont font;
+    transient private final PDFont font;
     private float fontSize;
     private float widthOfSpace, dir;
     private static final float AVERAGE_CHAR_TOLERANCE = 0.3f;

@@ -11,8 +11,8 @@ import technology.tabula.extractors.ExtractionAlgorithm;
 @SuppressWarnings("serial")
 public class TableWithRulingLines extends Table {
 
-    List<Ruling> verticalRulings, horizontalRulings;
-    RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
+    transient List<Ruling> verticalRulings, horizontalRulings;
+    transient RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
     
     public TableWithRulingLines(Rectangle area, List<Cell> cells, List<Ruling> horizontalRulings, List<Ruling> verticalRulings, ExtractionAlgorithm extractionAlgorithm) {
         super(extractionAlgorithm);
