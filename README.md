@@ -23,20 +23,20 @@ usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f
 
 Tabula helps you extract tables from PDFs
 
- -a,--area <AREA>           Portion of the page to analyze. Accepts top,
-                            left,bottom,right.
-                            Portion of the page to analyze. 
-                            Example: --area 269.875,12.75,790.5,561.
-                            Accepts top,left,bottom,right i.e. y1,x1,y2,x2
-                            If all values are between 0-100 (inclusive)
-                            and preceded by '%', input will be taken as
-                            % of actual height or width of the page.
-                            Example: --area %0,0,100,50.
-                            To specify multiple areas, -a option should 
-                            be repeated. Default is entire page
+ -a,--area <AREA>           Portion of the page to analyze. Example: --area
+                            269.875,12.75,790.5,561. Accepts
+                            top,left,bottom,right i.e. y1,x1,y2,x2 where all
+                            values are in points relative to the top left
+                            corner. If all values are between 0-100
+                            (inclusive) and preceded by '%', input will be
+                            taken as % of actual height or width of the page.
+                            Example: --area %0,0,100,50. To specify multiple
+                            areas, -a option should be repeated. Default is
+                            entire page
  -b,--batch <DIRECTORY>     Convert all .pdfs in the provided directory.
- -c,--columns <COLUMNS>     X coordinates of column boundaries. Example
-                            --columns 10.1,20.2,30.3
+ -c,--columns <COLUMNS>     X coordinates of column boundaries where values
+                            are in points and relative to the left of the
+                            page. Example --columns 10.1,20.2,30.3
  -d,--debug                 Print detected table areas instead of
                             processing.
  -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
