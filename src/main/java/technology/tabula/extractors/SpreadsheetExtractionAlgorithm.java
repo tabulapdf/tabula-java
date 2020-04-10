@@ -132,6 +132,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             }
                         
             TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this);
+            t.setPageNumber(page.getPageNumber());
             spreadsheets.add(t);
         }
         Utils.sort(spreadsheets, Rectangle.ILL_DEFINED_ORDER);

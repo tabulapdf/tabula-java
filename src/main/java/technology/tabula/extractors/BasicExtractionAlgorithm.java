@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import com.google.gson.Gson;
+
 import java.util.Arrays;
 
 import technology.tabula.Line;
@@ -65,6 +68,9 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         
         Table table = new Table(this);
         table.setRect(page.getLeft(), page.getTop(), page.getWidth(), page.getHeight());
+        
+        table.setPageNumber(page.getPageNumber());
+      
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
