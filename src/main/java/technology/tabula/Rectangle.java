@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @SuppressWarnings("serial")
 public class Rectangle extends Rectangle2D.Float {
@@ -151,7 +152,7 @@ public class Rectangle extends Rectangle2D.Float {
 		StringBuilder sb = new StringBuilder();
 		String s = super.toString();
 		sb.append(s.substring(0, s.length() - 1));
-		sb.append(String.format(",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
+		sb.append(String.format(Locale.US, ",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
 		return sb.toString();
 	}
 
