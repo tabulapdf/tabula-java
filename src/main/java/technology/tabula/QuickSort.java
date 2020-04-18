@@ -25,7 +25,7 @@ import java.util.Stack;
 /**
  * An implementation of Quicksort.
  * 
- * @see http://de.wikipedia.org/wiki/Quicksort
+ * @see <a href="http://de.wikipedia.org/wiki/Quicksort">wikipedia</a>
  * 
  * @author UWe Pachler
  */

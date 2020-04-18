@@ -11,7 +11,7 @@ public class Rectangle extends Rectangle2D.Float {
 	/**
 	 * Ill-defined comparator, from when Rectangle was Comparable.
 	 * 
-	 * @see https://github.com/tabulapdf/tabula-java/issues/116
+	 * @see <a href="https://github.com/tabulapdf/tabula-java/issues/116">PR 116</a>
 	 * @deprecated with no replacement
 	 */
 	@Deprecated
