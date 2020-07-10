@@ -32,6 +32,19 @@
         </developer>
     </developers>
 
+    <repositories>
+      <repository>
+        <id>snapshots</id>
+        <url>https://repository.apache.org/content/repositories/snapshots/</url>
+        <releases>
+          <enabled>false</enabled>
+        </releases>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
+    </repositories>
+
     <scm>
         <connection>scm:git:git@github.com:tabulapdf/tabula-java.git</connection>
         <developerConnection>scm:git:git@github.com:tabulapdf/tabula-java.git</developerConnection>
@@ -237,7 +250,7 @@
     <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>2.0.15</version>
+        <version>2.0.21-SNAPSHOT</version>
     </dependency>
 
     <dependency>

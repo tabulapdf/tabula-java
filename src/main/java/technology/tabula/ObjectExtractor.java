@@ -42,7 +42,7 @@ public class ObjectExtractor {
             h = p.getCropBox().getHeight();
         }
 
-        return new Page(0, 0, w, h, pageRotation, pageNumber, p, pdfTextStripper.textElements,
+        return new Page(0, 0, w, h, pageRotation, pageNumber, p, this.pdfDocument, pdfTextStripper.textElements,
                 se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
     }
 
