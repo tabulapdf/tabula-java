@@ -227,7 +227,7 @@ public class Debug {
 
         PDPage p = document.getPage(pageNumber);
 
-        BufferedImage image = Utils.pageConvertToImage(p, 72, ImageType.RGB);
+        BufferedImage image = Utils.pageConvertToImage(document, p, 72, ImageType.RGB);
 
         Graphics2D g = (Graphics2D) image.getGraphics();
 

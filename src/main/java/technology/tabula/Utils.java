@@ -280,4 +280,9 @@ public class Utils {
 		}
 	}
 
+  public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
+    PDFRenderer renderer = new PDFRenderer(doc);
+    return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
+  }
+
 }
