@@ -199,7 +199,7 @@ public class TestCommandLineApp {
                 "src/test/resources/technology/tabula/AnimalSounds.pdf",
                 "-p", "1", "-c",
                 "59,218,331,551", "-l",
-                "-f", "CSV"
+                "-r", "CSV"
         }));
     }
 
@@ -211,9 +211,8 @@ public class TestCommandLineApp {
                 "src/test/resources/technology/tabula/AnimalSounds1.pdf",
                 "-p", "1", "-c", "57,136,197,296,314,391,457,553",
                 "-a", "%0,0,100,50", "-a", "%0,50,100,100",
-                 "-l", "-f", "JSON"
+                 "-r", "-f", "JSON"
         });
-        System.out.println("Returned Json: \n" + resultJson);
         assertEquals(expectedJson, resultJson);
     }
 
