@@ -29,16 +29,16 @@ import technology.tabula.writers.Writer;
 
 public class CommandLineApp {
 
-    private static String VERSION = "1.0.2";
-    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2017 Manuel Aristarán", VERSION);
+    private static String VERSION = "1.0.4";
+    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2018 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
-    
+
     private static final int RELATIVE_AREA_CALCULATION_MODE = 0;
     private static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
 
 
     private Appendable defaultOutput;
-    
+
     private List<Pair<Integer, Rectangle>> pageAreas;
     private List<Integer> pages;
     private OutputFormat outputFormat;
@@ -174,10 +174,10 @@ public class CommandLineApp {
                 if (pageAreas != null) {
                     for (Pair<Integer, Rectangle> areaPair : pageAreas) {
                         Rectangle area = areaPair.getRight();
-                        if (areaPair.getLeft() == RELATIVE_AREA_CALCULATION_MODE) { 
+                        if (areaPair.getLeft() == RELATIVE_AREA_CALCULATION_MODE) {
                             area  = new Rectangle((float) (area.getTop() / 100 * page.getHeight()),
                                     (float) (area.getLeft() / 100 * page.getWidth()), (float) (area.getWidth() / 100 * page.getWidth()),
-                                    (float) (area.getHeight() / 100 * page.getHeight()));                            
+                                    (float) (area.getHeight() / 100 * page.getHeight()));
                         }
                         tables.addAll(tableExtractor.extractTables(page.getArea(area)));
                     }
@@ -227,10 +227,10 @@ public class CommandLineApp {
         if (!line.hasOption('a')) {
             return null;
         }
-        
+
         String[] optionValues = line.getOptionValues('a');
 
-        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>(); 
+        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>();
         for (String optionValue: optionValues) {
             int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
             int startIndex = 0;
@@ -259,7 +259,7 @@ public class CommandLineApp {
         }
 
         // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g') || line.hasOption('t')) {
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
@@ -270,6 +270,15 @@ public class CommandLineApp {
         extractor.setGuess(line.hasOption('g'));
         extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
         extractor.setUseLineReturns(line.hasOption('u'));
+
+        if (line.hasOption('c')) {
+            String optionString = line.getOptionValue('c');
+            if (optionString.startsWith("%")) {
+                extractor.setVerticalRulingPositionsRelative(true);
+                optionString = optionString.substring(1);
+            }
+            extractor.setVerticalRulingPositions(parseFloatList(optionString));
+        }
 
         return extractor;
     }
@@ -333,13 +342,16 @@ public class CommandLineApp {
                 .build());
         o.addOption(Option.builder("c")
                 .longOpt("columns")
-                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3")
+                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual width of the page. "
+                        + "Example: --columns %25,50,80.6")
                 .hasArg()
                 .argName("COLUMNS")
                 .build());
         o.addOption(Option.builder("a")
                 .longOpt("area")
-                .desc("-a/--area = Portion of the page to analyze. Accepts top,left,bottom,right . Example: --area 269.875,12.75,790.5,561. "
+                .desc("-a/--area = Portion of the page to analyze. Example: --area 269.875,12.75,790.5,561. "
+                        + "Accepts top,left,bottom,right i.e. y1,x1,y2,x2 where all values are in points relative to the top left corner. "
                         + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual height or width of the page. "
                         + "Example: --area %0,0,100,50. To specify multiple areas, -a option should be repeated. Default is entire page")
                 .hasArg()
@@ -360,9 +372,20 @@ public class CommandLineApp {
         private boolean useLineReturns = false;
         private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
         private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
+
+        private boolean verticalRulingPositionsRelative = false;
+        private List<Float> verticalRulingPositions = null;
+
         private ExtractionMethod method = ExtractionMethod.BASIC;
 
         public TableExtractor() {
+        }
+
+        public void setVerticalRulingPositions(List<Float> positions) {
+            this.verticalRulingPositions = positions;
+        }
+        public void setVerticalRulingPositionsRelative(boolean relative) {
+            this.verticalRulingPositionsRelative = relative;
         }
 
         public void setGuess(boolean guess) {
@@ -407,6 +430,22 @@ public class CommandLineApp {
                     tables.addAll(basicExtractor.extract(guess));
                 }
                 return tables;
+            }
+
+            if (verticalRulingPositions != null) {
+                List<Float> absoluteRulingPositions;
+
+                if (this.verticalRulingPositionsRelative) {
+                    // convert relative to absolute
+                    absoluteRulingPositions = new ArrayList<>(verticalRulingPositions.size());
+                    for (float relative: this.verticalRulingPositions) {
+                        float absolute = (float)(relative / 100.0 * page.getWidth());
+                        absoluteRulingPositions.add(absolute);
+                    }
+                } else {
+                    absoluteRulingPositions = this.verticalRulingPositions;
+                }
+                return basicExtractor.extract(page, absoluteRulingPositions);
             }
 
             return basicExtractor.extract(page);

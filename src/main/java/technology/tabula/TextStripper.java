@@ -55,7 +55,7 @@ public class TextStripper extends PDFTextStripper {
 
             TextElement te = new TextElement(Utils.round(textPosition.getYDirAdj() - h, 2),
                     Utils.round(textPosition.getXDirAdj(), 2), Utils.round(textPosition.getWidthDirAdj(), 2),
-                    Utils.round(textPosition.getHeightDir(), 2), textPosition.getFont(), textPosition.getFontSize(), c,
+                    Utils.round(textPosition.getHeightDir(), 2), textPosition.getFont(), textPosition.getFontSizeInPt(), c,
                     // workaround a possible bug in PDFBox:
                     // https://issues.apache.org/jira/browse/PDFBOX-1755
                     wos, textPosition.getDir());

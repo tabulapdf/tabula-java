@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
-    private static final String NBSP = "\u00A0";
-
     protected List<Ruling> rulings;
     private AffineTransform pageTransform;
     private boolean debugClippingPaths;
@@ -32,9 +30,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private Logger log;
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
-    public List<Shape> clippingPaths;
-
-    private Matrix translateMatrix;
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
@@ -62,7 +57,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
+    public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3)  {
         currentPath.moveTo((float) p0.getX(), (float) p0.getY());
         currentPath.lineTo((float) p1.getX(), (float) p1.getY());
         currentPath.lineTo((float) p2.getX(), (float) p2.getY());
@@ -72,30 +67,30 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void clip(int windingRule) throws IOException {
+    public void clip(int windingRule)  {
         // the clipping path will not be updated until the succeeding painting
         // operator is called
         clipWindingRule = windingRule;
     }
 
     @Override
-    public void closePath() throws IOException {
+    public void closePath()  {
         currentPath.closePath();
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) throws IOException {
+    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3)  {
         currentPath.curveTo(x1, y1, x2, y2, x3, y3);
     }
 
     @Override
-    public void drawImage(PDImage arg0) throws IOException {
+    public void drawImage(PDImage arg0)  {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void endPath() throws IOException {
+    public void endPath()  {
         if (clipWindingRule != -1) {
             currentPath.setWindingRule(clipWindingRule);
             getGraphicsState().intersectClippingPath(currentPath);
@@ -105,38 +100,38 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void fillAndStrokePath(int arg0) throws IOException {
+    public void fillAndStrokePath(int arg0) {
         strokeOrFillPath(true);
     }
 
     @Override
-    public void fillPath(int arg0) throws IOException {
+    public void fillPath(int arg0)  {
         strokeOrFillPath(true);
     }
 
     @Override
-    public Point2D getCurrentPoint() throws IOException {
+    public Point2D getCurrentPoint() {
         return currentPath.getCurrentPoint();
     }
 
     @Override
-    public void lineTo(float x, float y) throws IOException {
+    public void lineTo(float x, float y) {
         currentPath.lineTo(x, y);
     }
 
     @Override
-    public void moveTo(float x, float y) throws IOException {
+    public void moveTo(float x, float y) {
         currentPath.moveTo(x, y);
     }
 
     @Override
-    public void shadingFill(COSName arg0) throws IOException {
+    public void shadingFill(COSName arg0) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void strokePath() throws IOException {
+    public void strokePath()  {
         strokeOrFillPath(false);
     }
 
@@ -249,14 +244,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         Shape transformedClippingPath = this.getPageTransform().createTransformedShape(clippingPath);
 
         return transformedClippingPath.getBounds2D();
-    }
-
-    public boolean isDebugClippingPaths() {
-        return debugClippingPaths;
-    }
-
-    public void setDebugClippingPaths(boolean debugClippingPaths) {
-        this.debugClippingPaths = debugClippingPaths;
     }
 
     class PointComparator implements Comparator<Point2D> {
