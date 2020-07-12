@@ -198,8 +198,8 @@ public class TestCommandLineApp {
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/AnimalSounds.pdf",
                 "-p", "1", "-c",
-                "59,218,331,551", "-l",
-                "-r", "CSV"
+                "59,218,331,551",
+                "-r", "-f", "CSV"
         }));
     }
 
