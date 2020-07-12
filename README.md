@@ -1,4 +1,4 @@
-tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Build status](https://ci.appveyor.com/api/projects/status/l5gym1mjhrd2v8yn?svg=true)](https://ci.appveyor.com/project/jazzido/tabula-java) [![Join the chat at https://gitter.im/tabulapdf/tabula-java](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tabulapdf/tabula-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Build status](https://ci.appveyor.com/api/projects/status/l5gym1mjhrd2v8yn?svg=true)](https://ci.appveyor.com/project/jazzido/tabula-java)
 ===========
 
 `tabula-java` is a library for extracting tables from PDF files — it is the table extraction engine that powers [Tabula](http://tabula.technology/) ([repo](http://github.com/tabulapdf/tabula)). You can use `tabula-java` as a command-line tool to programmatically extract tables from PDFs.
@@ -23,18 +23,20 @@ usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f
 
 Tabula helps you extract tables from PDFs
 
- -a,--area <AREA>           Portion of the page to analyze. Accepts top,
-                            left,bottom,right.
-                            Example: --area 269.875,12.75,790.5,561.
-                            If all values are between 0-100 (inclusive)
-                            and preceded by '%', input will be taken as
-                            % of actual height or width of the page.
-                            Example: --area %0,0,100,50.
-                            To specify multiple areas, -a option should 
-                            be repeated. Default is entire page
+ -a,--area <AREA>           Portion of the page to analyze. Example: --area
+                            269.875,12.75,790.5,561. Accepts
+                            top,left,bottom,right i.e. y1,x1,y2,x2 where all
+                            values are in points relative to the top left
+                            corner. If all values are between 0-100
+                            (inclusive) and preceded by '%', input will be
+                            taken as % of actual height or width of the page.
+                            Example: --area %0,0,100,50. To specify multiple
+                            areas, -a option should be repeated. Default is
+                            entire page
  -b,--batch <DIRECTORY>     Convert all .pdfs in the provided directory.
- -c,--columns <COLUMNS>     X coordinates of column boundaries. Example
-                            --columns 10.1,20.2,30.3
+ -c,--columns <COLUMNS>     X coordinates of column boundaries where values
+                            are in points and relative to the left of the
+                            page. Example --columns 10.1,20.2,30.3
  -d,--debug                 Print detected table areas instead of
                             processing.
  -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV

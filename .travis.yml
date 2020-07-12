@@ -2,10 +2,8 @@ language: java
 install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dgpg.skip=true -B -V
 script: mvn test -Dgpg.skip=true
 jdk:
-  - openjdk7
-  - oraclejdk8
-  - oraclejdk9
+  - openjdk8
+  - openjdk9
+  - openjdk10
+  - openjdk11
 sudo: false
-
-
-

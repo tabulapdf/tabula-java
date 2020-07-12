@@ -117,6 +117,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDDocument removeTextDocument = null;
         try {
             removeTextDocument = this.removeText(pdfPage);
+            pdfPage = removeTextDocument.getPage(0);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
             return new ArrayList<>();
@@ -856,16 +857,15 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
 
         PDDocument document = new PDDocument();
-        document.addPage(page);
+        PDPage newPage = document.importPage(page);
+        newPage.setResources(page.getResources());
 
         PDStream newContents = new PDStream(document);
         OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
         ContentStreamWriter writer = new ContentStreamWriter(out);
         writer.writeTokens(newTokens);
         out.close();
-        page.setContents(newContents);
-
+        newPage.setContents(newContents);
         return document;
-
     }
 }
