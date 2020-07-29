@@ -315,7 +315,7 @@ public class CommandLineApp {
         o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
-        o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+        // o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
         o.addOption(Option.builder("b")
                 .longOpt("batch")
                 .desc("Convert all .pdfs in the provided directory.")
