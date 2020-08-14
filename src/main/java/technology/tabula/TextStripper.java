@@ -10,11 +10,14 @@ import java.util.List;
 
 public class TextStripper extends PDFTextStripper {
     private static final String NBSP = "\u00A0";
+    private static final float AVG_HEIGHT_MULT_THRESHOLD = 6.0f;
     private PDDocument document;
     public ArrayList<TextElement> textElements;
     public RectangleSpatialIndex<TextElement> spatialIndex;
     public float minCharWidth = Float.MAX_VALUE;
     public float minCharHeight = Float.MAX_VALUE;
+    public float totalHeight = 0.0f;
+    public int countHeight = 0;
 
     public TextStripper(PDDocument document, int pageNumber) throws IOException {
         super();
@@ -62,7 +65,17 @@ public class TextStripper extends PDFTextStripper {
 
             this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
             this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-
+            
+            countHeight++;
+            totalHeight += te.getHeight();
+            float avgHeight = totalHeight / countHeight;
+            
+            if (avgHeight > 0 
+                    && te.getHeight() >= (avgHeight * AVG_HEIGHT_MULT_THRESHOLD)
+                    && (te.getText() == null || te.getText().trim().equals(""))) {
+                continue;
+            }
+            
             this.spatialIndex.add(te);
             this.textElements.add(te);
         }
