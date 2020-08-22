@@ -3,9 +3,7 @@ tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?bra
 
 `tabula-java` is a library for extracting tables from PDF files — it is the table extraction engine that powers [Tabula](http://tabula.technology/) ([repo](http://github.com/tabulapdf/tabula)). You can use `tabula-java` as a command-line tool to programmatically extract tables from PDFs.
 
-(This is the new version of the extraction engine; the previous code can be found at [`tabula-extractor`](http://github.com/tabulapdf/tabula-extractor).)
-
-© 2014-2018 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
+© 2014-2020 Manuel Aristarán. Available under MIT License. See [`LICENSE`](LICENSE).
 
 ## Download
 
@@ -17,28 +15,28 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 
 ```
 $ java -jar target/tabula-1.0.2-jar-with-dependencies.jar --help
-usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-d] [-f
-       <FORMAT>] [-g] [-h] [-i] [-l] [-n] [-o <OUTFILE>] [-p <PAGES>] [-r]
-       [-s <PASSWORD>] [-t] [-u] [-v]
+usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-f <FORMAT>]
+       [-g] [-h] [-i] [-l] [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s
+       <PASSWORD>] [-t] [-u] [-v]
 
 Tabula helps you extract tables from PDFs
 
- -a,--area <AREA>           Portion of the page to analyze. Example: --area
-                            269.875,12.75,790.5,561. Accepts
-                            top,left,bottom,right i.e. y1,x1,y2,x2 where all
-                            values are in points relative to the top left
-                            corner. If all values are between 0-100
-                            (inclusive) and preceded by '%', input will be
-                            taken as % of actual height or width of the page.
-                            Example: --area %0,0,100,50. To specify multiple
-                            areas, -a option should be repeated. Default is
-                            entire page
+ -a,--area <AREA>           -a/--area = Portion of the page to analyze.
+                            Example: --area 269.875,12.75,790.5,561.
+                            Accepts top,left,bottom,right i.e. y1,x1,y2,x2
+                            where all values are in points relative to the
+                            top left corner. If all values are between
+                            0-100 (inclusive) and preceded by '%', input
+                            will be taken as % of actual height or width
+                            of the page. Example: --area %0,0,100,50. To
+                            specify multiple areas, -a option should be
+                            repeated. Default is entire page
  -b,--batch <DIRECTORY>     Convert all .pdfs in the provided directory.
- -c,--columns <COLUMNS>     X coordinates of column boundaries where values
-                            are in points and relative to the left of the
-                            page. Example --columns 10.1,20.2,30.3
- -d,--debug                 Print detected table areas instead of
-                            processing.
+ -c,--columns <COLUMNS>     X coordinates of column boundaries. Example
+                            --columns 10.1,20.2,30.3. If all values are
+                            between 0-100 (inclusive) and preceded by '%',
+                            input will be taken as % of actual width of
+                            the page. Example: --columns %25,50,80.6
  -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
  -g,--guess                 Guess the portion of the page to analyze per
                             page.
