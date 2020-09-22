@@ -13,8 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TextStripper extends PDFTextStripper {
+
     private static final String NBSP = "\u00A0";
     private static final float AVG_HEIGHT_MULT_THRESHOLD = 6.0f;
+    private static final float MAX_BLANK_FONT_SIZE = 40.0f;
+    private static final float MIN_BLANK_FONT_SIZE = 2.0f;
     private PDDocument document;
     public ArrayList<TextElement> textElements;
     public RectangleSpatialIndex<TextElement> spatialIndex;
@@ -69,15 +72,24 @@ public class TextStripper extends PDFTextStripper {
 
             this.minCharWidth = (float) Math.min(this.minCharWidth, te.getWidth());
             this.minCharHeight = (float) Math.min(this.minCharHeight, te.getHeight());
-            
+
             countHeight++;
             totalHeight += te.getHeight();
             float avgHeight = totalHeight / countHeight;
             
-            if (avgHeight > 0 
-                    && te.getHeight() >= (avgHeight * AVG_HEIGHT_MULT_THRESHOLD)
-                    && (te.getText() == null || te.getText().trim().equals(""))) {
-                continue;
+            //We have an issue where tall blank cells throw off the row height calculation
+            //Introspect a blank cell a bit here to see if it should be thrown away
+            if ((te.getText() == null || te.getText().trim().equals(""))) {
+                //if the cell height is more than AVG_HEIGHT_MULT_THRESHOLDxaverage, throw it away
+                if (avgHeight > 0
+                        && te.getHeight() >= (avgHeight * AVG_HEIGHT_MULT_THRESHOLD)) {
+                    continue;
+                }
+                
+                //if the font size is outside of reasonable ranges, throw it away
+                if (textPosition.getFontSizeInPt() > MAX_BLANK_FONT_SIZE || textPosition.getFontSizeInPt() < MIN_BLANK_FONT_SIZE) {
+                    continue;
+                }
             }
             
             this.spatialIndex.add(te);
