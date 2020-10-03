@@ -44,7 +44,6 @@ public class CommandLineApp {
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
-    private List<Float> verticalRulingPositions;
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
@@ -56,10 +55,6 @@ public class CommandLineApp {
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
-        if (line.hasOption('c')) {
-            this.verticalRulingPositions = parseFloatList(line.getOptionValue('c'));
-        }
-
     }
 
     public static void main(String[] args) {
@@ -164,12 +159,6 @@ public class CommandLineApp {
 
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
-
-                if (verticalRulingPositions != null) {
-                    for (Float verticalRulingPosition: verticalRulingPositions) {
-                        page.addRuling(new Ruling(0, verticalRulingPosition, 0.0f, (float) page.getHeight()));
-                    }
-                }
 
                 if (pageAreas != null) {
                     for (Pair<Integer, Rectangle> areaPair : pageAreas) {
@@ -290,7 +279,15 @@ public class CommandLineApp {
         List<Float> rv = new ArrayList<>();
         try {
             for (int i = 0; i < f.length; i++) {
-                rv.add(Float.parseFloat(f[i]));
+                final String element = f[i];
+
+                if(element.startsWith("%")) {
+
+                    rv.add(Float.parseFloat(element));
+                } else {
+                    rv.add(Float.parseFloat(element));
+                }
+
             }
             return rv;
         } catch (NumberFormatException e) {
