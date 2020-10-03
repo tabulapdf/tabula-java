@@ -160,11 +160,17 @@ public class CommandLineApp {
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
+                if (tableExtractor.verticalRulingPositions != null) {
+                    for (Float verticalRulingPosition : tableExtractor.verticalRulingPositions) {
+                        page.addRuling(new Ruling(0, verticalRulingPosition, 0.0f, (float) page.getHeight()));
+                    }
+                }
+
                 if (pageAreas != null) {
                     for (Pair<Integer, Rectangle> areaPair : pageAreas) {
                         Rectangle area = areaPair.getRight();
                         if (areaPair.getLeft() == RELATIVE_AREA_CALCULATION_MODE) {
-                            area  = new Rectangle((float) (area.getTop() / 100 * page.getHeight()),
+                            area = new Rectangle((float) (area.getTop() / 100 * page.getHeight()),
                                     (float) (area.getLeft() / 100 * page.getWidth()), (float) (area.getWidth() / 100 * page.getWidth()),
                                     (float) (area.getHeight() / 100 * page.getHeight()));
                         }
@@ -220,7 +226,7 @@ public class CommandLineApp {
         String[] optionValues = line.getOptionValues('a');
 
         List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>();
-        for (String optionValue: optionValues) {
+        for (String optionValue : optionValues) {
             int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
             int startIndex = 0;
             if (optionValue.startsWith("%")) {
@@ -281,7 +287,7 @@ public class CommandLineApp {
             for (int i = 0; i < f.length; i++) {
                 final String element = f[i];
 
-                if(element.startsWith("%")) {
+                if (element.startsWith("%")) {
 
                     rv.add(Float.parseFloat(element));
                 } else {
@@ -381,6 +387,7 @@ public class CommandLineApp {
         public void setVerticalRulingPositions(List<Float> positions) {
             this.verticalRulingPositions = positions;
         }
+
         public void setVerticalRulingPositionsRelative(boolean relative) {
             this.verticalRulingPositionsRelative = relative;
         }
@@ -435,8 +442,8 @@ public class CommandLineApp {
                 if (this.verticalRulingPositionsRelative) {
                     // convert relative to absolute
                     absoluteRulingPositions = new ArrayList<>(verticalRulingPositions.size());
-                    for (float relative: this.verticalRulingPositions) {
-                        float absolute = (float)(relative / 100.0 * page.getWidth());
+                    for (float relative : this.verticalRulingPositions) {
+                        float absolute = (float) (relative / 100.0 * page.getWidth());
                         absoluteRulingPositions.add(absolute);
                     }
                 } else {
