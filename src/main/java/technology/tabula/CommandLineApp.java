@@ -284,16 +284,8 @@ public class CommandLineApp {
         String[] f = option.split(",");
         List<Float> rv = new ArrayList<>();
         try {
-            for (int i = 0; i < f.length; i++) {
-                final String element = f[i];
-
-                if (element.startsWith("%")) {
-
-                    rv.add(Float.parseFloat(element));
-                } else {
-                    rv.add(Float.parseFloat(element));
-                }
-
+            for (final String element : f) {
+                rv.add(Float.parseFloat(element));
             }
             return rv;
         } catch (NumberFormatException e) {
