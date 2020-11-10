@@ -14,36 +14,39 @@ public class ObjectExtractor {
     }
 
     protected Page extractPage(Integer pageNumber) throws IOException {
-
-        if (pageNumber > this.pdfDocument.getNumberOfPages() || pageNumber < 1) {
-            throw new java.lang.IndexOutOfBoundsException(
-                    "Page number does not exist");
+        if (pageNumber > pdfDocument.getNumberOfPages() || pageNumber < 1) {
+            throw new java.lang.IndexOutOfBoundsException("Page number does not exist");
         }
+        PDPage page = pdfDocument.getPage(pageNumber - 1);
 
-        PDPage p = this.pdfDocument.getPage(pageNumber - 1);
+        ObjectExtractorStreamEngine streamEngine = new ObjectExtractorStreamEngine(page);
+        streamEngine.processPage(page);
 
-        ObjectExtractorStreamEngine se = new ObjectExtractorStreamEngine(p);
-        se.processPage(p);
+        TextStripper textStripper = new TextStripper(pdfDocument, pageNumber);
+        textStripper.process();
 
+        Utils.sort(textStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
 
-        TextStripper pdfTextStripper = new TextStripper(this.pdfDocument, pageNumber);
+        int rotation = page.getRotation();
+        float width = getPageWidth(page, rotation);
+        float height = getPageHeight(page, rotation);
 
-        pdfTextStripper.process();
+        return new Page(0, 0, width, height, rotation, pageNumber, page, pdfDocument, textStripper.textElements,
+                streamEngine.rulings, textStripper.minCharWidth, textStripper.minCharHeight, textStripper.spatialIndex);
+    }
 
-        Utils.sort(pdfTextStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
-
-        float w, h;
-        int pageRotation = p.getRotation();
-        if (Math.abs(pageRotation) == 90 || Math.abs(pageRotation) == 270) {
-            w = p.getCropBox().getHeight();
-            h = p.getCropBox().getWidth();
-        } else {
-            w = p.getCropBox().getWidth();
-            h = p.getCropBox().getHeight();
+    private float getPageWidth(PDPage page, int rotation) {
+        if (Math.abs(rotation) == 90 || Math.abs(rotation) == 270) {
+            return page.getCropBox().getHeight();
         }
+        return page.getCropBox().getWidth();
+    }
 
-        return new Page(0, 0, w, h, pageRotation, pageNumber, p, this.pdfDocument, pdfTextStripper.textElements,
-                se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
+    private float getPageHeight(PDPage page, int rotation) {
+        if (Math.abs(rotation) == 90 || Math.abs(rotation) == 270) {
+            return page.getCropBox().getWidth();
+        }
+        return page.getCropBox().getHeight();
     }
 
     public PageIterator extract(Iterable<Integer> pages) {
@@ -61,7 +64,5 @@ public class ObjectExtractor {
     public void close() throws IOException {
         this.pdfDocument.close();
     }
-
-
 
 }
