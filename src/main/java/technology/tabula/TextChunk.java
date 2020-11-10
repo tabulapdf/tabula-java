@@ -181,13 +181,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return Normalizer.normalize(sb.toString(), Normalizer.Form.NFKC).trim();
     }
 
-    @Override
-    public String getText(boolean useLineReturns) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
     /**
      * Returns true if text contained in this TextChunk is the same repeated character
      */
