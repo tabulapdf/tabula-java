@@ -14,20 +14,15 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 
 	public Cell(float top, float left, float width, float height) {
 		super(top, left, width, height);
-		setAttributesInitialValues();
-	}
-
-	public Cell(Point2D topLeft, Point2D bottomRight) {
-		super((float) topLeft.getY(), (float) topLeft.getX(),
-			  (float) (bottomRight.getX() - topLeft.getX()),
-			  (float) (bottomRight.getY() - topLeft.getY()));
-		setAttributesInitialValues();
-	}
-
-	private void setAttributesInitialValues() {
 		spanning = false;
 		placeholder = false;
 		textElements = new ArrayList<>();
+	}
+
+	public Cell(Point2D topLeft, Point2D bottomRight) {
+		this((float) topLeft.getY(), (float) topLeft.getX(),
+			  (float) (bottomRight.getX() - topLeft.getX()),
+			  (float) (bottomRight.getY() - topLeft.getY()));
 	}
 
 	public String getText() {
