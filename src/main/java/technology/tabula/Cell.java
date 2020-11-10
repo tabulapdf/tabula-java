@@ -8,44 +8,43 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class Cell extends RectangularTextContainer<TextChunk> {
 
-	public Cell(float top, float left, float width, float height) {
-		super(top, left, width, height);
-		this.setPlaceholder(false);
-		this.setSpanning(false);
-		this.setTextElements(new ArrayList<TextChunk>());
-	}
-
-	public Cell(Point2D topLeft, Point2D bottomRight) {
-		super((float) topLeft.getY(), (float) topLeft.getX(), (float) (bottomRight.getX() - topLeft.getX()), (float) (bottomRight.getY() - topLeft.getY()));
-		this.setPlaceholder(false);
-		this.setSpanning(false);
-		this.setTextElements(new ArrayList<TextChunk>());
-	}
-
 	private boolean spanning;
 	private boolean placeholder;
 	private List<TextChunk> textElements;
 
-	@Override
-	public String getText(boolean useLineReturns) {
-		if (this.textElements.size() == 0) {
-			return "";
-		}
-		StringBuilder sb = new StringBuilder();
-		Collections.sort(this.textElements, Rectangle.ILL_DEFINED_ORDER);
-		double curTop = this.textElements.get(0).getTop();
-		for (TextChunk tc : this.textElements) {
-			if (useLineReturns && tc.getTop() > curTop) {
-				sb.append('\r');
-			}
-			sb.append(tc.getText());
-			curTop = tc.getTop();
-		}
-		return sb.toString().trim();
+	public Cell(float top, float left, float width, float height) {
+		super(top, left, width, height);
+		setAttributesInitialValues();
+	}
+
+	public Cell(Point2D topLeft, Point2D bottomRight) {
+		super((float) topLeft.getY(), (float) topLeft.getX(),
+			  (float) (bottomRight.getX() - topLeft.getX()),
+			  (float) (bottomRight.getY() - topLeft.getY()));
+		setAttributesInitialValues();
+	}
+
+	private void setAttributesInitialValues() {
+		spanning = false;
+		placeholder = false;
+		textElements = new ArrayList<>();
 	}
 
 	public String getText() {
-		return getText(true);
+		if (textElements.size() == 0) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		Collections.sort(textElements, Rectangle.ILL_DEFINED_ORDER);
+		double currentTop = textElements.get(0).getTop();
+		for (TextChunk textChunk : textElements) {
+			if (textChunk.getTop() > currentTop) {
+				sb.append('\r');
+			}
+			sb.append(textChunk.getText());
+			currentTop = textChunk.getTop();
+		}
+		return sb.toString().trim();
 	}
 
 	public boolean isSpanning() {
