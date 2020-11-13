@@ -2,12 +2,8 @@ package technology.tabula.text;
 
 import technology.tabula.Rectangle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collections;
-import java.util.HashMap;
 import java.text.Normalizer;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> implements HasText {

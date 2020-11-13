@@ -1,23 +1,16 @@
 package technology.tabula.algorithms.extractors;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import technology.tabula.text.Cell;
-import technology.tabula.page.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.Ruling;
+import technology.tabula.Utils;
+import technology.tabula.page.Page;
 import technology.tabula.table.Table;
 import technology.tabula.table.TableWithRulingLines;
+import technology.tabula.text.Cell;
 import technology.tabula.text.TextElement;
-import technology.tabula.Utils;
+
+import java.awt.geom.Point2D;
+import java.util.*;
 
 /**
  * @author manuel

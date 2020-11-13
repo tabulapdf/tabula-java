@@ -1,6 +1,14 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Test;
+import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.table.Table;
+import technology.tabula.text.RectangularTextContainer;
+import technology.tabula.writers.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,16 +16,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Test;
-
-import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
-import technology.tabula.page.Page;
-import technology.tabula.table.Table;
-import technology.tabula.text.RectangularTextContainer;
-import technology.tabula.writers.CSVWriter;
+import static org.junit.Assert.*;
 
 public class TestBasicExtractor {
 
@@ -213,7 +212,7 @@ public class TestBasicExtractor {
                 page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
 
-        List<RectangularTextContainer> cells = new ArrayList<>(table.cells.values());
+        List<RectangularTextContainer> cells = new ArrayList<>(table.getCells().values());
         for (RectangularTextContainer rectangularTextContainer : cells) {
             System.out.println(rectangularTextContainer.getText());
         }

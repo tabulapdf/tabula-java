@@ -1,10 +1,5 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -12,6 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import technology.tabula.page.Page;
 import technology.tabula.text.TextElement;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestProjectionProfile {
 	

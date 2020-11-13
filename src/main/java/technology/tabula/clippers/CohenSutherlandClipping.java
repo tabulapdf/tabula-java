@@ -13,8 +13,8 @@ package technology.tabula.clippers;
 
 import technology.tabula.Utils;
 
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Implements the well known Cohen Sutherland line

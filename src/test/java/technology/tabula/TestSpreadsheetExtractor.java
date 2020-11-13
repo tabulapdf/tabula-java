@@ -1,30 +1,23 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-
 import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.page.Page;
 import technology.tabula.table.Table;
 import technology.tabula.text.Cell;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
+
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class TestSpreadsheetExtractor {
 

@@ -1,17 +1,17 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.junit.Test;
+import technology.tabula.page.Page;
+import technology.tabula.page.PageIterator;
+import technology.tabula.text.TextElement;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.junit.Test;
-import technology.tabula.page.Page;
-import technology.tabula.page.PageIterator;
-import technology.tabula.text.TextElement;
+import static org.junit.Assert.*;
 
 public class TestObjectExtractor {
 

@@ -1,5 +1,21 @@
 package technology.tabula;
 
+import com.google.gson.Gson;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.page.PageIterator;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -8,23 +24,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.*;
-
-import com.google.gson.Gson;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.w3c.dom.*;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.page.Page;
-import technology.tabula.page.PageIterator;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by matt on 2015-12-14.

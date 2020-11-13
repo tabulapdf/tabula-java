@@ -1,11 +1,5 @@
 package technology.tabula.page;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import technology.tabula.Rectangle;
@@ -13,6 +7,12 @@ import technology.tabula.RectangleSpatialIndex;
 import technology.tabula.Ruling;
 import technology.tabula.Utils;
 import technology.tabula.text.TextElement;
+
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that

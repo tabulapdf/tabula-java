@@ -1,17 +1,13 @@
 package technology.tabula.table;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
 import technology.tabula.Rectangle;
 import technology.tabula.RectangleSpatialIndex;
 import technology.tabula.Ruling;
 import technology.tabula.Utils;
 import technology.tabula.algorithms.extractors.ExtractionAlgorithm;
 import technology.tabula.text.Cell;
+
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class TableWithRulingLines extends Table {

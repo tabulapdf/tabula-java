@@ -16,11 +16,7 @@
  */
 package technology.tabula.algorithms.sorters;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.RandomAccess;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * An implementation of Quicksort.

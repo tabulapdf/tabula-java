@@ -1,9 +1,5 @@
 package technology.tabula;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.List;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -12,6 +8,10 @@ import org.junit.Assert;
 import technology.tabula.page.Page;
 import technology.tabula.table.Table;
 import technology.tabula.text.RectangularTextContainer;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.List;
 
 public class UtilsForTesting {
 

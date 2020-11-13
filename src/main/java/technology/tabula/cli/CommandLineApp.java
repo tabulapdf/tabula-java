@@ -1,23 +1,11 @@
 package technology.tabula.cli;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
-
-import technology.tabula.*;
+import technology.tabula.ObjectExtractor;
+import technology.tabula.Rectangle;
+import technology.tabula.Ruling;
+import technology.tabula.Utils;
 import technology.tabula.algorithms.detectors.DetectionAlgorithm;
 import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
@@ -29,6 +17,10 @@ import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
 import technology.tabula.writers.Writer;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CommandLineApp {
 

@@ -1,9 +1,9 @@
 package technology.tabula.algorithms.detectors;
 
-import technology.tabula.text.Cell;
-import technology.tabula.page.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.text.Cell;
 
 import java.util.Collections;
 import java.util.List;

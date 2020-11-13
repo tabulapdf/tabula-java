@@ -1,15 +1,14 @@
 package technology.tabula.writers;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import technology.tabula.table.Table;
+import technology.tabula.text.RectangularTextContainer;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVFormat;
-
-import technology.tabula.text.RectangularTextContainer;
-import technology.tabula.table.Table;
 
 public class CSVWriter implements Writer {
 

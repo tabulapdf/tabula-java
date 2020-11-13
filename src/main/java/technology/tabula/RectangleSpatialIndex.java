@@ -1,10 +1,10 @@
 package technology.tabula;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.strtree.STRtree;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RectangleSpatialIndex<T extends Rectangle> {
 

@@ -1,11 +1,5 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -14,6 +8,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import technology.tabula.cli.CommandLineApp;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
+
+import static org.junit.Assert.*;
 
 public class TestCommandLineApp {
 

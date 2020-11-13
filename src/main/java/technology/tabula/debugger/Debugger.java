@@ -1,10 +1,24 @@
 package technology.tabula.debugger;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.Stroke;
+import org.apache.commons.cli.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import technology.tabula.Rectangle;
+import technology.tabula.*;
+import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.cli.CommandLineApp;
+import technology.tabula.page.Page;
+import technology.tabula.table.Table;
+import technology.tabula.text.Cell;
+import technology.tabula.text.Line;
+import technology.tabula.text.TextChunk;
+import technology.tabula.text.TextElement;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -14,28 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.commons.cli.*;
-import technology.tabula.text.Cell;
-import technology.tabula.cli.CommandLineApp;
-import technology.tabula.text.Line;
-import technology.tabula.ObjectExtractor;
-import technology.tabula.page.Page;
-import technology.tabula.ProjectionProfile;
-import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
-import technology.tabula.table.Table;
-import technology.tabula.text.TextChunk;
-import technology.tabula.text.TextElement;
-import technology.tabula.Utils;
-import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
-import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.rendering.ImageType;
-
-import javax.imageio.ImageIO;
 
 public class Debugger {
 

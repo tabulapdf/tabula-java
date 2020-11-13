@@ -1,21 +1,16 @@
 package technology.tabula.writers;
 
+import com.google.gson.*;
+import technology.tabula.serializers.RectangularTextContainerSerializer;
+import technology.tabula.serializers.TableSerializer;
+import technology.tabula.table.Table;
+import technology.tabula.text.Cell;
+import technology.tabula.text.RectangularTextContainer;
+import technology.tabula.text.TextChunk;
+
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.List;
-
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-
-import technology.tabula.text.Cell;
-import technology.tabula.text.RectangularTextContainer;
-import technology.tabula.table.Table;
-import technology.tabula.text.TextChunk;
-import technology.tabula.serializers.RectangularTextContainerSerializer;
-import technology.tabula.serializers.TableSerializer;
 
 public class JSONWriter implements Writer {
 

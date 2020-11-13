@@ -1,12 +1,12 @@
 package technology.tabula;
 
-import java.io.IOException;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import technology.tabula.page.Page;
 import technology.tabula.page.PageIterator;
 import technology.tabula.text.TextStripper;
+
+import java.io.IOException;
 
 public class ObjectExtractor {
 

@@ -1,9 +1,9 @@
 package technology.tabula.writers;
 
+import technology.tabula.table.Table;
+
 import java.io.IOException;
 import java.util.List;
-
-import technology.tabula.table.Table;
 
 public interface Writer {
 

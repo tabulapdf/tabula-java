@@ -1,12 +1,12 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Test;
 import technology.tabula.text.Line;
 import technology.tabula.text.TextChunk;
 import technology.tabula.text.TextElement;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestLine {
 

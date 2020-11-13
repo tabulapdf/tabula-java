@@ -1,13 +1,13 @@
 package technology.tabula;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Assert;
 import org.junit.Test;
 import technology.tabula.text.TextChunk;
 import technology.tabula.text.TextElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestTextElement {
 	

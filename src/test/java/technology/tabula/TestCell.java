@@ -1,15 +1,15 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.ArrayList;
-
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Test;
 import technology.tabula.text.Cell;
 import technology.tabula.text.TextChunk;
 import technology.tabula.text.TextElement;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class TestCell {
 

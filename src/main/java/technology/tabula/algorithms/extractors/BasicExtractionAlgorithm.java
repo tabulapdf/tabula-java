@@ -1,18 +1,14 @@
 package technology.tabula.algorithms.extractors;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Arrays;
-
-import technology.tabula.text.Line;
-import technology.tabula.page.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.Ruling;
+import technology.tabula.page.Page;
 import technology.tabula.table.Table;
+import technology.tabula.text.Line;
 import technology.tabula.text.TextChunk;
 import technology.tabula.text.TextElement;
+
+import java.util.*;
 
 public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     

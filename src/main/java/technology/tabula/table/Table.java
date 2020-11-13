@@ -1,13 +1,13 @@
 package technology.tabula.table;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
-
 import technology.tabula.Rectangle;
 import technology.tabula.algorithms.extractors.ExtractionAlgorithm;
 import technology.tabula.text.RectangularTextContainer;
 import technology.tabula.text.TextChunk;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 @SuppressWarnings("serial")
 public class Table extends Rectangle {
@@ -17,8 +17,14 @@ public class Table extends Rectangle {
 
 	private final String extractionMethod;
 
+	public TreeMap<CellPosition, RectangularTextContainer> getCells() {
+		return cells;
+	}
+
 	/* visible for testing */
-	final TreeMap<CellPosition, RectangularTextContainer> cells = new TreeMap<>();
+	private final TreeMap<CellPosition, RectangularTextContainer> cells = new TreeMap<>();
+
+
 
 	public static final Table empty() { return new Table(""); }
 

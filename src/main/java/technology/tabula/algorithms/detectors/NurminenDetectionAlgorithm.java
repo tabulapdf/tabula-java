@@ -1,21 +1,5 @@
 package technology.tabula.algorithms.detectors;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
@@ -24,15 +8,22 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.rendering.ImageType;
-
-import technology.tabula.text.Line;
-import technology.tabula.page.Page;
 import technology.tabula.Rectangle;
 import technology.tabula.Ruling;
-import technology.tabula.text.TextChunk;
-import technology.tabula.text.TextElement;
 import technology.tabula.Utils;
 import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.text.Line;
+import technology.tabula.text.TextChunk;
+import technology.tabula.text.TextElement;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
 
 /**
  * Created by matt on 2015-12-17.

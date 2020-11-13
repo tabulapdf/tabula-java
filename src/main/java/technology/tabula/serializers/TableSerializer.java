@@ -1,16 +1,11 @@
 package technology.tabula.serializers;
 
+import com.google.gson.*;
+import technology.tabula.table.Table;
+import technology.tabula.text.RectangularTextContainer;
+
 import java.lang.reflect.Type;
 import java.util.List;
-
-import technology.tabula.text.RectangularTextContainer;
-import technology.tabula.table.Table;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
 public final class TableSerializer implements JsonSerializer<Table> {
 

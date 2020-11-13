@@ -1,8 +1,11 @@
 package technology.tabula;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.junit.Test;
+import technology.tabula.algorithms.sorters.QuickSort;
 
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -12,12 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.commons.cli.ParseException;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.junit.Test;
-import technology.tabula.algorithms.sorters.QuickSort;
+import static org.junit.Assert.*;
 
 public class TestUtils {
 
