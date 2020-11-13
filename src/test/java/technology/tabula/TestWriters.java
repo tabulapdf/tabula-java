@@ -10,8 +10,10 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
-import technology.tabula.extractors.BasicExtractionAlgorithm;
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.table.Table;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;

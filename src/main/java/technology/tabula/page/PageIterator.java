@@ -1,0 +1,44 @@
+package technology.tabula.page;
+
+import technology.tabula.ObjectExtractor;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+public class PageIterator implements Iterator<Page> {
+
+    private ObjectExtractor objectExtractor;
+    private Iterator<Integer> pageIndexIterator;
+    
+    public PageIterator(ObjectExtractor objectExtractor, Iterable<Integer> pages) {
+        super();
+        this.objectExtractor = objectExtractor;
+        this.pageIndexIterator = pages.iterator();
+    }
+
+    @Override
+    public Page next() {
+        Page nextPage = null;
+        if (!this.hasNext()) {
+            throw new IllegalStateException();
+        }
+        try {
+            Integer nextPageNumber = pageIndexIterator.next();
+            nextPage = objectExtractor.extractPage(nextPageNumber);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return nextPage;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return pageIndexIterator.hasNext();
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
+
+}

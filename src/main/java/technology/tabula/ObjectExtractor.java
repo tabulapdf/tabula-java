@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import technology.tabula.page.Page;
+import technology.tabula.page.PageIterator;
+import technology.tabula.text.TextStripper;
 
 public class ObjectExtractor {
 
@@ -13,7 +16,7 @@ public class ObjectExtractor {
         this.pdfDocument = pdfDocument;
     }
 
-    protected Page extractPage(Integer pageNumber) throws IOException {
+    public Page extractPage(Integer pageNumber) throws IOException {
         if (pageNumber > pdfDocument.getNumberOfPages() || pageNumber < 1) {
             throw new java.lang.IndexOutOfBoundsException("Page number does not exist");
         }

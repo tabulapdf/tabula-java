@@ -10,18 +10,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 
-import technology.tabula.Cell;
-import technology.tabula.RectangularTextContainer;
-import technology.tabula.Table;
-import technology.tabula.TextChunk;
-import technology.tabula.json.RectangularTextContainerSerializer;
-import technology.tabula.json.TableSerializer;
+import technology.tabula.text.Cell;
+import technology.tabula.text.RectangularTextContainer;
+import technology.tabula.table.Table;
+import technology.tabula.text.TextChunk;
+import technology.tabula.serializers.RectangularTextContainerSerializer;
+import technology.tabula.serializers.TableSerializer;
 
 public class JSONWriter implements Writer {
 
-	private static final ExclusionStrategy ALLCLASSES_SKIPNONPUBLIC = new ExclusionStrategy() {
-		@Override public boolean shouldSkipClass(Class<?> c) { return false; }
-		@Override public boolean shouldSkipField(FieldAttributes fa) { return !fa.hasModifier(Modifier.PUBLIC); }
+	private static final ExclusionStrategy ALL_CLASSES_SKIPPING_NON_PUBLIC_FIELDS = new ExclusionStrategy() {
+		@Override
+		public boolean shouldSkipClass(Class<?> c) { return false; }
+
+		@Override
+		public boolean shouldSkipField(FieldAttributes fa) { return !fa.hasModifier(Modifier.PUBLIC); }
 	};
 
 	@Override
@@ -31,14 +34,15 @@ public class JSONWriter implements Writer {
 
 	@Override public void write(Appendable out, List<Table> tables) throws IOException {
 		Gson gson = gson();
-		JsonArray array = new JsonArray();
-		for (Table table : tables) array.add(gson.toJsonTree(table, Table.class));
-		out.append(gson.toJson(array));
+		JsonArray jsons = new JsonArray();
+		for (Table table : tables)
+			jsons.add(gson.toJsonTree(table, Table.class));
+		out.append(gson.toJson(jsons));
 	}
 
 	private static Gson gson() {
 		return new GsonBuilder()
-				.addSerializationExclusionStrategy(ALLCLASSES_SKIPNONPUBLIC)
+				.addSerializationExclusionStrategy(ALL_CLASSES_SKIPPING_NON_PUBLIC_FIELDS)
 				.registerTypeAdapter(Table.class, TableSerializer.INSTANCE)
 				.registerTypeAdapter(RectangularTextContainer.class, RectangularTextContainerSerializer.INSTANCE)
 				.registerTypeAdapter(Cell.class, RectangularTextContainerSerializer.INSTANCE)

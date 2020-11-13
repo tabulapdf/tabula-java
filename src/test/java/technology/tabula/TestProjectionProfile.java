@@ -10,6 +10,8 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Before;
 import org.junit.Test;
+import technology.tabula.page.Page;
+import technology.tabula.text.TextElement;
 
 public class TestProjectionProfile {
 	

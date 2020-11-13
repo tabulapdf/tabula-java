@@ -157,7 +157,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>technology.tabula.CommandLineApp</mainClass>
+                            <mainClass>technology.tabula.cli.CommandLineApp</mainClass>
                         </manifest>
                 </archive>
                 <descriptorRefs>

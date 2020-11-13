@@ -17,6 +17,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.Test;
+import technology.tabula.algorithms.sorters.QuickSort;
 
 public class TestUtils {
 

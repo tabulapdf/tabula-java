@@ -1,5 +1,7 @@
 package technology.tabula;
 
+import technology.tabula.clippers.CohenSutherlandClipping;
+
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -285,9 +287,7 @@ public class Ruling extends Line2D.Float {
         }
         return angle;
     }
-    
-    
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -447,4 +447,5 @@ public class Ruling extends Line2D.Float {
         }
         return rv;
     }
+
 }

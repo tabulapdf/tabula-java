@@ -13,7 +13,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 
-import technology.tabula.extractors.BasicExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.BasicExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.table.Table;
+import technology.tabula.text.RectangularTextContainer;
 import technology.tabula.writers.CSVWriter;
 
 public class TestBasicExtractor {

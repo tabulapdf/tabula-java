@@ -19,7 +19,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.table.Table;
+import technology.tabula.text.Cell;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 

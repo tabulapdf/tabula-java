@@ -1,9 +1,10 @@
 package technology.tabula;
 
+import technology.tabula.page.Page;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 
 // NOTE: this class is currently not used by the extraction algorithms
 // keeping it for potential use.
@@ -172,20 +173,17 @@ public class ProjectionProfile {
         }
         return rv;
     }
-    
-    
+
     /** 
      * Simple Low pass filter
      */
     public static float[] filter(float[] data, float alpha) {
-
-        float[] rv = new float[data.length];
-        rv[0] = data[0];
+        float[] filteredData = new float[data.length];
+        filteredData[0] = data[0];
         for (int i = 1; i < data.length; i++) {
-            rv[i] = rv[i-1] + alpha * (data[i] - rv[i-1]);
+            filteredData[i] = filteredData[i-1] + alpha * (data[i] - filteredData[i-1]);
         }
-
-        return rv;
+        return filteredData;
     }
     
     public static float[] getAutocorrelation(float[] projection) {
@@ -194,7 +192,6 @@ public class ProjectionProfile {
             rv[i] = (projection[i] * projection[i-1]) / 100f;
         }
         return rv;
-        
     }
     
     public static float[] getFirstDeriv(float[] projection) {

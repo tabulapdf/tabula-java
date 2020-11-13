@@ -9,170 +9,171 @@ import java.util.Locale;
 @SuppressWarnings("serial")
 public class Rectangle extends Rectangle2D.Float {
 
-	/**
-	 * Ill-defined comparator, from when Rectangle was Comparable.
-	 * 
-	 * @see <a href="https://github.com/tabulapdf/tabula-java/issues/116">PR 116</a>
-	 * @deprecated with no replacement
-	 */
-	@Deprecated
-	public static final Comparator<Rectangle> ILL_DEFINED_ORDER = new Comparator<Rectangle>() {
-		@Override public int compare(Rectangle o1, Rectangle o2) {
-			if (o1.equals(o2)) return 0;
-			if (o1.verticalOverlap(o2) > VERTICAL_COMPARISON_THRESHOLD) {
-				return o1.isLtrDominant() == -1 && o2.isLtrDominant() == -1
-				     ? - java.lang.Double.compare(o1.getX(), o2.getX())
-				     : java.lang.Double.compare(o1.getX(), o2.getX());
-			} else {
-				return java.lang.Float.compare(o1.getBottom(), o2.getBottom());
-			}
-		}
-	};
-	
-	protected static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
+    /**
+     * Ill-defined comparator, from when Rectangle was Comparable.
+     *
+     * @see <a href="https://github.com/tabulapdf/tabula-java/issues/116">PR 116</a>
+     * @deprecated with no replacement
+     */
+    @Deprecated
+    public static final Comparator<Rectangle> ILL_DEFINED_ORDER = new Comparator<Rectangle>() {
+        @Override
+        public int compare(Rectangle o1, Rectangle o2) {
+            if (o1.equals(o2)) return 0;
+            if (o1.verticalOverlap(o2) > VERTICAL_COMPARISON_THRESHOLD) {
+                return o1.isLtrDominant() == -1 && o2.isLtrDominant() == -1
+                        ? -java.lang.Double.compare(o1.getX(), o2.getX())
+                        : java.lang.Double.compare(o1.getX(), o2.getX());
+            } else {
+                return java.lang.Float.compare(o1.getBottom(), o2.getBottom());
+            }
+        }
+    };
 
-	public Rectangle() {
-		super();
-	}
+    protected static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
 
-	public Rectangle(float top, float left, float width, float height) {
-		super();
-		this.setRect(left, top, width, height);
-	}
+    public Rectangle() {
+        super();
+    }
 
-	public int compareTo(Rectangle other) {
-		return ILL_DEFINED_ORDER.compare(this, other);
-	}
+    public Rectangle(float top, float left, float width, float height) {
+        super();
+        this.setRect(left, top, width, height);
+    }
 
-	// I'm bad at Java and need this for fancy sorting in
-	// technology.tabula.TextChunk.
-	public int isLtrDominant() {
-		return 0;
-	}
+    public int compareTo(Rectangle other) {
+        return ILL_DEFINED_ORDER.compare(this, other);
+    }
 
-	public float getArea() {
-		return this.width * this.height;
-	}
+    // I'm bad at Java and need this for fancy sorting in
+    // technology.tabula.text.TextChunk.
+    public int isLtrDominant() {
+        return 0;
+    }
 
-	public float verticalOverlap(Rectangle other) {
-		return Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
-	}
+    public float getArea() {
+        return this.width * this.height;
+    }
 
-	public boolean verticallyOverlaps(Rectangle other) {
-		return verticalOverlap(other) > 0;
-	}
+    public float verticalOverlap(Rectangle other) {
+        return Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
+    }
 
-	public float horizontalOverlap(Rectangle other) {
-		return Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
-	}
+    public boolean verticallyOverlaps(Rectangle other) {
+        return verticalOverlap(other) > 0;
+    }
 
-	public boolean horizontallyOverlaps(Rectangle other) {
-		return horizontalOverlap(other) > 0;
-	}
+    public float horizontalOverlap(Rectangle other) {
+        return Math.max(0, Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
+    }
 
-	public float verticalOverlapRatio(Rectangle other) {
-		float rv = 0, delta = Math.min(this.getBottom() - this.getTop(), other.getBottom() - other.getTop());
+    public boolean horizontallyOverlaps(Rectangle other) {
+        return horizontalOverlap(other) > 0;
+    }
 
-		if (other.getTop() <= this.getTop() && this.getTop() <= other.getBottom()
-				&& other.getBottom() <= this.getBottom()) {
-			rv = (other.getBottom() - this.getTop()) / delta;
-		} else if (this.getTop() <= other.getTop() && other.getTop() <= this.getBottom()
-				&& this.getBottom() <= other.getBottom()) {
-			rv = (this.getBottom() - other.getTop()) / delta;
-		} else if (this.getTop() <= other.getTop() && other.getTop() <= other.getBottom()
-				&& other.getBottom() <= this.getBottom()) {
-			rv = (other.getBottom() - other.getTop()) / delta;
-		} else if (other.getTop() <= this.getTop() && this.getTop() <= this.getBottom()
-				&& this.getBottom() <= other.getBottom()) {
-			rv = (this.getBottom() - this.getTop()) / delta;
-		}
+    public float verticalOverlapRatio(Rectangle other) {
+        float rv = 0, delta = Math.min(this.getBottom() - this.getTop(), other.getBottom() - other.getTop());
 
-		return rv;
+        if (other.getTop() <= this.getTop() && this.getTop() <= other.getBottom()
+                && other.getBottom() <= this.getBottom()) {
+            rv = (other.getBottom() - this.getTop()) / delta;
+        } else if (this.getTop() <= other.getTop() && other.getTop() <= this.getBottom()
+                && this.getBottom() <= other.getBottom()) {
+            rv = (this.getBottom() - other.getTop()) / delta;
+        } else if (this.getTop() <= other.getTop() && other.getTop() <= other.getBottom()
+                && other.getBottom() <= this.getBottom()) {
+            rv = (other.getBottom() - other.getTop()) / delta;
+        } else if (other.getTop() <= this.getTop() && this.getTop() <= this.getBottom()
+                && this.getBottom() <= other.getBottom()) {
+            rv = (this.getBottom() - this.getTop()) / delta;
+        }
 
-	}
+        return rv;
 
-	public float overlapRatio(Rectangle other) {
-		double intersectionWidth = Math.max(0,
-				Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
-		double intersectionHeight = Math.max(0,
-				Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
-		double intersectionArea = Math.max(0, intersectionWidth * intersectionHeight);
-		double unionArea = this.getArea() + other.getArea() - intersectionArea;
+    }
 
-		return (float) (intersectionArea / unionArea);
-	}
+    public float overlapRatio(Rectangle other) {
+        double intersectionWidth = Math.max(0,
+                Math.min(this.getRight(), other.getRight()) - Math.max(this.getLeft(), other.getLeft()));
+        double intersectionHeight = Math.max(0,
+                Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
+        double intersectionArea = Math.max(0, intersectionWidth * intersectionHeight);
+        double unionArea = this.getArea() + other.getArea() - intersectionArea;
 
-	public Rectangle merge(Rectangle other) {
-		this.setRect(this.createUnion(other));
-		return this;
-	}
+        return (float) (intersectionArea / unionArea);
+    }
 
-	public float getTop() {
-		return (float) this.getMinY();
-	}
+    public Rectangle merge(Rectangle other) {
+        this.setRect(this.createUnion(other));
+        return this;
+    }
 
-	public void setTop(float top) {
-		float deltaHeight = top - this.y;
-		this.setRect(this.x, top, this.width, this.height - deltaHeight);
-	}
+    public float getTop() {
+        return (float) this.getMinY();
+    }
 
-	public float getRight() {
-		return (float) this.getMaxX();
-	}
+    public void setTop(float top) {
+        float deltaHeight = top - this.y;
+        this.setRect(this.x, top, this.width, this.height - deltaHeight);
+    }
 
-	public void setRight(float right) {
-		this.setRect(this.x, this.y, right - this.x, this.height);
-	}
+    public float getRight() {
+        return (float) this.getMaxX();
+    }
 
-	public float getLeft() {
-		return (float) this.getMinX();
-	}
+    public void setRight(float right) {
+        this.setRect(this.x, this.y, right - this.x, this.height);
+    }
 
-	public void setLeft(float left) {
-		float deltaWidth = left - this.x;
-		this.setRect(left, this.y, this.width - deltaWidth, this.height);
-	}
+    public float getLeft() {
+        return (float) this.getMinX();
+    }
 
-	public float getBottom() {
-		return (float) this.getMaxY();
-	}
+    public void setLeft(float left) {
+        float deltaWidth = left - this.x;
+        this.setRect(left, this.y, this.width - deltaWidth, this.height);
+    }
 
-	public void setBottom(float bottom) {
-		this.setRect(this.x, this.y, this.width, bottom - this.y);
-	}
+    public float getBottom() {
+        return (float) this.getMaxY();
+    }
 
-	public Point2D[] getPoints() {
-		return new Point2D[] { new Point2D.Float(this.getLeft(), this.getTop()),
-				new Point2D.Float(this.getRight(), this.getTop()), new Point2D.Float(this.getRight(), this.getBottom()),
-				new Point2D.Float(this.getLeft(), this.getBottom()) };
-	}
+    public void setBottom(float bottom) {
+        this.setRect(this.x, this.y, this.width, bottom - this.y);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		String s = super.toString();
-		sb.append(s.substring(0, s.length() - 1));
-		sb.append(String.format(Locale.US, ",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
-		return sb.toString();
-	}
+    public Point2D[] getPoints() {
+        return new Point2D[]{new Point2D.Float(this.getLeft(), this.getTop()),
+                new Point2D.Float(this.getRight(), this.getTop()), new Point2D.Float(this.getRight(), this.getBottom()),
+                new Point2D.Float(this.getLeft(), this.getBottom())};
+    }
 
-	/**
-	 * @param rectangles
-	 * @return minimum bounding box that contains all the rectangles
-	 */
-	public static Rectangle boundingBoxOf(List<? extends Rectangle> rectangles) {
-		float minx = java.lang.Float.MAX_VALUE;
-		float miny = java.lang.Float.MAX_VALUE;
-		float maxx = java.lang.Float.MIN_VALUE;
-		float maxy = java.lang.Float.MIN_VALUE;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String s = super.toString();
+        sb.append(s.substring(0, s.length() - 1));
+        sb.append(String.format(Locale.US, ",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
+        return sb.toString();
+    }
 
-		for (Rectangle r : rectangles) {
-			minx = (float) Math.min(r.getMinX(), minx);
-			miny = (float) Math.min(r.getMinY(), miny);
-			maxx = (float) Math.max(r.getMaxX(), maxx);
-			maxy = (float) Math.max(r.getMaxY(), maxy);
-		}
-		return new Rectangle(miny, minx, maxx - minx, maxy - miny);
-	}
+    /**
+     * @param rectangles
+     * @return minimum bounding box that contains all the rectangles
+     */
+    public static Rectangle boundingBoxOf(List<? extends Rectangle> rectangles) {
+        float minx = java.lang.Float.MAX_VALUE;
+        float miny = java.lang.Float.MAX_VALUE;
+        float maxx = java.lang.Float.MIN_VALUE;
+        float maxy = java.lang.Float.MIN_VALUE;
+
+        for (Rectangle r : rectangles) {
+            minx = (float) Math.min(r.getMinX(), minx);
+            miny = (float) Math.min(r.getMinY(), miny);
+            maxx = (float) Math.max(r.getMaxX(), maxx);
+            maxy = (float) Math.max(r.getMaxY(), maxy);
+        }
+        return new Rectangle(miny, minx, maxx - minx, maxy - miny);
+    }
 
 }

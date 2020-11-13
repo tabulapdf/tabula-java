@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Test;
+import technology.tabula.text.Cell;
+import technology.tabula.text.TextChunk;
+import technology.tabula.text.TextElement;
 
 public class TestCell {
 

@@ -14,11 +14,16 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import technology.tabula.algorithms.sorters.QuickSort;
 
 /**
  * @author manuel
  */
 public class Utils {
+
+    private final static float EPSILON = 0.01f;
+    protected static boolean useQuickSort = useCustomQuickSort();
+
     public static boolean within(double first, double second, double variance) {
         return second < first + variance && second > first - variance;
     }
@@ -30,9 +35,6 @@ public class Utils {
     public static boolean overlap(double y1, double height1, double y2, double height2) {
         return overlap(y1, height1, y2, height2, 0.1f);
     }
-
-    private final static float EPSILON = 0.01f;
-    protected static boolean useQuickSort = useCustomQuickSort();
 
     public static boolean feq(double f1, double f2) {
         return (Math.abs(f1 - f2) < EPSILON);
@@ -58,7 +60,6 @@ public class Utils {
         }
 
         return rv;
-
     }
 
     // range iterator
@@ -155,7 +156,6 @@ public class Utils {
         String useLegacySort = System.getProperty("java.util.Arrays.useLegacyMergeSort");
         return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
     }
-
 
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
         if (pagesSpec.equals("all")) {
@@ -280,9 +280,9 @@ public class Utils {
 		}
 	}
 
-  public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
-    PDFRenderer renderer = new PDFRenderer(doc);
-    return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
-  }
+    public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
+	    PDFRenderer renderer = new PDFRenderer(doc);
+        return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
+    }
 
 }

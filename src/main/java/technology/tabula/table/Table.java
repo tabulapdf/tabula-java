@@ -1,10 +1,13 @@
-package technology.tabula;
+package technology.tabula.table;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import technology.tabula.extractors.ExtractionAlgorithm;
+import technology.tabula.Rectangle;
+import technology.tabula.algorithms.extractors.ExtractionAlgorithm;
+import technology.tabula.text.RectangularTextContainer;
+import technology.tabula.text.TextChunk;
 
 @SuppressWarnings("serial")
 public class Table extends Rectangle {

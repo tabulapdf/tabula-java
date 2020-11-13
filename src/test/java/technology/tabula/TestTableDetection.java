@@ -22,7 +22,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.algorithms.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.page.Page;
+import technology.tabula.page.PageIterator;
 
 /**
  * Created by matt on 2015-12-14.
