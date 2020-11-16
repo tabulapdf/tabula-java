@@ -13,6 +13,8 @@ import technology.tabula.Table;
 
 public class CSVWriter implements Writer {
 
+	private final CSVFormat format;
+
 	public CSVWriter() {
 		this(CSVFormat.EXCEL);
 	}
@@ -21,8 +23,7 @@ public class CSVWriter implements Writer {
 		this.format = format;
 	}
 
-	private final CSVFormat format;
-
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	@Override
 	public void write(Appendable out, Table table) throws IOException {
 		write(out, Collections.singletonList(table));
@@ -34,7 +35,8 @@ public class CSVWriter implements Writer {
 			for (Table table : tables) {
 				for (List<RectangularTextContainer> row : table.getRows()) {
 					List<String> cells = new ArrayList<>(row.size());
-					for (RectangularTextContainer<?> tc : row) cells.add(tc.getText());
+					for (RectangularTextContainer<?> cell : row)
+						cells.add(cell.getText());
 					printer.printRecord(cells);
 				}
 			}

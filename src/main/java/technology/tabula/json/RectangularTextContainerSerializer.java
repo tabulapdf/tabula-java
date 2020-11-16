@@ -13,9 +13,7 @@ public final class RectangularTextContainerSerializer implements JsonSerializer<
 
 	public static final RectangularTextContainerSerializer INSTANCE = new RectangularTextContainerSerializer();
 
-	private RectangularTextContainerSerializer() {
-		// singleton
-	}
+	private RectangularTextContainerSerializer() {}
 
 	@Override
 	public JsonElement serialize(RectangularTextContainer<?> src, Type typeOfSrc, JsonSerializationContext context) {

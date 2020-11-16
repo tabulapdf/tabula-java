@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 // NOTE: this class is currently not used by the extraction algorithms
 // keeping it for potential use.
 public class ProjectionProfile {
@@ -42,7 +41,8 @@ public class ProjectionProfile {
         this.verticalProjection = smooth(this.verticalProjection, toFixed(verticalKernelSize));
         this.horizontalProjection = smooth(this.horizontalProjection, toFixed(horizontalKernelSize));
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private void addRectangle(Rectangle element) {
         // calculate horizontal and vertical projection profiles
         if (!area.contains(element)) {
@@ -61,7 +61,8 @@ public class ProjectionProfile {
             this.maxVerticalProjection = Math.max(this.maxVerticalProjection, this.verticalProjection[k - toFixed(areaTop)]);
         }
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public float[] getVerticalProjection() {
         return verticalProjection;
     }
@@ -69,7 +70,8 @@ public class ProjectionProfile {
     public float[] getHorizontalProjection() {
         return horizontalProjection;
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public float[] findVerticalSeparators(float minColumnWidth) {
         boolean foundNarrower = false;
 
@@ -134,6 +136,18 @@ public class ProjectionProfile {
         }
         return rv;
     }
+
+    /**
+     * Simple Low pass filter
+     */
+    public static float[] filter(float[] data, float alpha) {
+        float[] rv = new float[data.length];
+        rv[0] = data[0];
+        for (int i = 1; i < data.length; i++) {
+            rv[i] = rv[i-1] + alpha * (data[i] - rv[i-1]);
+        }
+        return rv;
+    }
     
     private static List<Integer> findSeparatorsFromProjection(float[] derivative) {
         List<Integer> separators = new ArrayList<>();
@@ -155,7 +169,8 @@ public class ProjectionProfile {
         }
         return separators;
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static float[] smooth(float[] data, int kernelSize) {
         float[] rv = new float[data.length];
         float s;
@@ -172,22 +187,8 @@ public class ProjectionProfile {
         }
         return rv;
     }
-    
-    
-    /** 
-     * Simple Low pass filter
-     */
-    public static float[] filter(float[] data, float alpha) {
 
-        float[] rv = new float[data.length];
-        rv[0] = data[0];
-        for (int i = 1; i < data.length; i++) {
-            rv[i] = rv[i-1] + alpha * (data[i] - rv[i-1]);
-        }
-
-        return rv;
-    }
-    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static float[] getAutocorrelation(float[] projection) {
         float[] rv = new float[projection.length-1];
         for (int i = 1; i < projection.length - 1; i++) {
@@ -196,7 +197,8 @@ public class ProjectionProfile {
         return rv;
         
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static float[] getFirstDeriv(float[] projection) {
         float[] rv = new float[projection.length];
         rv[0] = projection[1] - projection[0];
@@ -207,6 +209,7 @@ public class ProjectionProfile {
         return rv;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     // pretty lame fixed precision math here
     private static int toFixed(double value) {
         return (int) Math.round(value * (Math.pow(10, DECIMAL_PLACES)));

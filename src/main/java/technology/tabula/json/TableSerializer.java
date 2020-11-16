@@ -16,15 +16,11 @@ public final class TableSerializer implements JsonSerializer<Table> {
 
 	public static final TableSerializer INSTANCE = new TableSerializer();
 
-	private TableSerializer() {
-		// singleton
-	}
+	private TableSerializer() {}
 
 	@Override
 	public JsonElement serialize(Table src, Type typeOfSrc, JsonSerializationContext context) {
-
 		JsonObject result = new JsonObject();
-
 		result.addProperty("extraction_method", src.getExtractionMethod());
 		result.addProperty("top",    src.getTop());
 		result.addProperty("left",   src.getLeft());
@@ -41,7 +37,6 @@ public final class TableSerializer implements JsonSerializer<Table> {
 			for (RectangularTextContainer textChunk : srcRow) row.add(context.serialize(textChunk));
 			data.add(row);
 		}
-
 		return result;
 	}
 

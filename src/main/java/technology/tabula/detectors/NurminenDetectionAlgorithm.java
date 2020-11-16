@@ -53,6 +53,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     private static final int REQUIRED_CELLS_FOR_TABLE = 4;
     private static final float IDENTICAL_TABLE_OVERLAP_RATIO = 0.9f;
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * Helper class that encapsulates a text edge
      */
@@ -96,9 +97,9 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
     public List<Rectangle> detect(Page page) {
-
         // get horizontal & vertical lines
         // we get these from an image of the PDF and not the PDF itself because sometimes there are invisible PDF
         // instructions that are interpreted incorrectly as visible elements - we really want to capture what a
@@ -321,6 +322,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return new ArrayList<>(tableSet);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private Rectangle getTableFromText(List<Line> lines,
                                        List<TextEdge> relevantEdges,
                                        int relevantEdgeCount,
@@ -461,6 +463,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return table;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private RelevantEdges getRelevantEdges(TextEdges textEdges, List<Line> lines) {
         List<TextEdge> leftTextEdges = textEdges.get(TextEdge.LEFT);
         List<TextEdge> midTextEdges = textEdges.get(TextEdge.MID);
@@ -514,6 +517,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return new RelevantEdges(relevantEdgeType, relevantEdgeCount);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private TextEdges getTextEdges(List<Line> lines) {
 
         // get all text edges (lines that align with the left, middle and right of chunks of text) that extend
@@ -654,6 +658,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return new TextEdges(leftTextEdges, midTextEdges, rightTextEdges);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private List<Rectangle> getTableAreasFromCells(List<? extends Rectangle> cells) {
         List<List<Rectangle>> cellGroups = new ArrayList<>();
         for (Rectangle cell : cells) {
@@ -710,6 +715,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return tableAreas;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private List<Ruling> getHorizontalRulings(BufferedImage image) {
 
         // get all horizontal edges, which we'll define as a change in grayscale colour
@@ -836,24 +842,23 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return verticalRulings;
     }
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
     private PDDocument removeText(PDPage page) throws IOException {
-
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
-        List<Object> tokens = parser.getTokens();
-        List<Object> newTokens = new ArrayList<>();
-        for (Object token : tokens) {
+
+        List<Object> tokens = new ArrayList<>();
+        for (Object token : parser.getTokens()) {
             if (token instanceof Operator) {
-                Operator op = (Operator) token;
-                if (op.getName().equals("TJ") || op.getName().equals("Tj")) {
+                String operatorName = ((Operator) token).getName();
+                if (operatorName.equals("TJ") || operatorName.equals("Tj")) {
                     //remove the one argument to this operator
-                    newTokens.remove(newTokens.size() - 1);
+                    tokens.remove(tokens.size() - 1);
                     continue;
                 }
             }
-            newTokens.add(token);
+            tokens.add(token);
         }
 
         PDDocument document = new PDDocument();
@@ -863,9 +868,11 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDStream newContents = new PDStream(document);
         OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
         ContentStreamWriter writer = new ContentStreamWriter(out);
-        writer.writeTokens(newTokens);
+        writer.writeTokens(tokens);
         out.close();
         newPage.setContents(newContents);
+
         return document;
     }
+
 }

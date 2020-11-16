@@ -18,17 +18,17 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     
     private List<Ruling> verticalRulings = null;
     
-    public BasicExtractionAlgorithm() {
-    }
+    public BasicExtractionAlgorithm() {}
     
     public BasicExtractionAlgorithm(List<Ruling> verticalRulings) {
         this.verticalRulings = verticalRulings;
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public List<Table> extract(Page page, List<Float> verticalRulingPositions) {
         List<Ruling> verticalRulings = new ArrayList<>(verticalRulingPositions.size());
-        for (Float p: verticalRulingPositions) {
-            verticalRulings.add(new Ruling(page.getTop(), p, 0.0f, (float) page.getHeight()));
+        for (Float position: verticalRulingPositions) {
+            verticalRulings.add(new Ruling(page.getTop(), position, 0.0f, (float) page.getHeight()));
         }
         this.verticalRulings = verticalRulings;
         return this.extract(page);
@@ -36,16 +36,15 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 
     @Override
     public List<Table> extract(Page page) {
-        
         List<TextElement> textElements = page.getText();
         
-        if (textElements.size() == 0) {
+        if (textElements.isEmpty()) {
             return Arrays.asList(new Table[] { Table.empty() });
         }
         
-        List<TextChunk> textChunks = this.verticalRulings == null ? TextElement.mergeWords(page.getText()) : TextElement.mergeWords(page.getText(), this.verticalRulings);
+        List<TextChunk> textChunks = (this.verticalRulings == null) ? TextElement.mergeWords(page.getText()) : TextElement.mergeWords(page.getText(), this.verticalRulings);
         List<Line> lines = TextChunk.groupByLines(textChunks);
-        List<Float> columns = null;
+        List<Float> columns;
         
         if (this.verticalRulings != null) {
             Collections.sort(this.verticalRulings, new Comparator<Ruling>() {
@@ -71,7 +70,6 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             List<TextChunk> elements = line.getTextElements();
             
             Collections.sort(elements, new Comparator<TextChunk>() {
-
 				@Override
 				public int compare(TextChunk o1, TextChunk o2) {
 					return new java.lang.Float(o1.getLeft()).compareTo(o2.getLeft());
@@ -94,22 +92,15 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
                 table.add(tc, i, found ? j : columns.size());
             }
         }
-        
         return Arrays.asList(new Table[] { table } );
     }
-    
-    @Override
-    public String toString() {
-        return "stream";
-    }
-    
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * @param lines must be an array of lines sorted by their +top+ attribute
      * @return a list of column boundaries (x axis)
      */
     public static List<java.lang.Float> columnPositions(List<Line> lines) {
-
         List<Rectangle> regions = new ArrayList<>();
         for (TextChunk tc: lines.get(0).getTextElements()) {
             if (tc.isSameChar(Line.WHITE_SPACE_CHARS)) { 
@@ -157,9 +148,13 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         Collections.sort(rv);
-        
         return rv;
-        
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public String toString() {
+        return "stream";
     }
 
 }

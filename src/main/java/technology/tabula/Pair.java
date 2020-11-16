@@ -1,6 +1,7 @@
 package technology.tabula;
 
-public class Pair<L,R> {
+public class Pair<L, R> {
+
     private final L left;
     private final R right;
     
@@ -16,4 +17,5 @@ public class Pair<L,R> {
     public R getRight() {
         return this.right;
     }
+
 }

@@ -36,7 +36,6 @@ public class CommandLineApp {
     private static final int RELATIVE_AREA_CALCULATION_MODE = 0;
     private static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
 
-
     private Appendable defaultOutput;
 
     private List<Pair<Integer, Rectangle>> pageAreas;
@@ -51,23 +50,21 @@ public class CommandLineApp {
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
-
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static void main(String[] args) {
         CommandLineParser parser = new DefaultParser();
         try {
-            // parse the command line arguments
             CommandLine line = parser.parse(buildOptions(), args);
 
             if (line.hasOption('h')) {
                 printHelp();
                 System.exit(0);
             }
-
             if (line.hasOption('v')) {
                 System.out.println(VERSION_STRING);
                 System.exit(0);
@@ -81,6 +78,77 @@ public class CommandLineApp {
         System.exit(0);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    public static Options buildOptions() {
+        Options o = new Options();
+
+        o.addOption("v", "version", false, "Print version and exit.");
+        o.addOption("h", "help", false, "Print this help text.");
+        o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
+        o.addOption("r", "spreadsheet", false, "[Deprecated in favor of -l/--lattice] Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
+        o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
+        o.addOption("i", "silent", false, "Suppress all stderr output.");
+        o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
+        // o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+        o.addOption(Option.builder("b")
+                .longOpt("batch")
+                .desc("Convert all .pdfs in the provided directory.")
+                .hasArg()
+                .argName("DIRECTORY")
+                .build());
+        o.addOption(Option.builder("o")
+                .longOpt("outfile")
+                .desc("Write output to <file> instead of STDOUT. Default: -")
+                .hasArg()
+                .argName("OUTFILE")
+                .build());
+        o.addOption(Option.builder("f")
+                .longOpt("format")
+                .desc("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
+                .hasArg()
+                .argName("FORMAT")
+                .build());
+        o.addOption(Option.builder("s")
+                .longOpt("password")
+                .desc("Password to decrypt document. Default is empty")
+                .hasArg()
+                .argName("PASSWORD")
+                .build());
+        o.addOption(Option.builder("c")
+                .longOpt("columns")
+                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual width of the page. "
+                        + "Example: --columns %25,50,80.6")
+                .hasArg()
+                .argName("COLUMNS")
+                .build());
+        o.addOption(Option.builder("a")
+                .longOpt("area")
+                .desc("-a/--area = Portion of the page to analyze. Example: --area 269.875,12.75,790.5,561. "
+                        + "Accepts top,left,bottom,right i.e. y1,x1,y2,x2 where all values are in points relative to the top left corner. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual height or width of the page. "
+                        + "Example: --area %0,0,100,50. To specify multiple areas, -a option should be repeated. Default is entire page")
+                .hasArg()
+                .argName("AREA")
+                .build());
+        o.addOption(Option.builder("p")
+                .longOpt("pages")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
+                .hasArg()
+                .argName("PAGES")
+                .build());
+
+        return o;
+    }
+
+    private static void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("tabula", BANNER, buildOptions(), "", true);
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public void extractTables(CommandLine line) throws ParseException {
         if (line.hasOption('b')) {
             if (line.getArgs().length != 0) {
@@ -112,11 +180,27 @@ public class CommandLineApp {
                 return name.endsWith(".pdf");
             }
         });
-
         for (File pdfFile : pdfs) {
             File outputFile = new File(getOutputFilename(pdfFile));
             extractFileInto(pdfFile, outputFile);
         }
+    }
+
+    // TODO: polimorfismo.
+    private String getOutputFilename(File pdfFile) {
+        String extension = ".csv";
+        switch (outputFormat) {
+            case CSV:
+                extension = ".csv";
+                break;
+            case JSON:
+                extension = ".json";
+                break;
+            case TSV:
+                extension = ".tsv";
+                break;
+        }
+        return pdfFile.getPath().replaceFirst("(\\.pdf|)$", extension);
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
@@ -194,70 +278,27 @@ public class CommandLineApp {
         }
     }
 
+    private void writeTables(List<Table> tables, Appendable out) throws IOException {
+        Writer writer = null;
+        switch (outputFormat) {
+            case CSV:
+                writer = new CSVWriter();
+                break;
+            case JSON:
+                writer = new JSONWriter();
+                break;
+            case TSV:
+                writer = new TSVWriter();
+                break;
+        }
+        writer.write(out, tables);
+    }
+
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
         return (pages == null) ?
                 extractor.extract() :
                 extractor.extract(pages);
-    }
-
-    // CommandLine parsing methods
-
-    private static OutputFormat whichOutputFormat(CommandLine line) throws ParseException {
-        if (!line.hasOption('f')) {
-            return OutputFormat.CSV;
-        }
-
-        try {
-            return OutputFormat.valueOf(line.getOptionValue('f'));
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(String.format(
-                    "format %s is illegal. Available formats: %s",
-                    line.getOptionValue('f'),
-                    Utils.join(",", OutputFormat.formatNames())));
-        }
-    }
-
-    private static List<Pair<Integer, Rectangle>> whichAreas(CommandLine line) throws ParseException {
-        if (!line.hasOption('a')) {
-            return null;
-        }
-
-        String[] optionValues = line.getOptionValues('a');
-
-        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>();
-        for (String optionValue : optionValues) {
-            int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
-            int startIndex = 0;
-            if (optionValue.startsWith("%")) {
-                startIndex = 1;
-                areaCalculationMode = RELATIVE_AREA_CALCULATION_MODE;
-            }
-            List<Float> f = parseFloatList(optionValue.substring(startIndex));
-            if (f.size() != 4) {
-                throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
-            }
-            areaList.add(new Pair<Integer, Rectangle>(areaCalculationMode, new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0))));
-        }
-        return areaList;
-    }
-
-    private static List<Integer> whichPages(CommandLine line) throws ParseException {
-        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
-        return Utils.parsePagesOption(pagesOption);
-    }
-
-    private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
-        if (line.hasOption('r') || line.hasOption('l')) {
-            return ExtractionMethod.SPREADSHEET;
-        }
-
-        // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('t')) {
-            return ExtractionMethod.BASIC;
-        }
-        return ExtractionMethod.DECIDE;
     }
 
     private static TableExtractor createExtractor(CommandLine line) throws ParseException {
@@ -276,90 +317,6 @@ public class CommandLineApp {
         }
 
         return extractor;
-    }
-
-    // utilities, etc.
-
-    public static List<Float> parseFloatList(String option) throws ParseException {
-        String[] f = option.split(",");
-        List<Float> rv = new ArrayList<>();
-        try {
-            for (final String element : f) {
-                rv.add(Float.parseFloat(element));
-            }
-            return rv;
-        } catch (NumberFormatException e) {
-            throw new ParseException("Wrong number syntax");
-        }
-    }
-
-    private static void printHelp() {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("tabula", BANNER, buildOptions(), "", true);
-    }
-
-    public static Options buildOptions() {
-        Options o = new Options();
-
-        o.addOption("v", "version", false, "Print version and exit.");
-        o.addOption("h", "help", false, "Print this help text.");
-        o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
-        o.addOption("r", "spreadsheet", false, "[Deprecated in favor of -l/--lattice] Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
-        o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
-        o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
-        o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
-        o.addOption("i", "silent", false, "Suppress all stderr output.");
-        o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
-        // o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
-        o.addOption(Option.builder("b")
-                .longOpt("batch")
-                .desc("Convert all .pdfs in the provided directory.")
-                .hasArg()
-                .argName("DIRECTORY")
-                .build());
-        o.addOption(Option.builder("o")
-                .longOpt("outfile")
-                .desc("Write output to <file> instead of STDOUT. Default: -")
-                .hasArg()
-                .argName("OUTFILE")
-                .build());
-        o.addOption(Option.builder("f")
-                .longOpt("format")
-                .desc("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
-                .hasArg()
-                .argName("FORMAT")
-                .build());
-        o.addOption(Option.builder("s")
-                .longOpt("password")
-                .desc("Password to decrypt document. Default is empty")
-                .hasArg()
-                .argName("PASSWORD")
-                .build());
-        o.addOption(Option.builder("c")
-                .longOpt("columns")
-                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3. "
-                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual width of the page. "
-                        + "Example: --columns %25,50,80.6")
-                .hasArg()
-                .argName("COLUMNS")
-                .build());
-        o.addOption(Option.builder("a")
-                .longOpt("area")
-                .desc("-a/--area = Portion of the page to analyze. Example: --area 269.875,12.75,790.5,561. "
-                        + "Accepts top,left,bottom,right i.e. y1,x1,y2,x2 where all values are in points relative to the top left corner. "
-                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual height or width of the page. "
-                        + "Example: --area %0,0,100,50. To specify multiple areas, -a option should be repeated. Default is entire page")
-                .hasArg()
-                .argName("AREA")
-                .build());
-        o.addOption(Option.builder("p")
-                .longOpt("pages")
-                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
-                .hasArg()
-                .argName("PAGES")
-                .build());
-
-        return o;
     }
 
     private static class TableExtractor {
@@ -453,36 +410,76 @@ public class CommandLineApp {
         }
     }
 
-    private void writeTables(List<Table> tables, Appendable out) throws IOException {
-        Writer writer = null;
-        switch (outputFormat) {
-            case CSV:
-                writer = new CSVWriter();
-                break;
-            case JSON:
-                writer = new JSONWriter();
-                break;
-            case TSV:
-                writer = new TSVWriter();
-                break;
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    private static OutputFormat whichOutputFormat(CommandLine line) throws ParseException {
+        if (!line.hasOption('f')) {
+            return OutputFormat.CSV;
         }
-        writer.write(out, tables);
+
+        try {
+            return OutputFormat.valueOf(line.getOptionValue('f'));
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(String.format(
+                    "format %s is illegal. Available formats: %s",
+                    line.getOptionValue('f'),
+                    Utils.join(",", OutputFormat.formatNames())));
+        }
     }
 
-    private String getOutputFilename(File pdfFile) {
-        String extension = ".csv";
-        switch (outputFormat) {
-            case CSV:
-                extension = ".csv";
-                break;
-            case JSON:
-                extension = ".json";
-                break;
-            case TSV:
-                extension = ".tsv";
-                break;
+    private static List<Pair<Integer, Rectangle>> whichAreas(CommandLine line) throws ParseException {
+        if (!line.hasOption('a')) {
+            return null;
         }
-        return pdfFile.getPath().replaceFirst("(\\.pdf|)$", extension);
+
+        String[] optionValues = line.getOptionValues('a');
+
+        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>();
+        for (String optionValue : optionValues) {
+            int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
+            int startIndex = 0;
+            if (optionValue.startsWith("%")) {
+                startIndex = 1;
+                areaCalculationMode = RELATIVE_AREA_CALCULATION_MODE;
+            }
+            List<Float> f = parseFloatList(optionValue.substring(startIndex));
+            if (f.size() != 4) {
+                throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
+            }
+            areaList.add(new Pair<>(areaCalculationMode, new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0))));
+        }
+        return areaList;
+    }
+
+    private static List<Integer> whichPages(CommandLine line) throws ParseException {
+        String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
+        return Utils.parsePagesOption(pagesOption);
+    }
+
+    private static ExtractionMethod whichExtractionMethod(CommandLine line) {
+        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
+        if (line.hasOption('r') || line.hasOption('l')) {
+            return ExtractionMethod.SPREADSHEET;
+        }
+
+        // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('t')) {
+            return ExtractionMethod.BASIC;
+        }
+        return ExtractionMethod.DECIDE;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    public static List<Float> parseFloatList(String option) throws ParseException {
+        String[] f = option.split(",");
+        List<Float> rv = new ArrayList<>();
+        try {
+            for (final String element : f) {
+                rv.add(Float.parseFloat(element));
+            }
+            return rv;
+        } catch (NumberFormatException e) {
+            throw new ParseException("Wrong number syntax");
+        }
     }
 
     private enum OutputFormat {
@@ -500,23 +497,11 @@ public class CommandLineApp {
         }
     }
 
+    // TODO: usar polimorfismo.
     private enum ExtractionMethod {
         BASIC,
         SPREADSHEET,
         DECIDE
     }
 
-    private class DebugOutput {
-        private boolean debugEnabled;
-
-        public DebugOutput(boolean debug) {
-            this.debugEnabled = debug;
-        }
-
-        public void debug(String msg) {
-            if (this.debugEnabled) {
-                System.err.println(msg);
-            }
-        }
-    }
 }

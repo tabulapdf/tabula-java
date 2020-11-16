@@ -9,6 +9,8 @@ import java.util.Locale;
 @SuppressWarnings("serial")
 public class Rectangle extends Rectangle2D.Float {
 
+	protected static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
+
 	/**
 	 * Ill-defined comparator, from when Rectangle was Comparable.
 	 * 
@@ -16,20 +18,16 @@ public class Rectangle extends Rectangle2D.Float {
 	 * @deprecated with no replacement
 	 */
 	@Deprecated
-	public static final Comparator<Rectangle> ILL_DEFINED_ORDER = new Comparator<Rectangle>() {
-		@Override public int compare(Rectangle o1, Rectangle o2) {
-			if (o1.equals(o2)) return 0;
-			if (o1.verticalOverlap(o2) > VERTICAL_COMPARISON_THRESHOLD) {
-				return o1.isLtrDominant() == -1 && o2.isLtrDominant() == -1
-				     ? - java.lang.Double.compare(o1.getX(), o2.getX())
-				     : java.lang.Double.compare(o1.getX(), o2.getX());
-			} else {
-				return java.lang.Float.compare(o1.getBottom(), o2.getBottom());
-			}
+	public static final Comparator<Rectangle> ILL_DEFINED_ORDER = (o1, o2) -> {
+		if (o1.equals(o2)) return 0;
+		if (o1.verticalOverlap(o2) > VERTICAL_COMPARISON_THRESHOLD) {
+			return o1.isLtrDominant() == -1 && o2.isLtrDominant() == -1
+				 ? - java.lang.Double.compare(o1.getX(), o2.getX())
+				 : java.lang.Double.compare(o1.getX(), o2.getX());
+		} else {
+			return java.lang.Float.compare(o1.getBottom(), o2.getBottom());
 		}
 	};
-	
-	protected static final float VERTICAL_COMPARISON_THRESHOLD = 0.4f;
 
 	public Rectangle() {
 		super();
@@ -40,6 +38,7 @@ public class Rectangle extends Rectangle2D.Float {
 		this.setRect(left, top, width, height);
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public int compareTo(Rectangle other) {
 		return ILL_DEFINED_ORDER.compare(this, other);
 	}
@@ -50,10 +49,7 @@ public class Rectangle extends Rectangle2D.Float {
 		return 0;
 	}
 
-	public float getArea() {
-		return this.width * this.height;
-	}
-
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public float verticalOverlap(Rectangle other) {
 		return Math.max(0, Math.min(this.getBottom(), other.getBottom()) - Math.max(this.getTop(), other.getTop()));
 	}
@@ -86,9 +82,7 @@ public class Rectangle extends Rectangle2D.Float {
 				&& this.getBottom() <= other.getBottom()) {
 			rv = (this.getBottom() - this.getTop()) / delta;
 		}
-
 		return rv;
-
 	}
 
 	public float overlapRatio(Rectangle other) {
@@ -102,18 +96,25 @@ public class Rectangle extends Rectangle2D.Float {
 		return (float) (intersectionArea / unionArea);
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public Rectangle merge(Rectangle other) {
 		this.setRect(this.createUnion(other));
 		return this;
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+	public float getArea() {
+		return width * height;
+	}
+
 	public float getTop() {
-		return (float) this.getMinY();
+		return (float) getMinY();
 	}
 
 	public void setTop(float top) {
-		float deltaHeight = top - this.y;
-		this.setRect(this.x, top, this.width, this.height - deltaHeight);
+		float deltaHeight = top - y;
+		float newHeight = height - deltaHeight;
+		this.setRect(x, top, width, newHeight);
 	}
 
 	public float getRight() {
@@ -141,21 +142,14 @@ public class Rectangle extends Rectangle2D.Float {
 		this.setRect(this.x, this.y, this.width, bottom - this.y);
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public Point2D[] getPoints() {
 		return new Point2D[] { new Point2D.Float(this.getLeft(), this.getTop()),
 				new Point2D.Float(this.getRight(), this.getTop()), new Point2D.Float(this.getRight(), this.getBottom()),
 				new Point2D.Float(this.getLeft(), this.getBottom()) };
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		String s = super.toString();
-		sb.append(s.substring(0, s.length() - 1));
-		sb.append(String.format(Locale.US, ",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
-		return sb.toString();
-	}
-
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	/**
 	 * @param rectangles
 	 * @return minimum bounding box that contains all the rectangles
@@ -173,6 +167,16 @@ public class Rectangle extends Rectangle2D.Float {
 			maxy = (float) Math.max(r.getMaxY(), maxy);
 		}
 		return new Rectangle(miny, minx, maxx - minx, maxy - miny);
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		String s = super.toString();
+		sb.append(s.substring(0, s.length() - 1));
+		sb.append(String.format(Locale.US, ",bottom=%f,right=%f]", this.getBottom(), this.getRight()));
+		return sb.toString();
 	}
 
 }

@@ -19,6 +19,11 @@ import org.apache.pdfbox.rendering.PDFRenderer;
  * @author manuel
  */
 public class Utils {
+
+    private final static float EPSILON = 0.01f;
+    protected static boolean useQuickSort = useCustomQuickSort();
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static boolean within(double first, double second, double variance) {
         return second < first + variance && second > first - variance;
     }
@@ -31,9 +36,7 @@ public class Utils {
         return overlap(y1, height1, y2, height2, 0.1f);
     }
 
-    private final static float EPSILON = 0.01f;
-    protected static boolean useQuickSort = useCustomQuickSort();
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static boolean feq(double f1, double f2) {
         return (Math.abs(f1 - f2) < EPSILON);
     }
@@ -76,7 +79,6 @@ public class Utils {
         };
     }
 
-
     /* from apache.commons-lang */
     public static boolean isNumeric(final CharSequence cs) {
         if (cs == null || cs.length() == 0) {
@@ -117,19 +119,20 @@ public class Utils {
         return ret;
     }
 
-	/**
-	 * Wrap Collections.sort so we can fallback to a non-stable quicksort if we're
-	 * running on JDK7+
-	 */
-	public static <T extends Comparable<? super T>> void sort(List<T> list) {
-		if (useQuickSort) QuickSort.sort(list);
-		else              Collections.sort(list);
-	}
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    /**
+     * Wrap Collections.sort so we can fallback to a non-stable quicksort if we're
+     * running on JDK7+
+     */
+    public static <T extends Comparable<? super T>> void sort(List<T> list) {
+        if (useQuickSort) QuickSort.sort(list);
+        else Collections.sort(list);
+    }
 
-	public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
-		if (useQuickSort) QuickSort.sort(list, comparator);
-		else              Collections.sort(list, comparator);
-	}
+    public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
+        if (useQuickSort) QuickSort.sort(list, comparator);
+        else Collections.sort(list, comparator);
+    }
 
     private static boolean useCustomQuickSort() {
         // taken from PDFBOX:
@@ -156,7 +159,7 @@ public class Utils {
         return !is16orLess || (useLegacySort != null && useLegacySort.equals("true"));
     }
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static List<Integer> parsePagesOption(String pagesSpec) throws ParseException {
         if (pagesSpec.equals("all")) {
             return null;
@@ -271,18 +274,18 @@ public class Utils {
         }
     }
 
-	public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
-		try (PDDocument document = new PDDocument()) {
-			document.addPage(page);
-			PDFRenderer renderer = new PDFRenderer(document);
-			document.close();
-			return renderer.renderImageWithDPI(0, dpi, imageType);
-		}
-	}
+    public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            document.addPage(page);
+            PDFRenderer renderer = new PDFRenderer(document);
+            document.close();
+            return renderer.renderImageWithDPI(0, dpi, imageType);
+        }
+    }
 
-  public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
-    PDFRenderer renderer = new PDFRenderer(doc);
-    return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
-  }
+    public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
+        PDFRenderer renderer = new PDFRenderer(doc);
+        return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
+    }
 
 }

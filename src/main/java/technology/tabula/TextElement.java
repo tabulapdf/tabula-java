@@ -30,7 +30,9 @@ public class TextElement extends Rectangle implements HasText {
         this.dir = dir;
     }
 
-    @Override public String getText() {
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public String getText() {
         return text;
     }
 
@@ -50,55 +52,7 @@ public class TextElement extends Rectangle implements HasText {
         return fontSize;
     }
 
-    @Override public String toString() {
-        StringBuilder sb = new StringBuilder();
-        String s = super.toString();
-        sb.append(s.substring(0, s.length() - 1));
-        sb.append(String.format(",text=\"%s\"]", this.getText()));
-        return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + java.lang.Float.floatToIntBits(dir);
-        result = prime * result + ((font == null) ? 0 : font.hashCode());
-        result = prime * result + java.lang.Float.floatToIntBits(fontSize);
-        result = prime * result + ((text == null) ? 0 : text.hashCode());
-        result = prime * result + java.lang.Float.floatToIntBits(widthOfSpace);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        TextElement other = (TextElement) obj;
-        if (java.lang.Float.floatToIntBits(dir) != java.lang.Float
-                .floatToIntBits(other.dir))
-            return false;
-        if (font == null) {
-            if (other.font != null)
-                return false;
-        } else if (!font.equals(other.font))
-            return false;
-        if (java.lang.Float.floatToIntBits(fontSize) != java.lang.Float
-                .floatToIntBits(other.fontSize))
-            return false;
-        if (text == null) {
-            if (other.text != null)
-                return false;
-        } else if (!text.equals(other.text))
-            return false;
-        return java.lang.Float.floatToIntBits(widthOfSpace) == java.lang.Float
-                .floatToIntBits(other.widthOfSpace);
-    }
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static List<TextChunk> mergeWords(List<TextElement> textElements) {
         return mergeWords(textElements, new ArrayList<Ruling>());
     }
@@ -266,6 +220,57 @@ public class TextElement extends Rectangle implements HasText {
 
     private static boolean verticallyOverlapsRuling(TextElement te, Ruling r) {
         return Math.max(0, Math.min(te.getBottom(), r.getY2()) - Math.max(te.getTop(), r.getY1())) > 0;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String s = super.toString();
+        sb.append(s.substring(0, s.length() - 1));
+        sb.append(String.format(",text=\"%s\"]", this.getText()));
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + java.lang.Float.floatToIntBits(dir);
+        result = prime * result + ((font == null) ? 0 : font.hashCode());
+        result = prime * result + java.lang.Float.floatToIntBits(fontSize);
+        result = prime * result + ((text == null) ? 0 : text.hashCode());
+        result = prime * result + java.lang.Float.floatToIntBits(widthOfSpace);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TextElement other = (TextElement) obj;
+        if (java.lang.Float.floatToIntBits(dir) != java.lang.Float
+                .floatToIntBits(other.dir))
+            return false;
+        if (font == null) {
+            if (other.font != null)
+                return false;
+        } else if (!font.equals(other.font))
+            return false;
+        if (java.lang.Float.floatToIntBits(fontSize) != java.lang.Float
+                .floatToIntBits(other.fontSize))
+            return false;
+        if (text == null) {
+            if (other.text != null)
+                return false;
+        } else if (!text.equals(other.text))
+            return false;
+        return java.lang.Float.floatToIntBits(widthOfSpace) == java.lang.Float
+                .floatToIntBits(other.widthOfSpace);
     }
 
 }

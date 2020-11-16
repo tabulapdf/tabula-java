@@ -31,9 +31,7 @@ import java.util.Stack;
  */
 public final class QuickSort {
 
-	private QuickSort() {
-		// utility
-	}
+	private QuickSort() {}
 
 	/**
 	 * Sorts the given list according to natural order.

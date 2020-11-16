@@ -16,11 +16,10 @@ import java.util.List;
  * It uses intersecting ruling lines to find tables.
  */
 public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
+
     @Override
     public List<Rectangle> detect(Page page) {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
-
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
 
         List<Rectangle> tables = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
 
@@ -29,4 +28,5 @@ public class SpreadsheetDetectionAlgorithm implements DetectionAlgorithm {
 
         return tables;
     }
+
 }

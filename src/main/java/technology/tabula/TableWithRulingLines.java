@@ -21,13 +21,12 @@ public class TableWithRulingLines extends Table {
         this.horizontalRulings = horizontalRulings;
         this.addCells(cells);
     }
-    
-    private void addCells(List<Cell> cells) {
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    private void addCells(List<Cell> cells) {
         if (cells.isEmpty()) {
             return;
-        } 
-        
+        }
         for (Cell ce: cells) {
             si.add(ce);
         }
@@ -52,7 +51,8 @@ public class TableWithRulingLines extends Table {
             }
         }
     }
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private static List<List<Cell>> rowsOfCells(List<Cell> cells) {
         Cell c;
         float lastTop;
@@ -62,15 +62,15 @@ public class TableWithRulingLines extends Table {
         if (cells.isEmpty()) {
             return rv;
         }
-        
+
+        // Replaced with lambda: Collections.sort(cells, Comparator.comparingDouble(Rectangle::getTop));
         Collections.sort(cells, new Comparator<Cell>() {
             @Override
             public int compare(Cell arg0, Cell arg1) {
                 return java.lang.Double.compare(arg0.getTop(), arg1.getTop());
             }
         });
-        
-        
+
         Iterator<Cell> iter = cells.iterator();
         c = iter.next();
         lastTop = c.getTop();

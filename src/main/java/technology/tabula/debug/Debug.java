@@ -41,9 +41,115 @@ public class Debug {
 
     private static final float CIRCLE_RADIUS = 5f;
 
-    private static final Color[] COLORS = {new Color(27, 158, 119), new Color(217, 95, 2), new Color(117, 112, 179),
-            new Color(231, 41, 138), new Color(102, 166, 30)};
+    private static final Color[] COLORS = {
+            new Color(27, 158, 119),
+            new Color(217, 95, 2),
+            new Color(117, 112, 179),
+            new Color(231, 41, 138),
+            new Color(102, 166, 30)};
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    public static void main(String[] args) throws IOException {
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine line = parser.parse(buildOptions(), args);
+            List<Integer> pages = new ArrayList<>();
+            if (line.hasOption('p')) {
+                pages = Utils.parsePagesOption(line.getOptionValue('p'));
+            } else {
+                pages.add(1);
+            }
+
+            if (line.hasOption('h')) {
+                printHelp();
+                System.exit(0);
+            }
+
+            if (line.getArgs().length != 1) {
+                throw new ParseException("Need one filename\nTry --help for help");
+            }
+
+            File pdfFile = new File(line.getArgs()[0]);
+            if (!pdfFile.exists()) {
+                throw new ParseException("File does not exist");
+            }
+
+            if (line.hasOption('g') && !line.hasOption('a')) {
+                throw new ParseException("-g argument needs an area (-a)");
+            }
+
+            Rectangle area = null;
+            if (line.hasOption('a')) {
+                List<Float> f = CommandLineApp.parseFloatList(line.getOptionValue('a'));
+                if (f.size() != 4) {
+                    throw new ParseException("area parameters must be top,left,bottom,right");
+                }
+                area = new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+            }
+
+            if (pages == null) {
+                // user specified all pages
+                PDDocument document = PDDocument.load(pdfFile);
+
+                int numPages = document.getNumberOfPages();
+                pages = new ArrayList<>(numPages);
+
+                for (int i = 1; i <= numPages; i++) {
+                    pages.add(i);
+                }
+
+                document.close();
+            }
+
+            for (int i : pages) {
+                renderPage(pdfFile.getAbsolutePath(),
+                        new File(pdfFile.getParent(), removeExtension(pdfFile.getName()) + "-" + (i) + ".jpg")
+                                .getAbsolutePath(),
+                        i - 1, area, line.hasOption('t'), line.hasOption('s'), line.hasOption('r'), line.hasOption('i'),
+                        line.hasOption('c'), line.hasOption('e'), line.hasOption('g'), line.hasOption('l'),
+                        line.hasOption('u'), line.hasOption('f'), line.hasOption('n'), line.hasOption('d'));
+            }
+        } catch (ParseException e) {
+            System.err.println("Error: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    private static Options buildOptions() {
+        Options o = new Options();
+        o.addOption("h", "help", false, "Print this help text.");
+        o.addOption("r", "rulings", false, "Show detected rulings.");
+        o.addOption("i", "intersections", false, "Show intersections between rulings.");
+        o.addOption("s", "spreadsheets", false, "Show detected spreadsheets.");
+        o.addOption("t", "textchunks", false, "Show detected text chunks (merged characters).");
+        o.addOption("c", "columns", false, "Show columns as detected by BasicExtractionAlgorithm.");
+        o.addOption("e", "characters", false, "Show detected characters.");
+        o.addOption("g", "region", false, "Show provided region (-a parameter).");
+        o.addOption("l", "cells", false, "Show detected cells.");
+        o.addOption("u", "unprocessed-rulings", false, "Show non-cleaned rulings.");
+        o.addOption("f", "profile", false, "Show projection profile.");
+        o.addOption("n", "clipping-paths", false, "Show clipping paths.");
+        o.addOption("d", "detected-tables", false, "Show detected tables.");
+        o.addOption(Option.builder("a").longOpt("area")
+                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page.")
+                .hasArg()
+                .argName("AREA")
+                .build());
+        o.addOption(Option.builder("p").longOpt("pages")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1.")
+                .hasArg()
+                .argName("PAGES")
+                .build());
+        return o;
+    }
+
+    private static void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("tabula-debug", "Generate debugging images", buildOptions(), "", true);
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static void debugIntersections(Graphics2D g, Page page) {
         int i = 0;
         for (Point2D p : Ruling.findIntersections(page.getHorizontalRulings(), page.getVerticalRulings()).keySet()) {
@@ -92,6 +198,12 @@ public class Debug {
         drawShapes(g, tables);
     }
 
+    private static void debugDetectedTables(Graphics2D g, Page page) {
+        NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
+        List<Rectangle> tables = detectionAlgorithm.detect(page);
+        drawShapes(g, tables);
+    }
+
     private static void debugCells(Graphics2D g, Rectangle area, Page page) {
         List<Ruling> h = page.getHorizontalRulings();
         List<Ruling> v = page.getVerticalRulings();
@@ -101,25 +213,6 @@ public class Debug {
         }
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(h, v);
         drawShapes(g, cells);
-    }
-
-    private static void debugDetectedTables(Graphics2D g, Page page) {
-        NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
-        List<Rectangle> tables = detectionAlgorithm.detect(page);
-        drawShapes(g, tables);
-    }
-
-    private static void drawShapes(Graphics2D g, Collection<? extends Shape> shapes, Stroke stroke) {
-        int i = 0;
-        g.setStroke(stroke);
-        for (Shape s : shapes) {
-            g.setColor(COLORS[(i++) % 5]);
-            drawShape(g, s);
-        }
-    }
-
-    private static void drawShapes(Graphics2D g, Collection<? extends Shape> shapes) {
-        drawShapes(g, shapes, new BasicStroke(2f));
     }
 
     private static void debugProjectionProfile(Graphics2D g, Page page) {
@@ -205,11 +298,26 @@ public class Debug {
 
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    private static void drawShapes(Graphics2D g, Collection<? extends Shape> shapes, Stroke stroke) {
+        int i = 0;
+        g.setStroke(stroke);
+        for (Shape s : shapes) {
+            g.setColor(COLORS[(i++) % 5]);
+            drawShape(g, s);
+        }
+    }
+
+    private static void drawShapes(Graphics2D g, Collection<? extends Shape> shapes) {
+        drawShapes(g, shapes, new BasicStroke(2f));
+    }
+
     private static void drawShape(Graphics2D g, Shape shape) {
         //g.setStroke(new BasicStroke(1));
         g.draw(shape);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static void renderPage(String pdfPath, String outPath, int pageNumber, Rectangle area,
                                   boolean drawTextChunks, boolean drawSpreadsheets, boolean drawRulings, boolean drawIntersections,
                                   boolean drawColumns, boolean drawCharacters, boolean drawArea, boolean drawCells,
@@ -276,128 +384,15 @@ public class Debug {
         ImageIO.write(image, "jpg", new File(outPath));
     }
 
-    private static Options buildOptions() {
-        Options o = new Options();
-
-        o.addOption("h", "help", false, "Print this help text.");
-        o.addOption("r", "rulings", false, "Show detected rulings.");
-        o.addOption("i", "intersections", false, "Show intersections between rulings.");
-        o.addOption("s", "spreadsheets", false, "Show detected spreadsheets.");
-        o.addOption("t", "textchunks", false, "Show detected text chunks (merged characters)");
-        o.addOption("c", "columns", false, "Show columns as detected by BasicExtractionAlgorithm");
-        o.addOption("e", "characters", false, "Show detected characters");
-        o.addOption("g", "region", false, "Show provided region (-a parameter)");
-        o.addOption("l", "cells", false, "Show detected cells");
-        o.addOption("u", "unprocessed-rulings", false, "Show non-cleaned rulings");
-        o.addOption("f", "profile", false, "Show projection profile");
-        o.addOption("n", "clipping-paths", false, "Show clipping paths");
-        o.addOption("d", "detected-tables", false, "Show detected tables");
-
-        o.addOption(Option.builder("a").longOpt("area")
-                .desc("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
-                .hasArg()
-                .argName("AREA")
-                .build());
-
-        o.addOption(Option.builder("p").longOpt("pages")
-                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
-                .hasArg()
-                .argName("PAGES")
-                .build());
-
-        return o;
-    }
-
-    public static void main(String[] args) throws IOException {
-        CommandLineParser parser = new DefaultParser();
-        try {
-            // parse the command line arguments
-            CommandLine line = parser.parse(buildOptions(), args);
-            List<Integer> pages = new ArrayList<>();
-            if (line.hasOption('p')) {
-                pages = Utils.parsePagesOption(line.getOptionValue('p'));
-            } else {
-                pages.add(1);
-            }
-
-            if (line.hasOption('h')) {
-                printHelp();
-                System.exit(0);
-            }
-
-            if (line.getArgs().length != 1) {
-                throw new ParseException("Need one filename\nTry --help for help");
-            }
-
-            File pdfFile = new File(line.getArgs()[0]);
-            if (!pdfFile.exists()) {
-                throw new ParseException("File does not exist");
-            }
-
-            if (line.hasOption('g') && !line.hasOption('a')) {
-                throw new ParseException("-g argument needs an area (-a)");
-            }
-
-            Rectangle area = null;
-            if (line.hasOption('a')) {
-                List<Float> f = CommandLineApp.parseFloatList(line.getOptionValue('a'));
-                if (f.size() != 4) {
-                    throw new ParseException("area parameters must be top,left,bottom,right");
-                }
-                area = new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
-            }
-
-            if (pages == null) {
-                // user specified all pages
-                PDDocument document = PDDocument.load(pdfFile);
-
-                int numPages = document.getNumberOfPages();
-                pages = new ArrayList<>(numPages);
-
-                for (int i = 1; i <= numPages; i++) {
-                    pages.add(i);
-                }
-
-                document.close();
-            }
-
-            for (int i : pages) {
-                renderPage(pdfFile.getAbsolutePath(),
-                        new File(pdfFile.getParent(), removeExtension(pdfFile.getName()) + "-" + (i) + ".jpg")
-                                .getAbsolutePath(),
-                        i - 1, area, line.hasOption('t'), line.hasOption('s'), line.hasOption('r'), line.hasOption('i'),
-                        line.hasOption('c'), line.hasOption('e'), line.hasOption('g'), line.hasOption('l'),
-                        line.hasOption('u'), line.hasOption('f'), line.hasOption('n'), line.hasOption('d'));
-            }
-        } catch (ParseException e) {
-            System.err.println("Error: " + e.getMessage());
-            System.exit(1);
-        }
-    }
-
-    private static void printHelp() {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("tabula-debug", "Generate debugging images", buildOptions(), "", true);
-    }
-
-    private static String removeExtension(String s) {
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    public static String removeExtension(String s) {
         String separator = System.getProperty("file.separator");
-        String filename;
-
-        // Remove the path upto the filename.
         int lastSeparatorIndex = s.lastIndexOf(separator);
-        if (lastSeparatorIndex == -1) {
-            filename = s;
-        } else {
-            filename = s.substring(lastSeparatorIndex + 1);
-        }
 
-        // Remove the extension.
+        String filename = (lastSeparatorIndex == -1) ? s : s.substring(lastSeparatorIndex + 1);
+
         int extensionIndex = filename.lastIndexOf(".");
-        if (extensionIndex == -1)
-            return filename;
-
-        return filename.substring(0, extensionIndex);
+        return (extensionIndex == -1) ? filename : filename.substring(0, extensionIndex);
     }
+
 }

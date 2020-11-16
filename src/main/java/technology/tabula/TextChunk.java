@@ -7,10 +7,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.text.Normalizer;
 
+import static java.lang.Character.*;
+import static technology.tabula.TextChunk.DirectionalityOptions.*;
+
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> implements HasText {
+
     public static final TextChunk EMPTY = new TextChunk(0, 0, 0, 0);
+
     List<TextElement> textElements = new ArrayList<>();
+
+    enum DirectionalityOptions {
+        LTR, NONE, RTL;
+    }
+
+    // I hate Java so bad.
+    // we're making this HashMap static! which requires really funky initialization per http://stackoverflow.com/questions/6802483/how-to-directly-initialize-a-hashmap-in-a-literal-way/6802502#6802502
+    private static HashMap<Byte, DirectionalityOptions> directionalities;
 
     public TextChunk(float top, float left, float width, float height) {
         super(top, left, width, height);
@@ -28,39 +41,32 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         }
     }
 
-    private enum DirectionalityOptions {
-        LTR, NONE, RTL
-    }
-
-    // I hate Java so bad.
-    // we're making this HashMap static! which requires really funky initialization per http://stackoverflow.com/questions/6802483/how-to-directly-initialize-a-hashmap-in-a-literal-way/6802502#6802502
-    private static HashMap<Byte, DirectionalityOptions> directionalities;
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     static {
-        directionalities = new HashMap<>();
-        // BCT = bidirectional character type
-        directionalities.put(java.lang.Character.DIRECTIONALITY_ARABIC_NUMBER, DirectionalityOptions.LTR);               // Weak BCT    "AN" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_BOUNDARY_NEUTRAL, DirectionalityOptions.NONE);            // Weak BCT    "BN" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_COMMON_NUMBER_SEPARATOR, DirectionalityOptions.LTR);     // Weak BCT    "CS" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_EUROPEAN_NUMBER, DirectionalityOptions.LTR);             // Weak BCT    "EN" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR, DirectionalityOptions.LTR);   // Weak BCT    "ES" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR, DirectionalityOptions.LTR);  // Weak BCT    "ET" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_LEFT_TO_RIGHT, DirectionalityOptions.LTR);              // Strong BCT  "L" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING, DirectionalityOptions.LTR);     // Strong BCT  "LRE" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE, DirectionalityOptions.LTR);      // Strong BCT  "LRO" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_NONSPACING_MARK, DirectionalityOptions.NONE);             // Weak BCT    "NSM" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_OTHER_NEUTRALS, DirectionalityOptions.NONE);              // Neutral BCT "ON" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR, DirectionalityOptions.NONE);         // Neutral BCT "B" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_POP_DIRECTIONAL_FORMAT, DirectionalityOptions.NONE);      // Weak BCT    "PDF" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_RIGHT_TO_LEFT, DirectionalityOptions.RTL);              // Strong BCT  "R" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC, DirectionalityOptions.RTL);       // Strong BCT  "AL" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING, DirectionalityOptions.RTL);    // Strong BCT  "RLE" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE, DirectionalityOptions.RTL);     // Strong BCT  "RLO" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_SEGMENT_SEPARATOR, DirectionalityOptions.RTL);          // Neutral BCT "S" in the Unicode specification.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_UNDEFINED, DirectionalityOptions.NONE);                   // Undefined BCT.
-        directionalities.put(java.lang.Character.DIRECTIONALITY_WHITESPACE, DirectionalityOptions.NONE);                  // Neutral BCT "WS" in the Unicode specification.
+        directionalities = new HashMap<>();                                    // BCT = bidirectional character type
+        directionalities.put(DIRECTIONALITY_ARABIC_NUMBER, LTR);               // Weak BCT    "AN" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_BOUNDARY_NEUTRAL, NONE);           // Weak BCT    "BN" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_COMMON_NUMBER_SEPARATOR, LTR);     // Weak BCT    "CS" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_EUROPEAN_NUMBER, LTR);             // Weak BCT    "EN" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR, LTR);   // Weak BCT    "ES" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR, LTR);  // Weak BCT    "ET" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_LEFT_TO_RIGHT, LTR);               // Strong BCT  "L" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING, LTR);     // Strong BCT  "LRE" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE, LTR);      // Strong BCT  "LRO" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_NONSPACING_MARK, NONE);            // Weak BCT    "NSM" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_OTHER_NEUTRALS, NONE);             // Neutral BCT "ON" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_PARAGRAPH_SEPARATOR, NONE);        // Neutral BCT "B" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_POP_DIRECTIONAL_FORMAT, NONE);     // Weak BCT    "PDF" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_RIGHT_TO_LEFT, RTL);               // Strong BCT  "R" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC, RTL);        // Strong BCT  "AL" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING, RTL);     // Strong BCT  "RLE" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE, RTL);      // Strong BCT  "RLO" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_SEGMENT_SEPARATOR, RTL);           // Neutral BCT "S" in the Unicode specification.
+        directionalities.put(DIRECTIONALITY_UNDEFINED, NONE);                  // Undefined BCT.
+        directionalities.put(DIRECTIONALITY_WHITESPACE, NONE);                 // Neutral BCT "WS" in the Unicode specification.
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * Splits a TextChunk into N TextChunks, where each chunk is of a single directionality, and
      * then reverse the RTL ones.
@@ -93,7 +99,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
                 DirectionalityOptions teDirectionality = directionalities.get(Character.getDirectionality(te.getText().charAt(0)));
 
                 if (teDirectionality == buffDirectionality || teDirectionality == DirectionalityOptions.NONE) {
-                    if (Character.getDirectionality(te.getText().charAt(0)) == java.lang.Character.DIRECTIONALITY_WHITESPACE && (buffDirectionality == (isLtrDominant ? DirectionalityOptions.RTL : DirectionalityOptions.LTR))) {
+                    if (Character.getDirectionality(te.getText().charAt(0)) == java.lang.Character.DIRECTIONALITY_WHITESPACE && (buffDirectionality == (isLtrDominant ? DirectionalityOptions.RTL : LTR))) {
                         buff.add(0, te);
                     } else {
                         buff.add(te);
@@ -126,7 +132,48 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return new TextChunk(everything);
     }
 
-    @Override public int isLtrDominant() {
+    public static List<Line> groupByLines(List<TextChunk> textChunks) {
+        List<Line> lines = new ArrayList<>();
+
+        if (textChunks.size() == 0) {
+            return lines;
+        }
+
+        float bbwidth = Rectangle.boundingBoxOf(textChunks).width;
+
+        Line l = new Line();
+        l.addTextChunk(textChunks.get(0));
+        textChunks.remove(0);
+        lines.add(l);
+
+        Line last = lines.get(lines.size() - 1);
+        for (TextChunk te : textChunks) {
+            if (last.verticalOverlapRatio(te) < 0.1) {
+                if (last.width / bbwidth > 0.9 && TextChunk.allSameChar(last.getTextElements())) {
+                    lines.remove(lines.size() - 1);
+                }
+                lines.add(new Line());
+                last = lines.get(lines.size() - 1);
+            }
+            last.addTextChunk(te);
+        }
+
+        if (last.width / bbwidth > 0.9 && TextChunk.allSameChar(last.getTextElements())) {
+            lines.remove(lines.size() - 1);
+        }
+
+        List<Line> rv = new ArrayList<>(lines.size());
+
+        for (Line line : lines) {
+            rv.add(Line.removeRepeatedCharacters(line, ' ', 3));
+        }
+
+        return rv;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public int isLtrDominant() {
         int ltrCnt = 0;
         int rtlCnt = 0;
         for (int i = 0; i < this.getTextElements().size(); i++) {
@@ -148,7 +195,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return java.lang.Integer.compare(ltrCnt, rtlCnt); // 1 is LTR, 0 is neutral, -1 is RTL
     }
 
-
     public TextChunk merge(TextChunk other) {
         super.merge(other);
         return this;
@@ -165,11 +211,14 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         }
     }
 
-    @Override public List<TextElement> getTextElements() {
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public List<TextElement> getTextElements() {
         return textElements;
     }
 
-    @Override public String getText() {
+    @Override
+    public String getText() {
         if (this.textElements.size() == 0) {
             return "";
         }
@@ -183,11 +232,10 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     @Override
     public String getText(boolean useLineReturns) {
-        // TODO Auto-generated method stub
         return null;
     }
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * Returns true if text contained in this TextChunk is the same repeated character
      */
@@ -206,6 +254,32 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         return true;
     }
 
+    public static boolean allSameChar(List<TextChunk> textChunks) {
+        /* the previous, far more elegant version of this method failed when there was an empty TextChunk in textChunks.
+         * so I rewrote it in an ugly way. but it works!
+         * it would be good for this to get rewritten eventually
+         * the purpose is basically just to return true iff there are 2+ TextChunks and they're identical.
+         * -Jeremy 5/13/2016
+         */
+
+        if (textChunks.size() == 1) return false;
+        boolean hasHadAtLeastOneNonEmptyTextChunk = false;
+        char first = '\u0000';
+        for (TextChunk tc : textChunks) {
+            if (tc.getText().length() == 0) {
+                continue;
+            }
+            if (first == '\u0000') {
+                first = tc.getText().charAt(0);
+            } else {
+                hasHadAtLeastOneNonEmptyTextChunk = true;
+                if (!tc.isSameChar(first)) return false;
+            }
+        }
+        return hasHadAtLeastOneNonEmptyTextChunk;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * Splits a TextChunk in two, at the position of the i-th TextElement
      */
@@ -278,7 +352,7 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     }
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -303,70 +377,6 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         } else if (!textElements.equals(other.textElements))
             return false;
         return true;
-    }
-
-    public static boolean allSameChar(List<TextChunk> textChunks) {
-        /* the previous, far more elegant version of this method failed when there was an empty TextChunk in textChunks.
-         * so I rewrote it in an ugly way. but it works!
-         * it would be good for this to get rewritten eventually
-         * the purpose is basically just to return true iff there are 2+ TextChunks and they're identical.
-         * -Jeremy 5/13/2016
-         */
-
-        if (textChunks.size() == 1) return false;
-        boolean hasHadAtLeastOneNonEmptyTextChunk = false;
-        char first = '\u0000';
-        for (TextChunk tc : textChunks) {
-            if (tc.getText().length() == 0) {
-                continue;
-            }
-            if (first == '\u0000') {
-                first = tc.getText().charAt(0);
-            } else {
-                hasHadAtLeastOneNonEmptyTextChunk = true;
-                if (!tc.isSameChar(first)) return false;
-            }
-        }
-        return hasHadAtLeastOneNonEmptyTextChunk;
-    }
-
-    public static List<Line> groupByLines(List<TextChunk> textChunks) {
-        List<Line> lines = new ArrayList<>();
-
-        if (textChunks.size() == 0) {
-            return lines;
-        }
-
-        float bbwidth = Rectangle.boundingBoxOf(textChunks).width;
-
-        Line l = new Line();
-        l.addTextChunk(textChunks.get(0));
-        textChunks.remove(0);
-        lines.add(l);
-
-        Line last = lines.get(lines.size() - 1);
-        for (TextChunk te : textChunks) {
-            if (last.verticalOverlapRatio(te) < 0.1) {
-                if (last.width / bbwidth > 0.9 && TextChunk.allSameChar(last.getTextElements())) {
-                    lines.remove(lines.size() - 1);
-                }
-                lines.add(new Line());
-                last = lines.get(lines.size() - 1);
-            }
-            last.addTextChunk(te);
-        }
-
-        if (last.width / bbwidth > 0.9 && TextChunk.allSameChar(last.getTextElements())) {
-            lines.remove(lines.size() - 1);
-        }
-
-        List<Line> rv = new ArrayList<>(lines.size());
-
-        for (Line line : lines) {
-            rv.add(Line.removeRepeatedCharacters(line, ' ', 3));
-        }
-
-        return rv;
     }
 
 }

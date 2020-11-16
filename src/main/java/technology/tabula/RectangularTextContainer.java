@@ -9,6 +9,7 @@ public abstract class RectangularTextContainer<T extends HasText> extends Rectan
 		super(top, left, width, height);
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public RectangularTextContainer<T> merge(RectangularTextContainer<T> other) {
 		if (compareTo(other) < 0) {
 			this.getTextElements().addAll(other.getTextElements());
@@ -19,16 +20,19 @@ public abstract class RectangularTextContainer<T extends HasText> extends Rectan
 		return this;
 	}
 
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	public abstract String getText();
 
 	public abstract String getText(boolean useLineReturns);
 
 	public abstract List<T> getTextElements();
 
-	@Override public String toString() {
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+	@Override
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		String s = super.toString();
-		sb.append(s.substring(0, s.length() - 1));
+		sb.append(s, 0, s.length() - 1);
 		sb.append(String.format(",text=%s]", this.getText() == null ? "null" : "\"" + this.getText() + "\""));
 		return sb.toString();
 	}

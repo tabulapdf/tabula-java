@@ -18,37 +18,12 @@ import java.awt.geom.Line2D;
  * Implements the well known Cohen Sutherland line
  * clipping algorithm (line against clip rectangle).
  */
-public final class CohenSutherlandClipping
-{
+public final class CohenSutherlandClipping {
+
     private double xMin;
     private double yMin;
     private double xMax;
     private double yMax;
-
-    /**
-     * Creates a Cohen Sutherland clipper with clip rect (0, 0, 0, 0).
-     */
-    public CohenSutherlandClipping() {
-    }
-
-    /**
-     * Creates a Cohen Sutherland clipper with the given clip rectangle.
-     * @param clip the clip rectangle to use
-     */
-    public CohenSutherlandClipping(Rectangle2D clip) {
-        setClip(clip);
-    }
-
-    /**
-     * Sets the clip rectangle.
-     * @param clip the clip rectangle
-     */
-    public void setClip(Rectangle2D clip) {
-        xMin = clip.getX();
-        xMax = xMin + clip.getWidth();
-        yMin = clip.getY();
-        yMax = yMin + clip.getHeight();
-    }
 
     private static final int INSIDE = 0;
     private static final int LEFT   = 1;
@@ -56,17 +31,23 @@ public final class CohenSutherlandClipping
     private static final int BOTTOM = 4;
     private static final int TOP    = 8;
 
+    public CohenSutherlandClipping(Rectangle2D clip) {
+        xMin = clip.getX();
+        xMax = xMin + clip.getWidth();
+        yMin = clip.getY();
+        yMax = yMin + clip.getHeight();
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private final int regionCode(double x, double y) {
-        int code = x < xMin 
-            ? LEFT
-            : x > xMax
-                ? RIGHT
-                : INSIDE;
-             if (y < yMin) code |= BOTTOM;
+        int code = (x < xMin) ? LEFT : (x > xMax) ? RIGHT : INSIDE;
+        if (y < yMin) code |= BOTTOM;
         else if (y > yMax) code |= TOP;
         return code;
     }
 
+    // TODO: refatorar (winkpedia).
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     /**
      * Clips a given line against the clip rectangle.
      * The modification (if needed) is done in place.
@@ -75,7 +56,6 @@ public final class CohenSutherlandClipping
      * totally outside the clip rect.
      */
     public boolean clip(Line2D.Float line) {
-
         double p1x = line.getX1();
         double p1y = line.getY1();
         double p2x = line.getX2();
@@ -94,7 +74,6 @@ public final class CohenSutherlandClipping
         int c2 = regionCode(p2x, p2y);
 
         while (c1 != INSIDE || c2 != INSIDE) {
-
             if ((c1 & c2) != INSIDE)
                 return false;
 
@@ -135,5 +114,5 @@ public final class CohenSutherlandClipping
         line.setLine(p1x, p1y, p2x, p2y);
         return true;
     }
+
 }
-// end of file
