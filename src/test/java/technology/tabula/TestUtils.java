@@ -30,7 +30,7 @@ public class TestUtils {
         new Rectangle(0, 0, 2, 4)
     };
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testBoundsOfTwoRulings() {
         Rectangle r = Utils.bounds(Arrays.asList(RULINGS));
@@ -54,9 +54,9 @@ public class TestUtils {
         assertEquals(r, shapes.get(0));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testParsePagesOption() throws ParseException {
-
         List<Integer> rv = Utils.parsePagesOption("1");
         assertArrayEquals(new Integer[] { 1 }, rv.toArray());
 
@@ -80,6 +80,7 @@ public class TestUtils {
         Utils.parsePagesOption("quuxor");
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testQuickSortEmptyList() {
     	List<Integer> numbers = new ArrayList<>();
@@ -106,7 +107,6 @@ public class TestUtils {
 
     @Test
     public void testQuickSortLongList() {
-
     	List<Integer> numbers = new ArrayList<>();
     	List<Integer> expectedNumbers = new ArrayList<>();
 
@@ -114,12 +114,12 @@ public class TestUtils {
     		numbers.add(12000 - i);
     		expectedNumbers.add(i);
     	}
-
     	QuickSort.sort(numbers);
 
     	assertEquals(expectedNumbers, numbers);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testJPEG2000DoesNotRaise() throws IOException {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));

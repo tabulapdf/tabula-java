@@ -29,10 +29,11 @@ public class TestCommandLineApp {
         return stringBuilder.toString();
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractSpreadsheetWithArea() throws ParseException, IOException {
-
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        String expectedCsv = UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spreadsheet_no_bounding_frame.pdf",
@@ -45,7 +46,8 @@ public class TestCommandLineApp {
     @Test
     public void testExtractBatchSpreadsheetWithArea() throws ParseException, IOException {
         FileSystem fs = FileSystems.getDefault();
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        String expectedCsv = UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
         Path tmpFolder = Files.createTempDirectory("tabula-java-batch-test");
         tmpFolder.toFile().deleteOnExit();
 
@@ -68,8 +70,8 @@ public class TestCommandLineApp {
 
     @Test
     public void testExtractSpreadsheetWithAreaAndNewFile() throws ParseException, IOException {
-
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
+        String expectedCsv = UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
 
         File newFile = folder.newFile();
         this.csvFromCommandLineArgs(new String[]{
@@ -82,11 +84,11 @@ public class TestCommandLineApp {
         assertArrayEquals(expectedCsv.getBytes(), Files.readAllBytes(Paths.get(newFile.getAbsolutePath())));
     }
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractJSONWithArea() throws ParseException, IOException {
-
-        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells_basic.json");
+        String expectedJson = UtilsForTesting.loadJson(
+                "src/test/resources/technology/tabula/json/spanning_cells_basic.json");
 
         assertEquals(expectedJson, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/spanning_cells.pdf",
@@ -98,7 +100,6 @@ public class TestCommandLineApp {
 
     @Test
     public void testExtractCSVWithArea() throws ParseException, IOException {
-
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
@@ -109,16 +110,19 @@ public class TestCommandLineApp {
         }));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testGuessOption() throws ParseException, IOException {
-        String expectedCsvNoGuessing = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/TestCommandLineApp_testGuessOption_no_guessing.csv");
+        String expectedCsvNoGuessing = UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/TestCommandLineApp_testGuessOption_no_guessing.csv");
         assertEquals(expectedCsvNoGuessing, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-eu/eu-001.pdf",
                 "-p", "1",
                 "-f", "CSV"
         }));
 
-        String expectedCsvWithGuessing = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/TestCommandLineApp_testGuessOption_with_guessing.csv");
+        String expectedCsvWithGuessing = UtilsForTesting.loadCsv(
+                "src/test/resources/technology/tabula/csv/TestCommandLineApp_testGuessOption_with_guessing.csv");
         assertEquals(expectedCsvWithGuessing, this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-eu/eu-001.pdf",
                 "-p", "1",
@@ -127,6 +131,7 @@ public class TestCommandLineApp {
         }));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testEncryptedPasswordSupplied() throws ParseException {
         String s = this.csvFromCommandLineArgs(new String[]{
@@ -148,9 +153,9 @@ public class TestCommandLineApp {
         });
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractWithMultiplePercentArea() throws ParseException, IOException {
-
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
@@ -164,7 +169,6 @@ public class TestCommandLineApp {
 
     @Test
     public void testExtractWithMultipleAbsoluteArea() throws ParseException, IOException {
-
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
@@ -178,7 +182,6 @@ public class TestCommandLineApp {
 
     @Test
     public void testExtractWithPercentAndAbsoluteArea() throws ParseException, IOException {
-
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/MultiColumn.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
@@ -190,9 +193,9 @@ public class TestCommandLineApp {
         }));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testLatticeModeWithColumnOption() throws ParseException, IOException {
-
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/AnimalSounds.csv");
 
         assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
@@ -205,7 +208,6 @@ public class TestCommandLineApp {
 
     @Test
     public void testLatticeModeWithColumnAndMultipleAreasOption() throws ParseException, IOException {
-
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/AnimalSounds1.json");
         String resultJson = this.csvFromCommandLineArgs(new String[]{
                 "src/test/resources/technology/tabula/AnimalSounds1.pdf",

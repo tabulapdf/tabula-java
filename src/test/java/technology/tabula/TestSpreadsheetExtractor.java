@@ -25,7 +25,6 @@ import technology.tabula.writers.JSONWriter;
 
 public class TestSpreadsheetExtractor {
 
-
     public static final Rectangle[] EXPECTED_RECTANGLES = {
             new Rectangle(40.0f, 18.0f, 208.0f, 40.0f),
             new Rectangle(84.0f, 18.0f, 962.0f, 464.0f)
@@ -103,7 +102,6 @@ public class TestSpreadsheetExtractor {
             new Ruling(new Point2D.Float(320.0f, 395.5f), new Point2D.Float(564.44086f, 395.5f)),
             new Ruling(new Point2D.Float(320.00006f, 415.0f), new Point2D.Float(564.4409f, 415.0f)),
             new Ruling(new Point2D.Float(320.00007f, 431.0f), new Point2D.Float(564.4409f, 431.0f)),
-
             new Ruling(new Point2D.Float(320.0f, 285.0f), new Point2D.Float(320.0f, 457.0f)),
             new Ruling(new Point2D.Float(565.0f, 285.0f), new Point2D.Float(564.4409f, 457.0f)),
             new Ruling(new Point2D.Float(470.5542f, 285.0f), new Point2D.Float(470.36865f, 457.0f))
@@ -118,14 +116,13 @@ public class TestSpreadsheetExtractor {
             new Ruling(new Point2D.Float(51.796964f, 309.0f), new Point2D.Float(560.20312f, 309.0f)),
             new Ruling(new Point2D.Float(51.796982f, 333.0f), new Point2D.Float(560.20312f, 333.0f)),
             new Ruling(new Point2D.Float(51.797f, 366.0f), new Point2D.Float(560.20312f, 366.0f)),
-
-
             new Ruling(new Point2D.Float(52.0f, 181.0f), new Point2D.Float(51.797f, 366.0f)),
             new Ruling(new Point2D.Float(208.62891f, 181.0f), new Point2D.Float(208.62891f, 366.0f)),
             new Ruling(new Point2D.Float(357.11328f, 180.0f), new Point2D.Float(357.0f, 366.0f)),
             new Ruling(new Point2D.Float(560.11328f, 180.0f), new Point2D.Float(560.0f, 366.0f))
     };
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testLinesToCells() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
@@ -135,6 +132,7 @@ public class TestSpreadsheetExtractor {
         assertTrue(cells.equals(expected));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testDetectSingleCell() {
         List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
@@ -156,9 +154,9 @@ public class TestSpreadsheetExtractor {
         assertFalse(cells.get(0).intersects(cells.get(1)));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testFindSpreadsheetsFromCells() throws IOException {
-
         CSVParser parse = org.apache.commons.csv.CSVParser.parse(new File("src/test/resources/technology/tabula/csv/TestSpreadsheetExtractor-CELLS.csv"),
                 Charset.forName("utf-8"),
                 CSVFormat.DEFAULT);
@@ -172,7 +170,6 @@ public class TestSpreadsheetExtractor {
                     Float.parseFloat(record.get(3))));
         }
 
-
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
         Collections.sort(expected, Rectangle.ILL_DEFINED_ORDER);
         List<Rectangle> foundRectangles = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
@@ -180,7 +177,7 @@ public class TestSpreadsheetExtractor {
         assertTrue(foundRectangles.equals(expected));
     }
 
-    // TODO Add assertions
+    // TODO: Add assertions
     @Test
     public void testSpreadsheetExtraction() throws IOException {
         Page page = UtilsForTesting
@@ -191,6 +188,7 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testSpanningCells() throws IOException {
         Page page = UtilsForTesting
@@ -223,6 +221,7 @@ public class TestSpreadsheetExtractor {
 
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testIncompleteGrid() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
@@ -231,6 +230,7 @@ public class TestSpreadsheetExtractor {
         assertEquals(2, tables.size());
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testNaturalOrderOfRectanglesDoesNotBreakContract() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
@@ -246,6 +246,7 @@ public class TestSpreadsheetExtractor {
         assertEquals(expected, result);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testMergeLinesCloseToEachOther() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/20.pdf", 1);
@@ -254,9 +255,8 @@ public class TestSpreadsheetExtractor {
         for (int i = 0; i < rulings.size(); i++) {
             assertEquals(expectedRulings[i], rulings.get(i).getLeft(), 0.1);
         }
+
         assertEquals(6, rulings.size());
-
-
     }
 
     @Test
@@ -274,7 +274,6 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
 
         assertEquals(expectedCsv, sb.toString());
-
     }
 
     @Test
@@ -333,7 +332,6 @@ public class TestSpreadsheetExtractor {
         for (int i = 0; i < parsedResult.size(); i++) {
             assertEquals(parsedResult.get(i).size(), parsedExpected.get(i).size());
         }
-
     }
 
     @Test
@@ -367,6 +365,7 @@ public class TestSpreadsheetExtractor {
         assertEquals(1, tables.size());
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractTableWithExternallyDefinedRulings() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf",
@@ -395,7 +394,6 @@ public class TestSpreadsheetExtractor {
         assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
         assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
         assertEquals("14.23", table.getRows().get(8).get(1).getText());
-
     }
 
     @Test
@@ -412,6 +410,7 @@ public class TestSpreadsheetExtractor {
         assertEquals("6.6", table.getRows().get(6).get(2).getText());
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testSpreadsheetsSortedByTopAndRight() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf",
@@ -436,6 +435,7 @@ public class TestSpreadsheetExtractor {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testRTL() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/arabic.pdf",
@@ -463,9 +463,7 @@ public class TestSpreadsheetExtractor {
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-
     }
-
 
     @Test
     public void testRealLifeRTL() throws IOException {
@@ -497,38 +495,36 @@ public class TestSpreadsheetExtractor {
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
-
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
-
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf",
                 106.01f, 48.09f, 227.31f, 551.89f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
         assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
-
     }
-    
+
     @Test
     public void testSpreadsheetExtractionIssue656() throws IOException {
         Page page = UtilsForTesting
                 .getAreaFromFirstPage(
                         "src/test/resources/technology/tabula/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.pdf",
-                        56.925f,24.255f,549.945f,786.555f);
+                        56.925f, 24.255f, 549.945f, 786.555f);
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
-        
+
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = sea.extract(page);
         assertEquals(1, tables.size());
         Table table = tables.get(0);
-        
+
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         String result = sb.toString();
         assertEquals(expectedCsv, result);
-    }    
+    }
 
 }

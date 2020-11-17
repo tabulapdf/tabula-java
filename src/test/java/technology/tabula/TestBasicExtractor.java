@@ -1,6 +1,11 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Test;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
+import technology.tabula.writers.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,13 +13,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Test;
-
-import technology.tabula.extractors.BasicExtractionAlgorithm;
-import technology.tabula.writers.CSVWriter;
+import static org.junit.Assert.*;
 
 public class TestBasicExtractor {
 
@@ -32,37 +31,37 @@ public class TestBasicExtractor {
 
 	private static final String ARGENTINA_DIPUTADOS_VOTING_RECORD_PDF = "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf";
 	private static final String[][] ARGENTINA_DIPUTADOS_VOTING_RECORD_EXPECTED = {
-		{"ABDALA de MATARAZZO, Norma Amanda",                 "Frente Cívico por Santiago",   "Santiago del Estero", "AFIRMATIVO"},
-		{"ALBRIEU, Oscar Edmundo Nicolas",                    "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
-		{"ALONSO, María Luz",                                 "Frente para la Victoria - PJ", "La Pampa",            "AFIRMATIVO"},
-		{"ARENA, Celia Isabel",                               "Frente para la Victoria - PJ", "Santa Fe",            "AFIRMATIVO"},
-		{"ARREGUI, Andrés Roberto",                           "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"AVOSCAN, Herman Horacio",                           "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
-		{"BALCEDO, María Ester",                              "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"BARRANDEGUY, Raúl Enrique",                         "Frente para la Victoria - PJ", "Entre Ríos",          "AFIRMATIVO"},
-		{"BASTERRA, Luis Eugenio",                            "Frente para la Victoria - PJ", "Formosa",             "AFIRMATIVO"},
-		{"BEDANO, Nora Esther",                               "Frente para la Victoria - PJ", "Córdoba",             "AFIRMATIVO"},
-		{"BERNAL, María Eugenia",                             "Frente para la Victoria - PJ", "Jujuy",               "AFIRMATIVO"},
-		{"BERTONE, Rosana Andrea",                            "Frente para la Victoria - PJ", "Tierra del Fuego",    "AFIRMATIVO"},
-		{"BIANCHI, María del Carmen",                         "Frente para la Victoria - PJ", "Cdad. Aut. Bs. As.",  "AFIRMATIVO"},
-		{"BIDEGAIN, Gloria Mercedes",                         "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"BRAWER, Mara",                                      "Frente para la Victoria - PJ", "Cdad. Aut. Bs. As.",  "AFIRMATIVO"},
-		{"BRILLO, José Ricardo",                              "Movimiento Popular Neuquino",  "Neuquén",             "AFIRMATIVO"},
-		{"BROMBERG, Isaac Benjamín",                          "Frente para la Victoria - PJ", "Tucumán",             "AFIRMATIVO"},
-		{"BRUE, Daniel Agustín",                              "Frente Cívico por Santiago",   "Santiago del Estero", "AFIRMATIVO"},
-		{"CALCAGNO, Eric",                                    "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"CARLOTTO, Remo Gerardo",                            "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"CARMONA, Guillermo Ramón",                          "Frente para la Victoria - PJ", "Mendoza",             "AFIRMATIVO"},
-		{"CATALAN MAGNI, Julio César",                        "Frente para la Victoria - PJ", "Tierra del Fuego",    "AFIRMATIVO"},
-		{"CEJAS, Jorge Alberto",                              "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
-		{"CHIENO, María Elena",                               "Frente para la Victoria - PJ", "Corrientes",          "AFIRMATIVO"},
-		{"CIAMPINI, José Alberto",                            "Frente para la Victoria - PJ", "Neuquén",             "AFIRMATIVO"},
-		{"CIGOGNA, Luis Francisco Jorge",                     "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"CLERI, Marcos",                                     "Frente para la Victoria - PJ", "Santa Fe",            "AFIRMATIVO"},
-		{"COMELLI, Alicia Marcela",                           "Movimiento Popular Neuquino",  "Neuquén",             "AFIRMATIVO"},
-		{"CONTI, Diana Beatriz",                              "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
-		{"CORDOBA, Stella Maris",                             "Frente para la Victoria - PJ", "Tucumán",             "AFIRMATIVO"},
-		{"CURRILEN, Oscar Rubén",                             "Frente para la Victoria - PJ", "Chubut",              "AFIRMATIVO"}
+		{"ABDALA de MATARAZZO, Norma Amanda", "Frente Cívico por Santiago",   "Santiago del Estero", "AFIRMATIVO"},
+		{"ALBRIEU, Oscar Edmundo Nicolas",    "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
+		{"ALONSO, María Luz",                 "Frente para la Victoria - PJ", "La Pampa",            "AFIRMATIVO"},
+		{"ARENA, Celia Isabel",               "Frente para la Victoria - PJ", "Santa Fe",            "AFIRMATIVO"},
+		{"ARREGUI, Andrés Roberto",           "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"AVOSCAN, Herman Horacio",           "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
+		{"BALCEDO, María Ester",              "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"BARRANDEGUY, Raúl Enrique",         "Frente para la Victoria - PJ", "Entre Ríos",          "AFIRMATIVO"},
+		{"BASTERRA, Luis Eugenio",            "Frente para la Victoria - PJ", "Formosa",             "AFIRMATIVO"},
+		{"BEDANO, Nora Esther",               "Frente para la Victoria - PJ", "Córdoba",             "AFIRMATIVO"},
+		{"BERNAL, María Eugenia",             "Frente para la Victoria - PJ", "Jujuy",               "AFIRMATIVO"},
+		{"BERTONE, Rosana Andrea",            "Frente para la Victoria - PJ", "Tierra del Fuego",    "AFIRMATIVO"},
+		{"BIANCHI, María del Carmen",         "Frente para la Victoria - PJ", "Cdad. Aut. Bs. As.",  "AFIRMATIVO"},
+		{"BIDEGAIN, Gloria Mercedes",         "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"BRAWER, Mara",                      "Frente para la Victoria - PJ", "Cdad. Aut. Bs. As.",  "AFIRMATIVO"},
+		{"BRILLO, José Ricardo",              "Movimiento Popular Neuquino",  "Neuquén",             "AFIRMATIVO"},
+		{"BROMBERG, Isaac Benjamín",          "Frente para la Victoria - PJ", "Tucumán",             "AFIRMATIVO"},
+		{"BRUE, Daniel Agustín",              "Frente Cívico por Santiago",   "Santiago del Estero", "AFIRMATIVO"},
+		{"CALCAGNO, Eric",                    "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"CARLOTTO, Remo Gerardo",            "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"CARMONA, Guillermo Ramón",          "Frente para la Victoria - PJ", "Mendoza",             "AFIRMATIVO"},
+		{"CATALAN MAGNI, Julio César",        "Frente para la Victoria - PJ", "Tierra del Fuego",    "AFIRMATIVO"},
+		{"CEJAS, Jorge Alberto",              "Frente para la Victoria - PJ", "Rio Negro",           "AFIRMATIVO"},
+		{"CHIENO, María Elena",               "Frente para la Victoria - PJ", "Corrientes",          "AFIRMATIVO"},
+		{"CIAMPINI, José Alberto",            "Frente para la Victoria - PJ", "Neuquén",             "AFIRMATIVO"},
+		{"CIGOGNA, Luis Francisco Jorge",     "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"CLERI, Marcos",                     "Frente para la Victoria - PJ", "Santa Fe",            "AFIRMATIVO"},
+		{"COMELLI, Alicia Marcela",           "Movimiento Popular Neuquino",  "Neuquén",             "AFIRMATIVO"},
+		{"CONTI, Diana Beatriz",              "Frente para la Victoria - PJ", "Buenos Aires",        "AFIRMATIVO"},
+		{"CORDOBA, Stella Maris",             "Frente para la Victoria - PJ", "Tucumán",             "AFIRMATIVO"},
+		{"CURRILEN, Oscar Rubén",             "Frente para la Victoria - PJ", "Chubut",              "AFIRMATIVO"}
 	};
 
 	private static final String EU_017_PDF = "src/test/resources/technology/tabula/eu-017.pdf";
@@ -125,10 +124,11 @@ public class TestBasicExtractor {
 
 	private static final String[][] EXPECTED_EMPTY_TABLE = { /* actually empty! */ };
 
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testRemoveSequentialSpaces() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/m27.pdf", 79.2f, 28.28f, 103.04f, 732.6f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                "src/test/resources/technology/tabula/m27.pdf", 79.2f, 28.28f, 103.04f, 732.6f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         List<RectangularTextContainer> firstRow = table.getRows().get(0);
@@ -139,9 +139,11 @@ public class TestBasicExtractor {
 
     @Test
     public void testColumnRecognition() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage(ARGENTINA_DIPUTADOS_VOTING_RECORD_PDF, 269.875f, 12.75f, 790.5f, 561f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                ARGENTINA_DIPUTADOS_VOTING_RECORD_PDF, 269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+
         assertArrayEquals(ARGENTINA_DIPUTADOS_VOTING_RECORD_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
     }
 
@@ -164,11 +166,14 @@ public class TestBasicExtractor {
         assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE"));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testExtractColumnsCorrectly() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage(EU_002_PDF, 1, 115.0f, 70.0f, 233.0f, 510.0f);
+        Page page = UtilsForTesting.getAreaFromPage(
+                EU_002_PDF, 1, 115.0f, 70.0f, 233.0f, 510.0f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+
         assertArrayEquals(EU_002_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
     }
 
@@ -177,6 +182,7 @@ public class TestBasicExtractor {
         Page page = UtilsForTesting.getPage(EU_017_PDF, 3);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
         Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
+
         assertArrayEquals(EU_017_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
     }
 
@@ -185,9 +191,11 @@ public class TestBasicExtractor {
         Page page = UtilsForTesting.getAreaFromFirstPage(FRX_2012_DISCLOSURE_PDF, 106.01f, 48.09f, 227.31f, 551.89f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+
         assertArrayEquals(FRX_2012_DISCLOSURE_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testCheckSqueezeDoesntBreak() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/12s0324.pdf",
@@ -197,10 +205,12 @@ public class TestBasicExtractor {
         List<List<RectangularTextContainer>> rows = table.getRows();
         List<RectangularTextContainer> firstRow = rows.get(0);
         List<RectangularTextContainer> lastRow = rows.get(rows.size() - 1);
+
         assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ."));
         assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testNaturalOrderOfRectangles() throws IOException {
         Page page = UtilsForTesting.getPage(
@@ -214,6 +224,7 @@ public class TestBasicExtractor {
         for (RectangularTextContainer rectangularTextContainer : cells) {
             System.out.println(rectangularTextContainer.getText());
         }
+
         //Column headers
         assertEquals("Project", cells.get(0).getText());
         assertEquals("Agency", cells.get(1).getText());
@@ -273,12 +284,12 @@ public class TestBasicExtractor {
         assertEquals("implications components", cells.get(37).getText());
         assertEquals("DOD, and NIH", cells.get(38).getText());
         assertEquals("and networks", cells.get(39).getText());
-
     }
 
     @Test
     public void testNaturalOrderOfRectanglesOneMoreTime() throws IOException {
-        CSVParser parse = org.apache.commons.csv.CSVParser.parse(new File("src/test/resources/technology/tabula/csv/TestBasicExtractor-RECTANGLE_TEST_NATURAL_ORDER.csv"),
+        CSVParser parse = org.apache.commons.csv.CSVParser.parse(
+                new File("src/test/resources/technology/tabula/csv/TestBasicExtractor-RECTANGLE_TEST_NATURAL_ORDER.csv"),
                 Charset.forName("utf-8"),
                 CSVFormat.DEFAULT);
 
@@ -291,7 +302,6 @@ public class TestBasicExtractor {
                     Float.parseFloat(record.get(3))));
         }
 
-
         //List<Rectangle> rectangles = Arrays.asList(RECTANGLES_TEST_NATURAL_ORDER);
         Utils.sort(rectangles, Rectangle.ILL_DEFINED_ORDER);
 
@@ -303,6 +313,7 @@ public class TestBasicExtractor {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testRealLifeRTL2() throws IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/indictb1h_14.csv");
@@ -313,28 +324,31 @@ public class TestBasicExtractor {
 
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
+
         assertEquals(expectedCsv, sb.toString());
     }
 
-
     @Test
     public void testEmptyRegion() throws IOException {
-        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/indictb1h_14.pdf", 1, 0, 0, 80.82f, 100.9f); // an empty area
+        Page page = UtilsForTesting.getAreaFromPage(
+                "src/test/resources/technology/tabula/indictb1h_14.pdf", 1, 0, 0, 80.82f, 100.9f); // an empty area
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
+
         assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
     }
-
 
     @Test
     public void testTableWithMultilineHeader() throws IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/us-020.csv");
-        Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/us-020.pdf", 2, 103.0f, 35.0f, 641.0f, 560.0f);
+        Page page = UtilsForTesting.getAreaFromPage(
+                "src/test/resources/technology/tabula/us-020.pdf", 2, 103.0f, 35.0f, 641.0f, 560.0f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
+
         assertEquals(expectedCsv, sb.toString());
     }
 

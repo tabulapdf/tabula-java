@@ -1,56 +1,51 @@
 package technology.tabula;
 
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestTextElement {
-	
-	
+
 	@Test
 	public void createTextElement() {
-		
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f);
 		
-		Assert.assertNotNull(textElement);
-		Assert.assertEquals("A", textElement.getText());
-		Assert.assertEquals(1f, textElement.getFontSize(), 0);
-		Assert.assertEquals(15f, textElement.getLeft(), 0);
-		Assert.assertEquals(5f, textElement.getTop(), 0);
-		Assert.assertEquals(10f, textElement.getWidth(), 0);
-		Assert.assertEquals(20f, textElement.getHeight(), 0);
-		Assert.assertEquals(PDType1Font.HELVETICA, textElement.getFont());
-		Assert.assertEquals(1f, textElement.getWidthOfSpace(), 0);
-		Assert.assertEquals(0f, textElement.getDirection(), 0);
-		
-		
+		assertNotNull(textElement);
+		assertEquals("A", textElement.getText());
+		assertEquals(1f, textElement.getFontSize(), 0);
+		assertEquals(15f, textElement.getLeft(), 0);
+		assertEquals(5f, textElement.getTop(), 0);
+		assertEquals(10f, textElement.getWidth(), 0);
+		assertEquals(20f, textElement.getHeight(), 0);
+		assertEquals(PDType1Font.HELVETICA, textElement.getFont());
+		assertEquals(1f, textElement.getWidthOfSpace(), 0);
+		assertEquals(0f, textElement.getDirection(), 0);
 	}
 	
 	@Test
 	public void createTextElementWithDirection() {
-		
 		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f);
 		
-		Assert.assertNotNull(textElement);
-		Assert.assertEquals("A", textElement.getText());
-		Assert.assertEquals(1f, textElement.getFontSize(), 0);
-		Assert.assertEquals(15f, textElement.getLeft(), 0);
-		Assert.assertEquals(5f, textElement.getTop(), 0);
-		Assert.assertEquals(10f, textElement.getWidth(), 0);
-		Assert.assertEquals(20f, textElement.getHeight(), 0);
-		Assert.assertEquals(PDType1Font.HELVETICA, textElement.getFont());
-		Assert.assertEquals(1f, textElement.getWidthOfSpace(), 0);
-		Assert.assertEquals(6f, textElement.getDirection(), 0);
-		
-		
+		assertNotNull(textElement);
+		assertEquals("A", textElement.getText());
+		assertEquals(1f, textElement.getFontSize(), 0);
+		assertEquals(15f, textElement.getLeft(), 0);
+		assertEquals(5f, textElement.getTop(), 0);
+		assertEquals(10f, textElement.getWidth(), 0);
+		assertEquals(20f, textElement.getHeight(), 0);
+		assertEquals(PDType1Font.HELVETICA, textElement.getFont());
+		assertEquals(1f, textElement.getWidthOfSpace(), 0);
+		assertEquals(6f, textElement.getDirection(), 0);
 	}
-	
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	@Test
 	public void mergeFourElementsIntoFourWords() {
-		
 		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(20f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
@@ -65,13 +60,11 @@ public class TestTextElement {
 		expectedWords.add(new TextChunk(new TextElement(40f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "C", 1f, 6f)));
 		expectedWords.add(new TextChunk(new TextElement(60f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "D", 1f, 6f)));
 		
-		Assert.assertEquals(expectedWords, words);
-		
+		assertEquals(expectedWords, words);
 	}
 	
 	@Test
 	public void mergeFourElementsIntoOneWord() {
-		
 		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 25f, 10f, 20f, PDType1Font.HELVETICA, 1f, "B", 1f, 6f));
@@ -87,10 +80,10 @@ public class TestTextElement {
 		textChunk.add(new TextElement(0f, 45f, 10f, 20f, PDType1Font.HELVETICA, 1f, "D", 1f, 6f));
 		expectedWords.add(textChunk);
 		
-		Assert.assertEquals(expectedWords, words);
-		
+		assertEquals(expectedWords, words);
 	}
-	
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	@Test
 	public void mergeElementsShouldBeIdempotent() {
 		/*
@@ -106,12 +99,11 @@ public class TestTextElement {
 		
 		List<TextChunk> words = TextElement.mergeWords(elements);
 		List<TextChunk> words2 = TextElement.mergeWords(elements);
-		Assert.assertEquals(words, words2);
+		assertEquals(words, words2);
 	}
 
 	@Test
 	public void mergeElementsWithSkippingRules() {
-		
 		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
 		elements.add(new TextElement(0f, 17f, 10f, 20f, PDType1Font.HELVETICA, 1f, "A", 1f, 6f));
@@ -129,13 +121,12 @@ public class TestTextElement {
 		textChunk.add(new TextElement(0f, 45f, 10f, 20f, PDType1Font.TIMES_ROMAN, 10f, "D", 1f, 6f));
 		expectedWords.add(textChunk);
 		
-		Assert.assertEquals(expectedWords, words);
-		
+		assertEquals(expectedWords, words);
 	}
-	
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	@Test
 	public void mergeTenElementsIntoTwoWords() {
-		
 		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		elements.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
@@ -163,14 +154,12 @@ public class TestTextElement {
 		textChunk2.add(new TextElement(0f, 100f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		expectedWords.add(textChunk2);
 		
-		Assert.assertEquals(2, words.size());
-		Assert.assertEquals(expectedWords, words);
-		
+		assertEquals(2, words.size());
+		assertEquals(expectedWords, words);
 	}
 	
 	@Test
 	public void mergeTenElementsIntoTwoLines() {
-		
 		List<TextElement> elements = new ArrayList<>();
 		elements.add(new TextElement(0f, 0f, 10f, 20f, PDType1Font.HELVETICA, 1f, "H", 1f, 6f));
 		elements.add(new TextElement(0f, 10f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
@@ -197,11 +186,8 @@ public class TestTextElement {
 		textChunk2.add(new TextElement(20f, 40f, 10f, 20f, PDType1Font.HELVETICA, 1f, "O", 1f, 6f));
 		expectedWords.add(textChunk2);
 		
-		Assert.assertEquals(2, words.size());
-		Assert.assertEquals(expectedWords, words);
-		
+		assertEquals(2, words.size());
+		assertEquals(expectedWords, words);
 	}	
-	
-	
 
 }

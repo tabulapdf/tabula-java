@@ -187,13 +187,6 @@ public class Ruling extends Line2D.Float {
         return this.vertical() == other.horizontal();
     }
     
-    public boolean collinear(Point2D point) {
-        return point.getX() >= this.x1
-                && point.getX() <= this.x2
-                && point.getY() >= this.y1
-                && point.getY() <= this.y2;
-    }
-    
     public double length() {
         return Math.sqrt(Math.pow(this.x1 - this.x2, 2) + Math.pow(this.y1 - this.y2, 2));
     }

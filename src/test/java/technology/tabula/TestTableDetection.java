@@ -32,6 +32,7 @@ public class TestTableDetection {
 
     private static int numTests = 0;
     private static int numPassingTests = 0;
+
     private static int totalExpectedTables = 0;
     private static int totalCorrectlyDetectedTables = 0;
     private static int totalErroneouslyDetectedTables = 0;
@@ -39,6 +40,7 @@ public class TestTableDetection {
     private static Level defaultLogLevel;
 
     private static final class TestStatus {
+
         public int numExpectedTables;
         public int numCorrectlyDetectedTables;
         public int numErroneouslyDetectedTables;
@@ -86,8 +88,10 @@ public class TestTableDetection {
         private static String jsonFilename(String pdfFilename) {
             return pdfFilename.replace(".pdf", ".json");
         }
+
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @BeforeClass
     public static void disableLogging() {
         Logger pdfboxLogger = Logger.getLogger("org.apache.pdfbox");
@@ -103,7 +107,6 @@ public class TestTableDetection {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         String[] regionCodes = {"eu", "us"};
-
         ArrayList<Object[]> data = new ArrayList<>();
 
         for (String regionCode : regionCodes) {
@@ -125,6 +128,7 @@ public class TestTableDetection {
         return data;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private File pdf;
     private DocumentBuilder builder;
     private TestStatus status;
@@ -139,11 +143,10 @@ public class TestTableDetection {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             this.builder = factory.newDocumentBuilder();
-        } catch (Exception e) {
-            // ignored
-        }
+        } catch (Exception e) {}
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private void printTables(Map<Integer, List<Rectangle>> tables) {
         for (Integer page : tables.keySet()) {
             System.out.println("Page " + page.toString());
@@ -153,6 +156,7 @@ public class TestTableDetection {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testDetectionOfTables() throws Exception {
         numTests++;
@@ -285,6 +289,7 @@ public class TestTableDetection {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private List<String> comparePages(Integer page, List<Rectangle> detected, List<Rectangle> expected) {
         ArrayList<String> errors = new ArrayList<>();
 
@@ -335,4 +340,5 @@ public class TestTableDetection {
 
         return errors;
     }
+
 }

@@ -20,6 +20,7 @@ public class UtilsForTesting {
         return getPage(path, page).getArea(top, left, bottom, right);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static Page getPage(String path, int pageNumber) throws IOException {
         ObjectExtractor oe = null;
         try {
@@ -34,6 +35,7 @@ public class UtilsForTesting {
         }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static String[][] tableToArrayOfRows(Table table) {
         List<List<RectangularTextContainer>> tableRows = table.getRows();
 
@@ -45,9 +47,9 @@ public class UtilsForTesting {
                 maxColCount = row.size();
             }
         }
-        
+
         Assert.assertEquals(maxColCount, table.getColCount());
-        
+
         String[][] rv = new String[tableRows.size()][maxColCount];
 
         for (int i = 0; i < tableRows.size(); i++) {
@@ -60,22 +62,19 @@ public class UtilsForTesting {
         return rv;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public static String loadJson(String path) throws IOException {
- 
-	    	StringBuilder stringBuilder = new StringBuilder();
-	    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))) {
-	        String line = null;
-	        while ((line = reader.readLine()) != null) {
-	            stringBuilder.append(line);
-	        }
-	    }
-
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        }
         return stringBuilder.toString();
-
     }
 
     public static String loadCsv(String path) throws IOException {
-
         StringBuilder out = new StringBuilder();
         CSVParser parse = org.apache.commons.csv.CSVParser.parse(new File(path), Charset.forName("utf-8"), CSVFormat.EXCEL);
 
@@ -85,8 +84,6 @@ public class UtilsForTesting {
 
         String csv = out.toString().replaceAll("(?<!\r)\n", "\r");
         return csv;
-
     }
-
 
 }

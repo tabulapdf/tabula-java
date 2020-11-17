@@ -12,46 +12,49 @@ import org.junit.Test;
 
 public class TestObjectExtractor {
 
-    /*@Test(expected=IOException.class)
+    @Test(expected=IOException.class)
     public void testWrongPasswordRaisesException() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, "wrongpass"); 
-        oe.extract().next();
-    }*/
+        PDDocument pdfDocument = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        extractor.extract().next();
+    }
 
     @Test(expected = IOException.class)
     public void testEmptyOnEncryptedFileRaisesException() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        oe.extract().next();
+        PDDocument pdfDocument = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"));
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        extractor.extract().next();
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testCanReadPDFWithOwnerEncryption() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"));
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
-        PageIterator pi = oe.extract();
+        PDDocument pdfDocument = PDDocument.load(new File("src/test/resources/technology/tabula/S2MNCEbirdisland.pdf"));
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        PageIterator iterator = extractor.extract();
+
         int i = 0;
-        while (pi.hasNext()) {
+        while (iterator.hasNext()) {
             i++;
-            pi.next();
+            iterator.next();
         }
+
         assertEquals(2, i);
     }
-    
 
     @Test
     public void testGoodPassword() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"), "userpassword");
-        ObjectExtractor oe = new ObjectExtractor(pdf_document);
+        PDDocument pdfDocument = PDDocument.load(new File("src/test/resources/technology/tabula/encrypted.pdf"), "userpassword");
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
         List<Page> pages = new ArrayList<>();
-        PageIterator pi = oe.extract();
+        PageIterator pi = extractor.extract();
+
         while (pi.hasNext()) {
             pages.add(pi.next());
         }
+
         assertEquals(1, pages.size());
     }
-
 
     @Test
     public void testTextExtractionDoesNotRaise() throws IOException {
@@ -62,7 +65,6 @@ public class TestObjectExtractor {
         assertTrue(pi.hasNext());
         assertNotNull(pi.next());
         assertFalse(pi.hasNext());
-
     }
 
     @Test
@@ -102,7 +104,6 @@ public class TestObjectExtractor {
         Page page = oe.extract(2);
 
         assertNotNull(page);
-
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -112,7 +113,6 @@ public class TestObjectExtractor {
 
         ObjectExtractor oe = new ObjectExtractor(pdf_document);
         oe.extract(3);
-
     }
 
     @Test
@@ -138,12 +138,12 @@ public class TestObjectExtractor {
             fail("NPE in ObjectExtractor " + e.toString());
         }
     }
-    
+
     /*
     @Test
     public void testExtractWithoutExtractingRulings() throws IOException {
-        PDDocument pdf_document = PDDocument.load("src/test/resources/technology/tabula/should_detect_rulings.pdf");
-        ObjectExtractor oe = new ObjectExtractor(pdf_document, null, false, false);
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/should_detect_rulings.pdf"));
+        ObjectExtractor oe = new ObjectExtractor(pdf_document);
         PageIterator pi = oe.extract();
        
         assertTrue(pi.hasNext());
@@ -151,7 +151,6 @@ public class TestObjectExtractor {
         assertNotNull(page);
         assertEquals(0, page.getRulings().size());
         assertFalse(pi.hasNext());
-    }
-    */
+    }*/
 
 }

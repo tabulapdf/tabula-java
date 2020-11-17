@@ -18,25 +18,29 @@ import technology.tabula.writers.TSVWriter;
 
 public class TestWriters {
 
-    private static final String EXPECTED_CSV_WRITER_OUTPUT = "\"ABDALA de MATARAZZO, Norma Amanda\",Frente Cívico por Santiago,Santiago del Estero,AFIRMATIVO";
+    private static final String EXPECTED_CSV_WRITER_OUTPUT =
+            "\"ABDALA de MATARAZZO, Norma Amanda\",Frente Cívico por Santiago,Santiago del Estero,AFIRMATIVO";
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     private Table getTable() throws IOException {
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         return table;
     }
 
     private List<Table> getTables() throws IOException {
-
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/twotables.pdf", 1);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         return sea.extract(page);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testCSVWriter() throws IOException {
-    	String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/argentina_diputados_voting_record.csv");
+    	String expectedCsv = UtilsForTesting.loadCsv(
+    	        "src/test/resources/technology/tabula/csv/argentina_diputados_voting_record.csv");
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
@@ -60,7 +64,8 @@ public class TestWriters {
 
     @Test
     public void testJSONWriter() throws IOException {
-        String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/argentina_diputados_voting_record.json");
+        String expectedJson = UtilsForTesting.loadJson(
+                "src/test/resources/technology/tabula/json/argentina_diputados_voting_record.json");
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
         (new JSONWriter()).write(sb, table);
@@ -68,10 +73,12 @@ public class TestWriters {
         assertEquals(expectedJson, s);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testJSONSerializeInfinity() throws IOException {
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/schools.json");
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                "src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
@@ -84,7 +91,8 @@ public class TestWriters {
     @Test
     public void testCSVSerializeInfinity() throws IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/schools.csv");
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                "src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
@@ -94,6 +102,7 @@ public class TestWriters {
         assertEquals(expectedCsv, s);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testJSONSerializeTwoTables() throws IOException {
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/twotables.json");
@@ -111,25 +120,27 @@ public class TestWriters {
 
     @Test
     public void testCSVSerializeTwoTables() throws IOException {
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/twotables.csv");
+        String expectedCSV = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/twotables.csv");
         List<Table> tables = this.getTables();
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables);
 
-        String s = sb.toString();
-        assertEquals(expectedCsv, s);
+                      String s = sb.toString();
+        assertEquals(expectedCSV, s);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testCSVMultilineRow() throws IOException {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/frx_2012_disclosure.csv");
-        Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 53.0f, 49.0f, 735.0f, 550.0f);
+        Page page = UtilsForTesting.getAreaFromFirstPage(
+                "src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 53.0f, 49.0f, 735.0f, 550.0f);
         SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
         Table table = sea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
-        String s = sb.toString();
+                      String s = sb.toString();
         assertEquals(expectedCsv, s);
     }
 
