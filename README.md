@@ -69,7 +69,7 @@ Tabula helps you extract tables from PDFs
  -v,--version               Print version and exit.
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-1.0.2-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-1.0.2-jar-with-dependencies.jar technology.tabula.debugger.Debugger -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 

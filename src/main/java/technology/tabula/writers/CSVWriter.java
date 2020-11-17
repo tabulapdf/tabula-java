@@ -8,8 +8,8 @@ import java.util.List;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVFormat;
 
-import technology.tabula.RectangularTextContainer;
-import technology.tabula.Table;
+import technology.tabula.texts.RectangularTextContainer;
+import technology.tabula.tables.Table;
 
 public class CSVWriter implements Writer {
 

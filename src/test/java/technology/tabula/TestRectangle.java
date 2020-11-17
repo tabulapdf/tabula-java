@@ -8,9 +8,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import technology.tabula.algorithms.sorters.QuickSort;
 
 public class TestRectangle {
 

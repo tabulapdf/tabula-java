@@ -22,7 +22,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import technology.tabula.algorithms.detectors.AnssiNurminen;
+import technology.tabula.pages.ObjectExtractor;
+import technology.tabula.pages.Page;
+import technology.tabula.pages.PageIterator;
 
 /**
  * Created by matt on 2015-12-14.
@@ -211,7 +214,7 @@ public class TestTableDetection {
         Map<Integer, List<Rectangle>> detectedTables = new HashMap<>();
 
         // the algorithm we're going to be testing
-        NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
+        AnssiNurminen detectionAlgorithm = new AnssiNurminen();
 
         PageIterator pages = extractor.extract();
         while (pages.hasNext()) {

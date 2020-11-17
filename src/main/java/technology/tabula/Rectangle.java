@@ -44,7 +44,7 @@ public class Rectangle extends Rectangle2D.Float {
 	}
 
 	// I'm bad at Java and need this for fancy sorting in
-	// technology.tabula.TextChunk.
+	// technology.tabula.text.TextChunk.
 	public int isLtrDominant() {
 		return 0;
 	}

@@ -1,9 +1,10 @@
 package technology.tabula;
 
 import static org.junit.Assert.*;
-import static technology.tabula.TextChunk.EMPTY;
+import static technology.tabula.texts.TextChunk.EMPTY;
 
 import org.junit.Test;
+import technology.tabula.tables.Table;
 
 public class TableTest {
 

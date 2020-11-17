@@ -3,7 +3,6 @@ package technology.tabula;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -11,6 +10,9 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Before;
 import org.junit.Test;
+import technology.tabula.debugger.ProjectionProfile;
+import technology.tabula.pages.Page;
+import technology.tabula.texts.TextElement;
 
 public class TestProjectionProfile {
 

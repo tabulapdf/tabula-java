@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import technology.tabula.algorithms.sorters.QuickSort;
 
 /**
  * @author manuel

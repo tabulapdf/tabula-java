@@ -10,8 +10,10 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
-import technology.tabula.extractors.BasicExtractionAlgorithm;
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.Basic;
+import technology.tabula.algorithms.extractors.Spreadsheet;
+import technology.tabula.pages.Page;
+import technology.tabula.tables.Table;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
@@ -25,14 +27,14 @@ public class TestWriters {
     private Table getTable() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf", 269.875f, 12.75f, 790.5f, 561f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
         return table;
     }
 
     private List<Table> getTables() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/twotables.pdf", 1);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         return sea.extract(page);
     }
 
@@ -79,7 +81,7 @@ public class TestWriters {
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/schools.json");
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         Table table = sea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
@@ -93,7 +95,7 @@ public class TestWriters {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/schools.csv");
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/schools.pdf", 53.74f, 16.97f, 548.74f, 762.3f);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         Table table = sea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
@@ -135,7 +137,7 @@ public class TestWriters {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/frx_2012_disclosure.csv");
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/frx_2012_disclosure.pdf", 53.0f, 49.0f, 735.0f, 550.0f);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         Table table = sea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();

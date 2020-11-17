@@ -10,10 +10,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 
-import technology.tabula.Cell;
-import technology.tabula.RectangularTextContainer;
-import technology.tabula.Table;
-import technology.tabula.TextChunk;
+import technology.tabula.texts.Cell;
+import technology.tabula.texts.RectangularTextContainer;
+import technology.tabula.tables.Table;
+import technology.tabula.texts.TextChunk;
 import technology.tabula.json.RectangularTextContainerSerializer;
 import technology.tabula.json.TableSerializer;
 

@@ -1,5 +1,7 @@
 package technology.tabula;
 
+import technology.tabula.algorithms.clippers.CohenSutherland;
+
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -193,7 +195,7 @@ public class Ruling extends Line2D.Float {
     
     public Ruling intersect(Rectangle2D clip) {
         Line2D.Float clipee = (Line2D.Float) this.clone();
-        boolean clipped = new CohenSutherlandClipping(clip).clip(clipee);
+        boolean clipped = new CohenSutherland(clip).clip(clipee);
 
         if (clipped) {
             return new Ruling(clipee.getP1(), clipee.getP2());

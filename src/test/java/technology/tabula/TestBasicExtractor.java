@@ -4,7 +4,10 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-import technology.tabula.extractors.BasicExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.Basic;
+import technology.tabula.pages.Page;
+import technology.tabula.tables.Table;
+import technology.tabula.texts.RectangularTextContainer;
 import technology.tabula.writers.CSVWriter;
 
 import java.io.File;
@@ -129,7 +132,7 @@ public class TestBasicExtractor {
     public void testRemoveSequentialSpaces() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/m27.pdf", 79.2f, 28.28f, 103.04f, 732.6f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
         List<RectangularTextContainer> firstRow = table.getRows().get(0);
 
@@ -141,7 +144,7 @@ public class TestBasicExtractor {
     public void testColumnRecognition() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 ARGENTINA_DIPUTADOS_VOTING_RECORD_PDF, 269.875f, 12.75f, 790.5f, 561f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         assertArrayEquals(ARGENTINA_DIPUTADOS_VOTING_RECORD_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
@@ -158,7 +161,7 @@ public class TestBasicExtractor {
         Page page = UtilsForTesting.getAreaFromFirstPage(
                 "src/test/resources/technology/tabula/campaign_donors.pdf",
                 255.57f, 40.43f, 398.76f, 557.35f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(rulings);
+        Basic bea = new Basic(rulings);
         Table table = bea.extract(page).get(0);
         List<RectangularTextContainer> sixthRow = table.getRows().get(5);
 
@@ -171,7 +174,7 @@ public class TestBasicExtractor {
     public void testExtractColumnsCorrectly() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
                 EU_002_PDF, 1, 115.0f, 70.0f, 233.0f, 510.0f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         assertArrayEquals(EU_002_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
@@ -180,7 +183,7 @@ public class TestBasicExtractor {
     @Test
     public void testExtractColumnsCorrectly2() throws IOException {
         Page page = UtilsForTesting.getPage(EU_017_PDF, 3);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
+        Basic bea = new Basic(page.getVerticalRulings());
         Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
 
         assertArrayEquals(EU_017_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
@@ -189,7 +192,7 @@ public class TestBasicExtractor {
     @Test
     public void testExtractColumnsCorrectly3() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage(FRX_2012_DISCLOSURE_PDF, 106.01f, 48.09f, 227.31f, 551.89f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         assertArrayEquals(FRX_2012_DISCLOSURE_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
@@ -200,7 +203,7 @@ public class TestBasicExtractor {
     public void testCheckSqueezeDoesntBreak() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/12s0324.pdf",
                 99.0f, 17.25f, 316.5f, 410.25f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
         List<List<RectangularTextContainer>> rows = table.getRows();
         List<RectangularTextContainer> firstRow = rows.get(0);
@@ -216,7 +219,7 @@ public class TestBasicExtractor {
         Page page = UtilsForTesting.getPage(
                 "src/test/resources/technology/tabula/us-017.pdf", 2)
                 .getArea(446.0f, 97.0f, 685.0f, 520.0f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(
+        Basic bea = new Basic(
                 page.getVerticalRulings());
         Table table = bea.extract(page).get(0);
 
@@ -319,7 +322,7 @@ public class TestBasicExtractor {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/indictb1h_14.csv");
         Page page = UtilsForTesting.getAreaFromPage("src/test/resources/technology/tabula/indictb1h_14.pdf", 1,
                 205.0f, 120.0f, 622.82f, 459.9f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
@@ -332,7 +335,7 @@ public class TestBasicExtractor {
     public void testEmptyRegion() throws IOException {
         Page page = UtilsForTesting.getAreaFromPage(
                 "src/test/resources/technology/tabula/indictb1h_14.pdf", 1, 0, 0, 80.82f, 100.9f); // an empty area
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
@@ -343,7 +346,7 @@ public class TestBasicExtractor {
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/us-020.csv");
         Page page = UtilsForTesting.getAreaFromPage(
                 "src/test/resources/technology/tabula/us-020.pdf", 2, 103.0f, 35.0f, 641.0f, 560.0f);
-        BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+        Basic bea = new Basic();
         Table table = bea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();

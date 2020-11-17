@@ -3,7 +3,7 @@ package technology.tabula.writers;
 import java.io.IOException;
 import java.util.List;
 
-import technology.tabula.Table;
+import technology.tabula.tables.Table;
 
 public interface Writer {
 

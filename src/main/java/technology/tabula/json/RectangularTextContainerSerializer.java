@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import technology.tabula.RectangularTextContainer;
+import technology.tabula.texts.RectangularTextContainer;
 
 public final class RectangularTextContainerSerializer implements JsonSerializer<RectangularTextContainer<?>> {
 

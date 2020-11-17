@@ -13,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import technology.tabula.cli.CommandLineApp;
 
 public class TestCommandLineApp {
 

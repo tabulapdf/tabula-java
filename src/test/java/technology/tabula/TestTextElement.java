@@ -2,6 +2,8 @@ package technology.tabula;
 
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.Test;
+import technology.tabula.texts.TextChunk;
+import technology.tabula.texts.TextElement;
 
 import java.util.ArrayList;
 import java.util.List;

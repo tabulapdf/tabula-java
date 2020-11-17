@@ -9,6 +9,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.Assert;
+import technology.tabula.pages.ObjectExtractor;
+import technology.tabula.pages.Page;
+import technology.tabula.tables.Table;
+import technology.tabula.texts.RectangularTextContainer;
 
 public class UtilsForTesting {
 

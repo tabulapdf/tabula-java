@@ -19,7 +19,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 
-import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.algorithms.extractors.Spreadsheet;
+import technology.tabula.pages.Page;
+import technology.tabula.tables.Table;
+import technology.tabula.texts.Cell;
 import technology.tabula.writers.CSVWriter;
 import technology.tabula.writers.JSONWriter;
 
@@ -125,7 +128,7 @@ public class TestSpreadsheetExtractor {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testLinesToCells() {
-        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
+        List<Cell> cells = Spreadsheet.findCells(Arrays.asList(HORIZONTAL_RULING_LINES), Arrays.asList(VERTICAL_RULING_LINES));
         Collections.sort(cells, Rectangle.ILL_DEFINED_ORDER);
         List<Cell> expected = Arrays.asList(EXPECTED_CELLS);
         Collections.sort(expected, Rectangle.ILL_DEFINED_ORDER);
@@ -135,7 +138,7 @@ public class TestSpreadsheetExtractor {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void testDetectSingleCell() {
-        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
+        List<Cell> cells = Spreadsheet.findCells(Arrays.asList(SINGLE_CELL_RULINGS[0]),
                 Arrays.asList(SINGLE_CELL_RULINGS[1]));
         assertEquals(1, cells.size());
         Cell cell = cells.get(0);
@@ -147,7 +150,7 @@ public class TestSpreadsheetExtractor {
 
     @Test
     public void testDetectTwoSingleCells() {
-        List<Cell> cells = SpreadsheetExtractionAlgorithm.findCells(Arrays.asList(TWO_SINGLE_CELL_RULINGS[0]),
+        List<Cell> cells = Spreadsheet.findCells(Arrays.asList(TWO_SINGLE_CELL_RULINGS[0]),
                 Arrays.asList(TWO_SINGLE_CELL_RULINGS[1]));
         assertEquals(2, cells.size());
         // should not overlap
@@ -172,7 +175,7 @@ public class TestSpreadsheetExtractor {
 
         List<Rectangle> expected = Arrays.asList(EXPECTED_RECTANGLES);
         Collections.sort(expected, Rectangle.ILL_DEFINED_ORDER);
-        List<Rectangle> foundRectangles = SpreadsheetExtractionAlgorithm.findSpreadsheetsFromCells(cells);
+        List<Rectangle> foundRectangles = Spreadsheet.findSpreadsheetsFromCells(cells);
         Collections.sort(foundRectangles, Rectangle.ILL_DEFINED_ORDER);
         assertTrue(foundRectangles.equals(expected));
     }
@@ -185,7 +188,7 @@ public class TestSpreadsheetExtractor {
                         "src/test/resources/technology/tabula/argentina_diputados_voting_record.pdf",
                         269.875f, 12.75f, 790.5f, 561f);
 
-        SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
+        Spreadsheet.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -194,7 +197,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/spanning_cells.json");
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         List<Table> tables = se.extract(page);
         assertEquals(2, tables.size());
 
@@ -210,7 +213,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting
                 .getPage("src/test/resources/technology/tabula/spanning_cells.pdf", 1);
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spanning_cells.csv");
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         List<Table> tables = se.extract(page);
         assertEquals(2, tables.size());
 
@@ -225,7 +228,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testIncompleteGrid() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/china.pdf", 1);
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
     }
@@ -234,7 +237,7 @@ public class TestSpreadsheetExtractor {
     @Test
     public void testNaturalOrderOfRectanglesDoesNotBreakContract() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-017.pdf", 2);
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         List<? extends Table> tables = se.extract(page);
 
         StringBuilder sb = new StringBuilder();
@@ -266,7 +269,7 @@ public class TestSpreadsheetExtractor {
 
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/spreadsheet_no_bounding_frame.csv");
 
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         boolean isTabular = se.isTabular(page);
         assertTrue(isTabular);
         List<? extends Table> tables = se.extract(page);
@@ -282,7 +285,7 @@ public class TestSpreadsheetExtractor {
                 "src/test/resources/technology/tabula/puertos1.pdf",
                 1,
                 273.9035714285714f, 30.32142857142857f, 554.8821428571429f, 546.7964285714286f);
-        SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet se = new Spreadsheet();
         List<? extends Table> tables = se.extract(page);
         Table table = tables.get(0);
         assertEquals(15, table.getRows().size());
@@ -350,7 +353,7 @@ public class TestSpreadsheetExtractor {
                 2,
                 446.0f, 97.0f, 685.0f, 520.0f);
         page.getText();
-        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet bea = new Spreadsheet();
         bea.extract(page).get(0);
     }
 
@@ -360,7 +363,7 @@ public class TestSpreadsheetExtractor {
                 "src/test/resources/technology/tabula/offense.pdf",
                 1,
                 68.08f, 16.44f, 680.85f, 597.84f);
-        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet bea = new Spreadsheet();
         List<Table> tables = bea.extract(page);
         assertEquals(1, tables.size());
     }
@@ -370,7 +373,7 @@ public class TestSpreadsheetExtractor {
     public void testExtractTableWithExternallyDefinedRulings() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-007.pdf",
                 1);
-        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet bea = new Spreadsheet();
         List<Table> tables = bea.extract(page,
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS));
         assertEquals(1, tables.size());
@@ -400,7 +403,7 @@ public class TestSpreadsheetExtractor {
     public void testAnotherExtractTableWithExternallyDefinedRulings() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/us-024.pdf",
                 1);
-        SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet bea = new Spreadsheet();
         List<Table> tables = bea.extract(page,
                 Arrays.asList(EXTERNALLY_DEFINED_RULINGS2));
         assertEquals(1, tables.size());
@@ -416,7 +419,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/sydney_disclosure_contract.pdf",
                 1);
 
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         List<Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
@@ -428,7 +431,7 @@ public class TestSpreadsheetExtractor {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/failing_sort.pdf",
                 1);
 
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         List<Table> tables = sea.extract(page);
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
@@ -440,7 +443,7 @@ public class TestSpreadsheetExtractor {
     public void testRTL() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/arabic.pdf",
                 1);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         List<Table> tables = sea.extract(page);
         // assertEquals(1, tables.size());
         Table table = tables.get(0);
@@ -469,7 +472,7 @@ public class TestSpreadsheetExtractor {
     public void testRealLifeRTL() throws IOException {
         Page page = UtilsForTesting.getPage("src/test/resources/technology/tabula/mednine.pdf",
                 1);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         List<Table> tables = sea.extract(page);
         // assertEquals(1, tables.size());
         Table table = tables.get(0);
@@ -502,7 +505,7 @@ public class TestSpreadsheetExtractor {
     public void testExtractColumnsCorrectly3() throws IOException {
         Page page = UtilsForTesting.getAreaFromFirstPage("src/test/resources/technology/tabula/frx_2012_disclosure.pdf",
                 106.01f, 48.09f, 227.31f, 551.89f);
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         Table table = sea.extract(page).get(0);
 
         assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
@@ -516,7 +519,7 @@ public class TestSpreadsheetExtractor {
                         56.925f, 24.255f, 549.945f, 786.555f);
         String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/Publication_of_award_of_Bids_for_Transport_Sector__August_2016.csv");
 
-        SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+        Spreadsheet sea = new Spreadsheet();
         List<Table> tables = sea.extract(page);
         assertEquals(1, tables.size());
         Table table = tables.get(0);

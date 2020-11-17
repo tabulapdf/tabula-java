@@ -3,8 +3,8 @@ package technology.tabula.json;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import technology.tabula.RectangularTextContainer;
-import technology.tabula.Table;
+import technology.tabula.texts.RectangularTextContainer;
+import technology.tabula.tables.Table;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
