@@ -11,21 +11,19 @@ import technology.tabula.RectangularTextContainer;
 
 public final class RectangularTextContainerSerializer implements JsonSerializer<RectangularTextContainer<?>> {
 
-	public static final RectangularTextContainerSerializer INSTANCE = new RectangularTextContainerSerializer();
+    public static final RectangularTextContainerSerializer INSTANCE = new RectangularTextContainerSerializer();
 
-	private RectangularTextContainerSerializer() {
-		// singleton
-	}
+    private RectangularTextContainerSerializer() {}
 
-	@Override
-	public JsonElement serialize(RectangularTextContainer<?> src, Type typeOfSrc, JsonSerializationContext context) {
-		JsonObject result = new JsonObject();
-		result.addProperty("top",    src.getTop());
-		result.addProperty("left",   src.getLeft());
-		result.addProperty("width",  src.getWidth());
-		result.addProperty("height", src.getHeight());
-		result.addProperty("text",   src.getText());
-		return result;
-	}
+    @Override
+    public JsonElement serialize(RectangularTextContainer<?> textContainer, Type type, JsonSerializationContext context) {
+        JsonObject json = new JsonObject();
+        json.addProperty("top", textContainer.getTop());
+        json.addProperty("left", textContainer.getLeft());
+        json.addProperty("width", textContainer.getWidth());
+        json.addProperty("height", textContainer.getHeight());
+        json.addProperty("text", textContainer.getText());
+        return json;
+    }
 
 }
