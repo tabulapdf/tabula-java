@@ -5,39 +5,39 @@ import java.util.Iterator;
 
 public class PageIterator implements Iterator<Page> {
 
-    private ObjectExtractor oe;
+    private ObjectExtractor objectExtractor;
     private Iterator<Integer> pageIndexIterator;
-    
-    public PageIterator(ObjectExtractor oe, Iterable<Integer> pages) {
+
+    public PageIterator(ObjectExtractor objectExtractor, Iterable<Integer> pages) {
         super();
-        this.oe = oe;
+        this.objectExtractor = objectExtractor;
         this.pageIndexIterator = pages.iterator();
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
     public boolean hasNext() {
-        return this.pageIndexIterator.hasNext();
+        return pageIndexIterator.hasNext();
     }
 
     @Override
     public Page next() {
-        Page page = null;
+        Page nextPage = null;
         if (!this.hasNext()) {
             throw new IllegalStateException();
         }
         try {
-            page = oe.extractPage(this.pageIndexIterator.next());
+            nextPage = objectExtractor.extractPage(pageIndexIterator.next());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return page;
+        return nextPage;
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
-
     }
 
 }
