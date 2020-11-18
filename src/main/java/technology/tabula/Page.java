@@ -20,6 +20,7 @@ public class Page extends Rectangle {
 
     private List<TextElement> textElements;
 
+    // TODO: Create a class for 'List <Ruling>' that encapsulates all of these lists and their behaviors?
     private List<Ruling> rulings,
             cleanRulings = null,
             verticalRulingLines = null,
@@ -197,65 +198,74 @@ public class Page extends Rectangle {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public List<Ruling> getRulings() {
-        if (this.cleanRulings != null) {
-            return this.cleanRulings;
+        if (cleanRulings != null) {
+            return cleanRulings;
         }
 
-        if (this.rulings == null || this.rulings.isEmpty()) {
-            this.verticalRulingLines = new ArrayList<>();
-            this.horizontalRulingLines = new ArrayList<>();
+        if (rulings == null || rulings.isEmpty()) {
+            verticalRulingLines = new ArrayList<>();
+            horizontalRulingLines = new ArrayList<>();
             return new ArrayList<>();
         }
 
-        Utils.snapPoints(this.rulings, this.minCharWidth, this.minCharHeight);
+        // TODO: Move as a static method to the Ruling class?
+        Utils.snapPoints(rulings, minCharWidth, minCharHeight);
 
-        List<Ruling> vrs = new ArrayList<>();
-        for (Ruling vr : this.rulings) {
-            if (vr.vertical()) {
-                vrs.add(vr);
+        verticalRulingLines = getCollapsedVerticalRulings();
+        horizontalRulingLines = getCollapsedHorizontalRulings();
+
+        cleanRulings = new ArrayList<>(verticalRulingLines);
+        cleanRulings.addAll(horizontalRulingLines);
+
+        return cleanRulings;
+    }
+
+    // TODO: Create a class for 'List <Ruling>' and encapsulate these behaviors within it?
+    private List<Ruling> getCollapsedVerticalRulings() {
+        List<Ruling> verticalRulings = new ArrayList<>();
+        for (Ruling ruling : rulings) {
+            if (ruling.vertical()) {
+                verticalRulings.add(ruling);
             }
         }
-        this.verticalRulingLines = Ruling.collapseOrientedRulings(vrs);
+        return Ruling.collapseOrientedRulings(verticalRulings);
+    }
 
-        List<Ruling> hrs = new ArrayList<>();
-        for (Ruling hr : this.rulings) {
-            if (hr.horizontal()) {
-                hrs.add(hr);
+    private List<Ruling> getCollapsedHorizontalRulings() {
+        List<Ruling> horizontalRulings = new ArrayList<>();
+        for (Ruling ruling : rulings) {
+            if (ruling.horizontal()) {
+                horizontalRulings.add(ruling);
             }
         }
-        this.horizontalRulingLines = Ruling.collapseOrientedRulings(hrs);
-
-        this.cleanRulings = new ArrayList<>(this.verticalRulingLines);
-        this.cleanRulings.addAll(this.horizontalRulingLines);
-
-        return this.cleanRulings;
+        return Ruling.collapseOrientedRulings(horizontalRulings);
     }
 
     public List<Ruling> getVerticalRulings() {
-        if (this.verticalRulingLines != null) {
-            return this.verticalRulingLines;
+        if (verticalRulingLines != null) {
+            return verticalRulingLines;
         }
-        this.getRulings();
-        return this.verticalRulingLines;
+        getRulings();
+        return verticalRulingLines;
     }
 
     public List<Ruling> getHorizontalRulings() {
-        if (this.horizontalRulingLines != null) {
-            return this.horizontalRulingLines;
+        if (horizontalRulingLines != null) {
+            return horizontalRulingLines;
         }
-        this.getRulings();
-        return this.horizontalRulingLines;
+        getRulings();
+        return horizontalRulingLines;
     }
 
-    public void addRuling(Ruling r) {
-        if (r.oblique()) {
-            throw new UnsupportedOperationException("Can't add an oblique ruling");
+    public void addRuling(Ruling ruling) {
+        if (ruling.oblique()) {
+            throw new UnsupportedOperationException("Can't add an oblique ruling.");
         }
-        this.rulings.add(r);
-        // clear caches
-        this.verticalRulingLines = null;
-        this.horizontalRulingLines = null;
-        this.cleanRulings = null;
+        rulings.add(ruling);
+        // Clear caches:
+        verticalRulingLines = null;
+        horizontalRulingLines = null;
+        cleanRulings = null;
     }
 
     public List<Ruling> getUnprocessedRulings() {
