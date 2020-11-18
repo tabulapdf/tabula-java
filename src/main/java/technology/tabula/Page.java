@@ -39,6 +39,13 @@ public class Page extends Rectangle {
     this.rulings = rulings;
   }
 
+  public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
+              ObjectExtractorStreamEngine streamEngine, TextStripper textStripper) {
+    this(top, left, width, height, rotation, number, pdPage, doc, textStripper.textElements, streamEngine.rulings);
+    this.minCharWidth = textStripper.minCharWidth;
+    this.minCharHeight = textStripper.minCharHeight;
+    this.spatial_index = textStripper.spatialIndex;
+  }
 
   public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage, PDDocument doc,
               List<TextElement> characters, List<Ruling> rulings,
