@@ -9,6 +9,9 @@ import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 
+import static java.lang.Float.compare;
+import static java.util.Collections.min;
+
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that
 public class Page extends Rectangle {
@@ -31,17 +34,20 @@ public class Page extends Rectangle {
 
     private RectangleSpatialIndex<TextElement> spatialIndex;
 
-    public Page(float top, float left, float width, float height, int rotation, int pageNumber, PDPage pdPage, PDDocument doc) {
+    private static final float DEFAULT_MIN_CHAR_LENGTH = 7;
+
+    // TODO: Use a creational design patterns here?
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc) {
         super(top, left, width, height);
         this.rotation = rotation;
-        this.number = pageNumber;
+        this.number = number;
         this.pdPage = pdPage;
         this.pdDoc = doc;
     }
 
-    public Page(float top, float left, float width, float height, int rotation, int pageNumber, PDPage pdPage, PDDocument doc,
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
                 List<TextElement> characters, List<Ruling> rulings) {
-        this(top, left, width, height, rotation, pageNumber, pdPage, doc);
+        this(top, left, width, height, rotation, number, pdPage, doc);
         this.textElements = characters;
         this.rulings = rulings;
     }
@@ -54,10 +60,10 @@ public class Page extends Rectangle {
         this.spatialIndex = textStripper.spatialIndex;
     }
 
-    public Page(float top, float left, float width, float height, int rotation, int pageNumber, PDPage pdPage, PDDocument doc,
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
                 List<TextElement> characters, List<Ruling> rulings,
                 float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
-        this(top, left, width, height, rotation, pageNumber, pdPage, doc, characters, rulings);
+        this(top, left, width, height, rotation, number, pdPage, doc, characters, rulings);
         this.minCharHeight = minCharHeight;
         this.minCharWidth = minCharWidth;
         this.spatialIndex = index;
@@ -65,60 +71,44 @@ public class Page extends Rectangle {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public Page getArea(Rectangle area) {
-        List<TextElement> t = getText(area);
-        float min_char_width = 7;
-        float min_char_height = 7;
+        List<TextElement> areaTextElements = getText(area);
 
-        if (t.size() > 0) {
-            min_char_width = Collections.min(t, new Comparator<TextElement>() {
-                @Override
-                public int compare(TextElement te1, TextElement te2) {
-                    return java.lang.Float.compare(te1.width, te2.width);
-                }
-            }).width;
-            min_char_height = Collections.min(t, new Comparator<TextElement>() {
-                @Override
-                public int compare(TextElement te1, TextElement te2) {
-                    return java.lang.Float.compare(te1.height, te2.height);
-                }
-            }).height;
-        }
-        Page rv = new Page(
-                area.getTop(),
-                area.getLeft(),
-                (float) area.getWidth(),
-                (float) area.getHeight(),
-                rotation, number,
-                pdPage,
-                pdDoc,
-                t,
+        float minimumCharWidth = getMinimumCharWidthFrom(areaTextElements);
+        float minimumCharHeight = getMinimumCharHeightFrom(areaTextElements);
+
+        Page page = new Page(area.getTop(), area.getLeft(), (float) area.getWidth(), (float) area.getHeight(),
+                rotation, number, pdPage, pdDoc, areaTextElements,
                 Ruling.cropRulingsToArea(getRulings(), area),
-                min_char_width,
-                min_char_height,
-                spatialIndex);
+                minimumCharWidth, minimumCharHeight, spatialIndex);
 
-        rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getLeft(),
-                        rv.getTop()),
-                new Point2D.Double(rv.getRight(),
-                        rv.getTop())));
-        rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getRight(),
-                        rv.getTop()),
-                new Point2D.Double(rv.getRight(),
-                        rv.getBottom())));
-        rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getRight(),
-                        rv.getBottom()),
-                new Point2D.Double(rv.getLeft(),
-                        rv.getBottom())));
-        rv.addRuling(new Ruling(
-                new Point2D.Double(rv.getLeft(),
-                        rv.getBottom()),
-                new Point2D.Double(rv.getLeft(),
-                        rv.getTop())));
+        addBorderRulingsTo(page);
 
-        return rv;
+        return page;
+    }
+
+    private float getMinimumCharWidthFrom(List<TextElement> areaTextElements) {
+        if (!areaTextElements.isEmpty()) {
+            return min(areaTextElements, (te1, te2) -> compare(te1.width, te2.width)).width;
+        }
+        return DEFAULT_MIN_CHAR_LENGTH;
+    }
+
+    private float getMinimumCharHeightFrom(List<TextElement> areaTextElements) {
+        if (!areaTextElements.isEmpty()) {
+            return min(areaTextElements, (te1, te2) -> compare(te1.height, te2.height)).height;
+        }
+        return DEFAULT_MIN_CHAR_LENGTH;
+    }
+
+    private void addBorderRulingsTo(Page page) {
+        Point2D.Double leftTop = new Point2D.Double(page.getLeft(), page.getTop()),
+                rightTop = new Point2D.Double(page.getRight(), page.getTop()),
+                rightBottom = new Point2D.Double(page.getRight(), page.getBottom()),
+                leftBottom = new Point2D.Double(page.getLeft(), page.getBottom());
+        page.addRuling(new Ruling(leftTop, rightTop));
+        page.addRuling(new Ruling(rightTop, rightBottom));
+        page.addRuling(new Ruling(rightBottom, leftBottom));
+        page.addRuling(new Ruling(leftBottom, leftTop));
     }
 
     public Page getArea(float top, float left, float bottom, float right) {
@@ -282,6 +272,7 @@ public class Page extends Rectangle {
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+
     /**
      * @deprecated with no replacement
      */
