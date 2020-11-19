@@ -19,6 +19,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.awt.geom.PathIterator.*;
+
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
     protected List<Ruling> rulings;
@@ -119,64 +121,47 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     @Override
     public void shadingFill(COSName arg0) {}
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
     public void strokePath()  {
         strokeOrFillPath(false);
     }
 
     private void strokeOrFillPath(boolean isFill) {
-        GeneralPath path = this.currentPath;
-
-        if (!this.extractRulingLines) {
-            this.currentPath.reset();
+        if (!extractRulingLines) {
+            currentPath.reset();
             return;
         }
 
-        PathIterator pi = path.getPathIterator(this.getPageTransform());
-        float[] c = new float[6];
-        int currentSegment;
-
-        // skip paths whose first operation is not a MOVETO
-        // or contains operations other than LINETO, MOVETO or CLOSE
-        if ((pi.currentSegment(c) != PathIterator.SEG_MOVETO)) {
-            path.reset();
-            return;
-        }
-        pi.next();
-        while (!pi.isDone()) {
-            currentSegment = pi.currentSegment(c);
-            if (currentSegment != PathIterator.SEG_LINETO && currentSegment != PathIterator.SEG_CLOSE
-                    && currentSegment != PathIterator.SEG_MOVETO) {
-                path.reset();
-                return;
-            }
-            pi.next();
-        }
+        boolean didNotPassedTheFilter = filterPathBySegmentType();
+        if (didNotPassedTheFilter) return;
 
         // TODO: how to implement color filter?
 
         // skip the first path operation and save it as the starting position
         float[] first = new float[6];
-        pi = path.getPathIterator(this.getPageTransform());
-        pi.currentSegment(first);
+        PathIterator pathIterator = currentPath.getPathIterator(this.getPageTransform());
+        float[] c = new float[6];
+        int currentSegment;
+        pathIterator.currentSegment(first);
         // last move
         Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
         Point2D.Float last_move = start_pos;
         Point2D.Float end_pos = null;
         Line2D.Float line;
         PointComparator pc = new PointComparator();
-        while (!pi.isDone()) {
-            pi.next();
+        while (!pathIterator.isDone()) {
+            pathIterator.next();
             // This can be the last segment, when pi.isDone, but we need to
             // process it
             // otherwise us-017.pdf fails the last value.
             try {
-                currentSegment = pi.currentSegment(c);
+                currentSegment = pathIterator.currentSegment(c);
             } catch (IndexOutOfBoundsException ex) {
                 continue;
             }
             switch (currentSegment) {
-                case PathIterator.SEG_LINETO:
+                case SEG_LINETO:
                     end_pos = new Point2D.Float(c[0], c[1]);
 
                     if (start_pos == null || end_pos == null) {
@@ -194,11 +179,11 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                         }
                     }
                     break;
-                case PathIterator.SEG_MOVETO:
+                case SEG_MOVETO:
                     last_move = new Point2D.Float(c[0], c[1]);
                     end_pos = last_move;
                     break;
-                case PathIterator.SEG_CLOSE:
+                case SEG_CLOSE:
                     // according to PathIterator docs:
                     // "the preceding subpath should be closed by appending a line
                     // segment
@@ -221,9 +206,30 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             }
             start_pos = end_pos;
         }
-        path.reset();
+        currentPath.reset();
     }
 
+    private boolean filterPathBySegmentType() {
+        PathIterator pathIterator = currentPath.getPathIterator(pageTransform);
+        float[] coordinates = new float[6];
+        int currentSegmentType = pathIterator.currentSegment(coordinates);
+        if (currentSegmentType != SEG_MOVETO) {
+            currentPath.reset();
+            return true;
+        }
+        pathIterator.next();
+        while (!pathIterator.isDone()) {
+            currentSegmentType = pathIterator.currentSegment(coordinates);
+            if (currentSegmentType != SEG_LINETO && currentSegmentType != SEG_CLOSE && currentSegmentType != SEG_MOVETO) {
+                currentPath.reset();
+                return true;
+            }
+            pathIterator.next();
+        }
+        return false;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public AffineTransform getPageTransform() {
         return pageTransform;
     }
