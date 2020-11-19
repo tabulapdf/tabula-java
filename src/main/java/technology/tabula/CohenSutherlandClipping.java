@@ -18,18 +18,23 @@ import java.awt.geom.Line2D;
  * Implements the well known Cohen Sutherland line
  * clipping algorithm (line against clip rectangle).
  */
-public final class CohenSutherlandClipping
-{
+public final class CohenSutherlandClipping {
+
     private double xMin;
     private double yMin;
     private double xMax;
     private double yMax;
 
+    private static final int INSIDE = 0;
+    private static final int LEFT   = 1;
+    private static final int RIGHT  = 2;
+    private static final int BOTTOM = 4;
+    private static final int TOP    = 8;
+
     /**
      * Creates a Cohen Sutherland clipper with clip rect (0, 0, 0, 0).
      */
-    public CohenSutherlandClipping() {
-    }
+    public CohenSutherlandClipping() {}
 
     /**
      * Creates a Cohen Sutherland clipper with the given clip rectangle.
@@ -50,20 +55,12 @@ public final class CohenSutherlandClipping
         yMax = yMin + clip.getHeight();
     }
 
-    private static final int INSIDE = 0;
-    private static final int LEFT   = 1;
-    private static final int RIGHT  = 2;
-    private static final int BOTTOM = 4;
-    private static final int TOP    = 8;
-
     private final int regionCode(double x, double y) {
-        int code = x < xMin 
-            ? LEFT
-            : x > xMax
-                ? RIGHT
-                : INSIDE;
-             if (y < yMin) code |= BOTTOM;
-        else if (y > yMax) code |= TOP;
+        int code = (x < xMin) ? LEFT : (x > xMax) ? RIGHT : INSIDE;
+        if (y < yMin)
+            code |= BOTTOM;
+        else if (y > yMax)
+            code |= TOP;
         return code;
     }
 
@@ -84,56 +81,54 @@ public final class CohenSutherlandClipping
         double qx = 0d;
         double qy = 0d;
 
-        boolean vertical = p1x == p2x;
+        boolean lineIsVertical = (p1x == p2x);
 
-        double slope = vertical 
-            ? 0d
-            : (p2y-p1y)/(p2x-p1x);
+        double lineSlope = lineIsVertical ? 0d : (p2y-p1y)/(p2x-p1x);
 
-        int c1 = regionCode(p1x, p1y);
-        int c2 = regionCode(p2x, p2y);
+        int p1Region = regionCode(p1x, p1y);
+        int p2Region = regionCode(p2x, p2y);
 
-        while (c1 != INSIDE || c2 != INSIDE) {
+        while (p1Region != INSIDE || p2Region != INSIDE) {
 
-            if ((c1 & c2) != INSIDE)
+            if ((p1Region & p2Region) != INSIDE)
                 return false;
 
-            int c = c1 == INSIDE ? c2 : c1;
+            int c = (p1Region == INSIDE) ? p2Region : p1Region;
 
             if ((c & LEFT) != INSIDE) {
                 qx = xMin;
-                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*slope + p1y;
+                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*lineSlope + p1y;
             }
             else if ((c & RIGHT) != INSIDE) {
                 qx = xMax;
-                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*slope + p1y;
+                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*lineSlope + p1y;
             }
             else if ((c & BOTTOM) != INSIDE) {
                 qy = yMin;
-                qx = vertical
+                qx = lineIsVertical
                     ? p1x
-                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/slope + p1x;
+                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/lineSlope + p1x;
             }
             else if ((c & TOP) != INSIDE) {
                 qy = yMax;
-                qx = vertical
+                qx = lineIsVertical
                     ? p1x
-                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/slope + p1x;
+                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/lineSlope + p1x;
             }
 
-            if (c == c1) {
+            if (c == p1Region) {
                 p1x = qx;
                 p1y = qy;
-                c1  = regionCode(p1x, p1y);
+                p1Region  = regionCode(p1x, p1y);
             }
             else {
                 p2x = qx;
                 p2y = qy;
-                c2 = regionCode(p2x, p2y);
+                p2Region = regionCode(p2x, p2y);
             }
         }
         line.setLine(p1x, p1y, p2x, p2y);
         return true;
     }
+
 }
-// end of file
