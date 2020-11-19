@@ -7,7 +7,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,7 +16,6 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
-import org.apache.pdfbox.util.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,72 +23,66 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
     protected List<Ruling> rulings;
     private AffineTransform pageTransform;
-    private boolean debugClippingPaths;
     private boolean extractRulingLines = true;
-    private Logger log;
+    private Logger logger;
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
 
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
+        logger = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
+        rulings = new ArrayList<>();
 
-        this.log = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
+        // Calculate page transform:
+        pageTransform = new AffineTransform();
+        PDRectangle pageCropBox = getPage().getCropBox();
+        int rotationAngleInDegrees = getPage().getRotation();
 
-        this.rulings = new ArrayList<>();
-        this.pageTransform = null;
-
-        // calculate page transform
-        PDRectangle cb = this.getPage().getCropBox();
-        int rotation = this.getPage().getRotation();
-
-        this.pageTransform = new AffineTransform();
-
-        if (Math.abs(rotation) == 90 || Math.abs(rotation) == 270) {
-            this.pageTransform = AffineTransform.getRotateInstance(rotation * (Math.PI / 180.0), 0, 0);
-            this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
+        if (Math.abs(rotationAngleInDegrees) == 90 || Math.abs(rotationAngleInDegrees) == 270) {
+            double rotationAngleInRadians = rotationAngleInDegrees * (Math.PI / 180.0);
+            pageTransform = AffineTransform.getRotateInstance(rotationAngleInRadians, 0, 0);
         } else {
-            this.pageTransform.concatenate(AffineTransform.getTranslateInstance(0, cb.getHeight()));
-            this.pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
+            double deltaX = 0;
+            double deltaY = pageCropBox.getHeight();
+            pageTransform.concatenate(AffineTransform.getTranslateInstance(deltaX, deltaY));
         }
 
-        this.pageTransform.translate(-cb.getLowerLeftX(), -cb.getLowerLeftY());
+        pageTransform.concatenate(AffineTransform.getScaleInstance(1, -1));
+        pageTransform.translate(-pageCropBox.getLowerLeftX(), -pageCropBox.getLowerLeftY());
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Override
-    public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3)  {
+    public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) {
         currentPath.moveTo((float) p0.getX(), (float) p0.getY());
         currentPath.lineTo((float) p1.getX(), (float) p1.getY());
         currentPath.lineTo((float) p2.getX(), (float) p2.getY());
         currentPath.lineTo((float) p3.getX(), (float) p3.getY());
-
         currentPath.closePath();
     }
 
     @Override
-    public void clip(int windingRule)  {
-        // the clipping path will not be updated until the succeeding painting
-        // operator is called
+    public void clip(int windingRule) {
+        // The clipping path will not be updated until the succeeding painting
+        // operator is called.
         clipWindingRule = windingRule;
     }
 
     @Override
-    public void closePath()  {
+    public void closePath() {
         currentPath.closePath();
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3)  {
+    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
         currentPath.curveTo(x1, y1, x2, y2, x3, y3);
     }
 
     @Override
-    public void drawImage(PDImage arg0)  {
-        // TODO Auto-generated method stub
-
-    }
+    public void drawImage(PDImage arg0) {}
 
     @Override
-    public void endPath()  {
+    public void endPath() {
         if (clipWindingRule != -1) {
             currentPath.setWindingRule(clipWindingRule);
             getGraphicsState().intersectClippingPath(currentPath);
@@ -105,7 +97,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void fillPath(int arg0)  {
+    public void fillPath(int arg0) {
         strokeOrFillPath(true);
     }
 
@@ -125,10 +117,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void shadingFill(COSName arg0) {
-        // TODO Auto-generated method stub
-
-    }
+    public void shadingFill(COSName arg0) {}
 
     @Override
     public void strokePath()  {
@@ -236,33 +225,34 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     public AffineTransform getPageTransform() {
-        return this.pageTransform;
+        return pageTransform;
     }
 
     public Rectangle2D currentClippingPath() {
-        Shape clippingPath = this.getGraphicsState().getCurrentClippingPath();
-        Shape transformedClippingPath = this.getPageTransform().createTransformedShape(clippingPath);
-
+        Shape currentClippingPath = getGraphicsState().getCurrentClippingPath();
+        Shape transformedClippingPath = getPageTransform().createTransformedShape(currentClippingPath);
         return transformedClippingPath.getBounds2D();
     }
 
+    // TODO: repeated in SpreadsheetExtractionAlgorithm.
     class PointComparator implements Comparator<Point2D> {
         @Override
-        public int compare(Point2D o1, Point2D o2) {
-            float o1X = Utils.round(o1.getX(), 2);
-            float o1Y = Utils.round(o1.getY(), 2);
-            float o2X = Utils.round(o2.getX(), 2);
-            float o2Y = Utils.round(o2.getY(), 2);
+        public int compare(Point2D p1, Point2D p2) {
+            float p1X = Utils.round(p1.getX(), 2);
+            float p1Y = Utils.round(p1.getY(), 2);
+            float p2X = Utils.round(p2.getX(), 2);
+            float p2Y = Utils.round(p2.getY(), 2);
 
-            if (o1Y > o2Y)
+            if (p1Y > p2Y)
                 return 1;
-            if (o1Y < o2Y)
+            if (p1Y < p2Y)
                 return -1;
-            if (o1X > o2X)
+            if (p1X > p2X)
                 return 1;
-            if (o1X < o2X)
+            if (p1X < p2X)
                 return -1;
             return 0;
         }
     }
+
 }
