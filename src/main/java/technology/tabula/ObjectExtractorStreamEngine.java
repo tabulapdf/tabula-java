@@ -30,6 +30,8 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     private int clipWindingRule = -1;
     private GeneralPath currentPath = new GeneralPath();
 
+    private static final float RULING_MINIMUM_LENGTH = 0.01f;
+
     protected ObjectExtractorStreamEngine(PDPage page) {
         super(page);
         logger = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
@@ -138,73 +140,53 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
         // TODO: how to implement color filter?
 
-        // skip the first path operation and save it as the starting position
-        float[] first = new float[6];
-        PathIterator pathIterator = currentPath.getPathIterator(this.getPageTransform());
-        float[] c = new float[6];
+        // Skip the first path operation and save it as the starting point.
+        PathIterator pathIterator = currentPath.getPathIterator(getPageTransform());
+
+        float[] coordinates = new float[6];
         int currentSegment;
-        pathIterator.currentSegment(first);
-        // last move
-        Point2D.Float start_pos = new Point2D.Float(Utils.round(first[0], 2), Utils.round(first[1], 2));
-        Point2D.Float last_move = start_pos;
-        Point2D.Float end_pos = null;
+
+        Point2D.Float startPoint = getStartPoint(pathIterator);
+        Point2D.Float last_move = startPoint;
+        Point2D.Float endPoint = null;
         Line2D.Float line;
-        PointComparator pc = new PointComparator();
+        PointComparator pointComparator = new PointComparator();
+
         while (!pathIterator.isDone()) {
             pathIterator.next();
-            // This can be the last segment, when pi.isDone, but we need to
-            // process it
-            // otherwise us-017.pdf fails the last value.
+            // This can be the last segment, when pathIterator.isDone, but we need to
+            // process it otherwise us-017.pdf fails the last value.
             try {
-                currentSegment = pathIterator.currentSegment(c);
+                currentSegment = pathIterator.currentSegment(coordinates);
             } catch (IndexOutOfBoundsException ex) {
                 continue;
             }
             switch (currentSegment) {
                 case SEG_LINETO:
-                    end_pos = new Point2D.Float(c[0], c[1]);
-
-                    if (start_pos == null || end_pos == null) {
+                    endPoint = new Point2D.Float(coordinates[0], coordinates[1]);
+                    if (startPoint == null || endPoint == null) {
                         break;
                     }
-
-                    line = pc.compare(start_pos, end_pos) == -1 ? new Line2D.Float(start_pos, end_pos)
-                            : new Line2D.Float(end_pos, start_pos);
-
-                    if (line.intersects(this.currentClippingPath())) {
-                        Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
-
-                        if (r.length() > 0.01) {
-                            this.rulings.add(r);
-                        }
-                    }
+                    line = getLineBetween(startPoint, endPoint, pointComparator);
+                    verifyLineIntersectsClipping(line);
                     break;
                 case SEG_MOVETO:
-                    last_move = new Point2D.Float(c[0], c[1]);
-                    end_pos = last_move;
+                    last_move = new Point2D.Float(coordinates[0], coordinates[1]);
+                    endPoint = last_move;
                     break;
                 case SEG_CLOSE:
-                    // according to PathIterator docs:
-                    // "the preceding subpath should be closed by appending a line
-                    // segment
-                    // back to the point corresponding to the most recent
+                    // According to PathIterator docs:
+                    // "The preceding sub-path should be closed by appending a line
+                    // segment back to the point corresponding to the most recent
                     // SEG_MOVETO."
-                    if (start_pos == null || end_pos == null) {
+                    if (startPoint == null || endPoint == null) {
                         break;
                     }
-                    line = pc.compare(end_pos, last_move) == -1 ? new Line2D.Float(end_pos, last_move)
-                            : new Line2D.Float(last_move, end_pos);
-
-                    if (line.intersects(this.currentClippingPath())) {
-                        Ruling r = new Ruling(line.getP1(), line.getP2()).intersect(this.currentClippingPath());
-
-                        if (r.length() > 0.01) {
-                            this.rulings.add(r);
-                        }
-                    }
+                    line = getLineBetween(endPoint, last_move, pointComparator);
+                    verifyLineIntersectsClipping(line);
                     break;
             }
-            start_pos = end_pos;
+            startPoint = endPoint;
         }
         currentPath.reset();
     }
@@ -227,6 +209,31 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             pathIterator.next();
         }
         return false;
+    }
+
+    private Point2D.Float getStartPoint(PathIterator pathIterator) {
+        float[] startPointCoordinates = new float[6];
+        pathIterator.currentSegment(startPointCoordinates);
+        float x = Utils.round(startPointCoordinates[0], 2);
+        float y = Utils.round(startPointCoordinates[1], 2);
+        return new Point2D.Float(x, y);
+    }
+
+    private Line2D.Float getLineBetween(Point2D.Float pointA, Point2D.Float pointB, PointComparator pointComparator) {
+        if (pointComparator.compare(pointA, pointB) == -1) {
+            return new Line2D.Float(pointA, pointB);
+        }
+        return new Line2D.Float(pointB, pointA);
+    }
+
+    private void verifyLineIntersectsClipping(Line2D.Float line) {
+        Rectangle2D currentClippingPath = currentClippingPath();
+        if (line.intersects(currentClippingPath)) {
+            Ruling ruling = new Ruling(line.getP1(), line.getP2()).intersect(currentClippingPath);
+            if (ruling.length() > RULING_MINIMUM_LENGTH) {
+                rulings.add(ruling);
+            }
+        }
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
