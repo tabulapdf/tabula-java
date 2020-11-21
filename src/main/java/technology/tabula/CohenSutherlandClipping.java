@@ -31,6 +31,8 @@ public final class CohenSutherlandClipping {
     private static final int BOTTOM = 4;
     private static final int TOP    = 8;
 
+    private final static float MINIMUM_DELTA = 0.01f;
+
     /**
      * Creates a Cohen Sutherland clipper with clip rect (0, 0, 0, 0).
      */
@@ -90,23 +92,23 @@ public final class CohenSutherlandClipping {
 
             if ((outsidePointRegion & LEFT) != INSIDE) {
                 outsidePointX = xMin;
-                outsidePointY = (Utils.feq(outsidePointX, point1X) ? 0 : outsidePointX-point1X)*lineSlope + point1Y;
+                outsidePointY = delta(outsidePointX, point1X)*lineSlope + point1Y;
             }
             else if ((outsidePointRegion & RIGHT) != INSIDE) {
                 outsidePointX = xMax;
-                outsidePointY = (Utils.feq(outsidePointX, point1X) ? 0 : outsidePointX-point1X)*lineSlope + point1Y;
+                outsidePointY = delta(outsidePointX, point1X)*lineSlope + point1Y;
             }
             else if ((outsidePointRegion & BOTTOM) != INSIDE) {
                 outsidePointY = yMin;
                 outsidePointX = lineIsVertical
                     ? point1X
-                    : (Utils.feq(outsidePointY, point1Y) ? 0 : outsidePointY-point1Y)/lineSlope + point1X;
+                    : delta(outsidePointY, point1Y)/lineSlope + point1X;
             }
             else if ((outsidePointRegion & TOP) != INSIDE) {
                 outsidePointY = yMax;
                 outsidePointX = lineIsVertical
                     ? point1X
-                    : (Utils.feq(outsidePointY, point1Y) ? 0 : outsidePointY-point1Y)/lineSlope + point1X;
+                    : delta(outsidePointY, point1Y)/lineSlope + point1X;
             }
 
             if (outsidePointRegion == point1Region) {
@@ -122,6 +124,10 @@ public final class CohenSutherlandClipping {
         }
         line.setLine(point1X, point1Y, point2X, point2Y);
         return true;
+    }
+
+    private static double delta(double value1, double value2) {
+        return (Math.abs(value1 - value2) < MINIMUM_DELTA) ? 0 : (value1 - value2);
     }
 
 }
