@@ -20,8 +20,8 @@ public class TestCohenSutherland {
         algorithm = new CohenSutherlandClipping(clipWindow);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     // TODO: How to parameterize the tests?
-
     @Test
     public void theLineIsCompletelyInside() {
         Line2D.Float line = new Line2D.Float(20, 20, 30, 30);
@@ -76,6 +76,7 @@ public class TestCohenSutherland {
         assertEquals(y2, line.y2, DELTA);
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     @Test
     public void lineCrossesTopLeftCorner() {
         float x1 = 5, y1 = 25, x2 = 25, y2 = 5;
