@@ -74,25 +74,25 @@ public final class CohenSutherlandClipping {
         double lineSlope = lineIsVertical ? 0d : (point2.y-point1.y)/(point2.x-point1.x);
 
         while (point1.region != INSIDE || point2.region != INSIDE) {
-            if ((point1.region & point2.region) != INSIDE) return false;
+            if ((point1.region & point2.region) != 0) return false;
 
             outsidePoint.region = (point1.region == INSIDE) ? point2.region : point1.region;
 
-            if ((outsidePoint.region & LEFT) != INSIDE) {
+            if ((outsidePoint.region & LEFT) != 0) {
                 outsidePoint.x = xMin;
                 outsidePoint.y = delta(outsidePoint.x, point1.x)*lineSlope + point1.y;
             }
-            else if ((outsidePoint.region & RIGHT) != INSIDE) {
+            else if ((outsidePoint.region & RIGHT) != 0) {
                 outsidePoint.x = xMax;
                 outsidePoint.y = delta(outsidePoint.x, point1.x)*lineSlope + point1.y;
             }
-            else if ((outsidePoint.region & BOTTOM) != INSIDE) {
+            else if ((outsidePoint.region & BOTTOM) != 0) {
                 outsidePoint.y = yMin;
                 outsidePoint.x = lineIsVertical
                     ? point1.x
                     : delta(outsidePoint.y, point1.y)/lineSlope + point1.x;
             }
-            else if ((outsidePoint.region & TOP) != INSIDE) {
+            else if ((outsidePoint.region & TOP) != 0) {
                 outsidePoint.y = yMax;
                 outsidePoint.x = lineIsVertical
                     ? point1.x
