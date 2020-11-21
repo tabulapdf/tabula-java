@@ -67,67 +67,60 @@ public final class CohenSutherlandClipping {
     /**
      * Clips a given line against the clip rectangle.
      * The modification (if needed) is done in place.
-     * @param line the line to clip
+     * @param line the line to clip.
      * @return true if line is clipped, false if line is
      * totally outside the clip rect.
      */
     public boolean clip(Line2D.Float line) {
+        double point1X = line.getX1(), point1Y = line.getY1();
+        double point2X = line.getX2(), point2Y = line.getY2();
+        double outsidePointX = 0d, outsidePointY = 0d;
 
-        double p1x = line.getX1();
-        double p1y = line.getY1();
-        double p2x = line.getX2();
-        double p2y = line.getY2();
+        boolean lineIsVertical = (point1X == point2X);
+        double lineSlope = lineIsVertical ? 0d : (point2Y-point1Y)/(point2X-point1X);
 
-        double qx = 0d;
-        double qy = 0d;
+        int point1Region = regionCode(point1X, point1Y);
+        int point2Region = regionCode(point2X, point2Y);
 
-        boolean lineIsVertical = (p1x == p2x);
-
-        double lineSlope = lineIsVertical ? 0d : (p2y-p1y)/(p2x-p1x);
-
-        int p1Region = regionCode(p1x, p1y);
-        int p2Region = regionCode(p2x, p2y);
-
-        while (p1Region != INSIDE || p2Region != INSIDE) {
-
-            if ((p1Region & p2Region) != INSIDE)
+        while (point1Region != INSIDE || point2Region != INSIDE) {
+            if ((point1Region & point2Region) != INSIDE)
                 return false;
 
-            int c = (p1Region == INSIDE) ? p2Region : p1Region;
+            int outsidePointRegion = (point1Region == INSIDE) ? point2Region : point1Region;
 
-            if ((c & LEFT) != INSIDE) {
-                qx = xMin;
-                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*lineSlope + p1y;
+            if ((outsidePointRegion & LEFT) != INSIDE) {
+                outsidePointX = xMin;
+                outsidePointY = (Utils.feq(outsidePointX, point1X) ? 0 : outsidePointX-point1X)*lineSlope + point1Y;
             }
-            else if ((c & RIGHT) != INSIDE) {
-                qx = xMax;
-                qy = (Utils.feq(qx, p1x) ? 0 : qx-p1x)*lineSlope + p1y;
+            else if ((outsidePointRegion & RIGHT) != INSIDE) {
+                outsidePointX = xMax;
+                outsidePointY = (Utils.feq(outsidePointX, point1X) ? 0 : outsidePointX-point1X)*lineSlope + point1Y;
             }
-            else if ((c & BOTTOM) != INSIDE) {
-                qy = yMin;
-                qx = lineIsVertical
-                    ? p1x
-                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/lineSlope + p1x;
+            else if ((outsidePointRegion & BOTTOM) != INSIDE) {
+                outsidePointY = yMin;
+                outsidePointX = lineIsVertical
+                    ? point1X
+                    : (Utils.feq(outsidePointY, point1Y) ? 0 : outsidePointY-point1Y)/lineSlope + point1X;
             }
-            else if ((c & TOP) != INSIDE) {
-                qy = yMax;
-                qx = lineIsVertical
-                    ? p1x
-                    : (Utils.feq(qy, p1y) ? 0 : qy-p1y)/lineSlope + p1x;
+            else if ((outsidePointRegion & TOP) != INSIDE) {
+                outsidePointY = yMax;
+                outsidePointX = lineIsVertical
+                    ? point1X
+                    : (Utils.feq(outsidePointY, point1Y) ? 0 : outsidePointY-point1Y)/lineSlope + point1X;
             }
 
-            if (c == p1Region) {
-                p1x = qx;
-                p1y = qy;
-                p1Region  = regionCode(p1x, p1y);
+            if (outsidePointRegion == point1Region) {
+                point1X = outsidePointX;
+                point1Y = outsidePointY;
+                point1Region  = regionCode(point1X, point1Y);
             }
             else {
-                p2x = qx;
-                p2y = qy;
-                p2Region = regionCode(p2x, p2y);
+                point2X = outsidePointX;
+                point2Y = outsidePointY;
+                point2Region = regionCode(point2X, point2Y);
             }
         }
-        line.setLine(p1x, p1y, p2x, p2y);
+        line.setLine(point1X, point1Y, point2X, point2Y);
         return true;
     }
 
