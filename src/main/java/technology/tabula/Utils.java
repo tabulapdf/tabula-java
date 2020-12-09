@@ -8,7 +8,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javafx.scene.control.Tab;
 import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -58,7 +61,6 @@ public class Utils {
         }
 
         return rv;
-
     }
 
     // range iterator
@@ -115,6 +117,28 @@ public class Utils {
             ret.add(col);
         }
         return ret;
+    }
+
+    public static Table maxColTable(List<? extends Table> tables){
+        int colCount = 0;
+        Table table = null;
+        for (int i = 0; i< tables.size();i++) {
+            Table t = tables.get(i);
+            if (t.getColCount() > colCount || i == 0){
+                colCount = t.getColCount();
+                table = t;
+            }
+        }
+        return  table;
+    }
+
+    public static boolean isEmptyRow(List<String> rows){
+        for(String item: rows){
+            if (item != null && !"".equals(item)){
+                return false;
+            }
+        }
+        return  true;
     }
 
 	/**
@@ -185,6 +209,63 @@ public class Utils {
 
         Collections.sort(rv);
         return rv;
+    }
+
+    public static Map<String,List<String>> parseTableMapOption(String tableNamesSpec) throws ParseException {
+        if (tableNamesSpec.equals("")) {
+            return null;
+        }
+        Map<String,List<String>> rv = new HashMap<>();
+        String[] ranges = tableNamesSpec.split(",");
+        for (int i = 0; i < ranges.length; i++) {
+            List<String> cols = new ArrayList<>();
+            //解析表名和列
+            String[] tns = ranges[i].split("\\[");
+            if ("".equals(tns[0]))
+                continue;
+            String tableName = tns[0];
+            rv.put(tableName,cols);
+            List<String> colGroup= findContentByRegex(ranges[i], "\\\\[(.*?)]");
+            for(String str: colGroup){
+                String[] cns = str.split("|");
+                for(String item: cns) cols.add(item);
+            }
+        }
+        return rv;
+    }
+
+    public static List<String> findContentByRegex(String content,  String regex){
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+        List<String> lstStr = new ArrayList<>();
+        while (matcher.find()) {
+            lstStr.add(matcher.group(1));
+        }
+        return  lstStr;
+    }
+
+    public static boolean isMatch(String content, String regex){
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+        return matcher.matches();
+    }
+
+    public static boolean containTable(List<String> tableNames, String content){
+        for (String tableName: tableNames) {
+            if (content.contains(tableName)){
+                return true;
+            }
+        }
+        return  false;
+    }
+
+    public static String findTableName(List<String> tableNames, String content){
+        for (String tableName: tableNames) {
+            if (content.contains(tableName)){
+                return tableName;
+            }
+        }
+        return  "";
     }
 
     public static void snapPoints(List<? extends Line2D.Float> rulings, float xThreshold, float yThreshold) {

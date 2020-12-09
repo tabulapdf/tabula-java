@@ -132,6 +132,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             }
                         
             TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this);
+            t.setTableName(page.getTableName());
             spreadsheets.add(t);
         }
         Utils.sort(spreadsheets, Rectangle.ILL_DEFINED_ORDER);
@@ -154,7 +155,8 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         if (tables.size() == 0) {
             return false;
         }
-        Table table = tables.get(0);
+        //Table table = tables.get(0);
+        Table table = Utils.maxColTable(tables);
         int rowsDefinedByLines = table.getRowCount();
         int colsDefinedByLines = table.getColCount();
         
@@ -167,8 +169,8 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         int colsDefinedWithoutLines = table.getColCount();
         
         float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) + ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
-        
-        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1/MAGIC_HEURISTIC_NUMBER);
+        //&& ratio < (1/MAGIC_HEURISTIC_NUMBER)
+        return ratio > MAGIC_HEURISTIC_NUMBER ;
     }
     
     public static List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {

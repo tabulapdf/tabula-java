@@ -25,6 +25,11 @@ public class TextStripper extends PDFTextStripper {
     public float minCharHeight = Float.MAX_VALUE;
     public float totalHeight = 0.0f;
     public int countHeight = 0;
+    private String content;
+
+    public String getContent() {
+        return content;
+    }
 
     public TextStripper(PDDocument document, int pageNumber) throws IOException {
         super();
@@ -36,12 +41,13 @@ public class TextStripper extends PDFTextStripper {
     }
 
     public void process() throws IOException {
-        this.getText(this.document);
+        content = this.getText(this.document);
     }
 
     @Override
     protected void writeString(String string, List<TextPosition> textPositions) throws IOException
     {
+        super.writeString(string, textPositions);
         for (TextPosition textPosition: textPositions)
         {
             if (textPosition == null) {

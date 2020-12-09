@@ -37,7 +37,7 @@ Tabula helps you extract tables from PDFs
                             between 0-100 (inclusive) and preceded by '%',
                             input will be taken as % of actual width of
                             the page. Example: --columns %25,50,80.6
- -f,--format <FORMAT>       Output format: (CSV,TSV,JSON). Default: CSV
+ -f,--format <FORMAT>       Output format: (CSV,TSV,JSON，SJSON). Default: CSV
  -g,--guess                 Guess the portion of the page to analyze per
                             page.
  -h,--help                  Print this help text.
@@ -67,6 +67,7 @@ Tabula helps you extract tables from PDFs
  -u,--use-line-returns      Use embedded line returns in cells. (Only in
                             spreadsheet mode.)
  -v,--version               Print version and exit.
+ -tn, --tableNames           筛选要输出的表
 ```
 
 It also includes a debugging tool, run `java -cp ./target/tabula-1.0.2-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.

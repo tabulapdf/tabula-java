@@ -16,6 +16,8 @@ public class Page extends Rectangle {
   private Integer rotation;
   private int pageNumber;
   private List<TextElement> texts;
+  private String content;
+  private String tableName;
   private List<Ruling> rulings, cleanRulings = null, verticalRulingLines = null, horizontalRulingLines = null;
   private float minCharWidth;
   private float minCharHeight;
@@ -39,7 +41,6 @@ public class Page extends Rectangle {
     this.rulings = rulings;
   }
 
-
   public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage, PDDocument doc,
               List<TextElement> characters, List<Ruling> rulings,
               float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
@@ -48,6 +49,15 @@ public class Page extends Rectangle {
     this.minCharHeight = minCharHeight;
     this.minCharWidth = minCharWidth;
     this.spatial_index = index;
+  }
+
+  public Page(float top, float left, float width, float height, int rotation, int page_number, PDPage pdPage, PDDocument doc,
+              List<TextElement> characters, List<Ruling> rulings,
+              float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index, String content, String tableName) {
+
+    this(top, left, width, height, rotation, page_number, pdPage, doc, characters, rulings,minCharHeight, minCharWidth, index);
+    this.content = content;
+    this.tableName = tableName;
   }
 
   public Page getArea(Rectangle area) {
@@ -234,6 +244,14 @@ public class Page extends Rectangle {
 
   public PDDocument getPDDoc() {
     return pdDoc;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
+  public String getTableName() {
+    return tableName;
   }
 
   /** @deprecated with no replacement  */

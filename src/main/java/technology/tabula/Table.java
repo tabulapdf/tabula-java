@@ -23,11 +23,20 @@ public class Table extends Rectangle {
 
 	private int rowCount = 0;
 	private int colCount = 0;
+	private String tableName;
 
 	/* visible for testing */ final TreeMap<CellPosition, RectangularTextContainer> cells = new TreeMap<>();
 
 	public int getRowCount() { return rowCount; }
 	public int getColCount() { return colCount; }
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
 
 	public String getExtractionMethod() { return extractionMethod; }
 

@@ -163,7 +163,7 @@ public class TestTableDetection {
 
         // tabula extractors
         PDDocument pdfDocument = PDDocument.load(this.pdf);
-        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument, null);
 
         // parse expected tables from the ground truth dataset
         Map<Integer, List<Rectangle>> expectedTables = new HashMap<>();

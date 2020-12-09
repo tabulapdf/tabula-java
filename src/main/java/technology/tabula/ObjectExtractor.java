@@ -1,6 +1,7 @@
 package technology.tabula;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -9,8 +10,11 @@ public class ObjectExtractor {
 
     private final PDDocument pdfDocument;
 
-    public ObjectExtractor(PDDocument pdfDocument) {
+    private final List<String> tableNames;
+
+    public ObjectExtractor(PDDocument pdfDocument, List<String> tableNames) {
         this.pdfDocument = pdfDocument;
+        this.tableNames = tableNames;
     }
 
     protected Page extractPage(Integer pageNumber) throws IOException {
@@ -21,16 +25,21 @@ public class ObjectExtractor {
         }
 
         PDPage p = this.pdfDocument.getPage(pageNumber - 1);
+        TextStripper pdfTextStripper = new TextStripper(this.pdfDocument, pageNumber);
+        pdfTextStripper.process();
+        String tableName = "";
+        //TODO 判断表名是否存在
+        if (tableNames != null){
+            //采用文本包含方式判断表名,后续需优化
+            tableName = Utils.findTableName(tableNames, pdfTextStripper.getContent());
+            if ("".equals(tableName)) {
+                return null;
+            }
+        }
+        Utils.sort(pdfTextStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
 
         ObjectExtractorStreamEngine se = new ObjectExtractorStreamEngine(p);
         se.processPage(p);
-
-
-        TextStripper pdfTextStripper = new TextStripper(this.pdfDocument, pageNumber);
-
-        pdfTextStripper.process();
-
-        Utils.sort(pdfTextStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
 
         float w, h;
         int pageRotation = p.getRotation();
@@ -43,7 +52,7 @@ public class ObjectExtractor {
         }
 
         return new Page(0, 0, w, h, pageRotation, pageNumber, p, this.pdfDocument, pdfTextStripper.textElements,
-                se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex);
+                se.rulings, pdfTextStripper.minCharWidth, pdfTextStripper.minCharHeight, pdfTextStripper.spatialIndex, pdfTextStripper.getContent(), tableName);
     }
 
     public PageIterator extract(Iterable<Integer> pages) {
