@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.text.Normalizer;
 
 @SuppressWarnings("serial")
-public class TextChunk extends RectangularTextContainer<TextElement> implements HasText {
+public class TextChunk extends RectangularTextContainer<TextElement> {
     public static final TextChunk EMPTY = new TextChunk(0, 0, 0, 0);
-    List<TextElement> textElements = new ArrayList<>();
+//    List<TextElement> textElements = new ArrayList<>();
 
     public TextChunk(float top, float left, float width, float height) {
         super(top, left, width, height);
@@ -165,11 +165,8 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         }
     }
 
-    @Override public List<TextElement> getTextElements() {
-        return textElements;
-    }
-
-    @Override public String getText() {
+    @Override
+    public String getText() {
         if (this.textElements.size() == 0) {
             return "";
         }
@@ -183,10 +180,8 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
 
     @Override
     public String getText(boolean useLineReturns) {
-        // TODO Auto-generated method stub
-        return null;
+        return getText();
     }
-
 
     /**
      * Returns true if text contained in this TextChunk is the same repeated character

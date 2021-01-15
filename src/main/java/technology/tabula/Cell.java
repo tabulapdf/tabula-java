@@ -1,9 +1,7 @@
 package technology.tabula;
 
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 @SuppressWarnings("serial")
 public class Cell extends RectangularTextContainer<TextChunk> {
@@ -12,19 +10,16 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 		super(top, left, width, height);
 		this.setPlaceholder(false);
 		this.setSpanning(false);
-		this.setTextElements(new ArrayList<TextChunk>());
 	}
 
 	public Cell(Point2D topLeft, Point2D bottomRight) {
 		super((float) topLeft.getY(), (float) topLeft.getX(), (float) (bottomRight.getX() - topLeft.getX()), (float) (bottomRight.getY() - topLeft.getY()));
 		this.setPlaceholder(false);
 		this.setSpanning(false);
-		this.setTextElements(new ArrayList<TextChunk>());
 	}
 
 	private boolean spanning;
 	private boolean placeholder;
-	private List<TextChunk> textElements;
 
 	@Override
 	public String getText(boolean useLineReturns) {
@@ -44,6 +39,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 		return sb.toString().trim();
 	}
 
+	@Override
 	public String getText() {
 		return getText(true);
 	}
@@ -63,13 +59,4 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 	public void setPlaceholder(boolean placeholder) {
 		this.placeholder = placeholder;
 	}
-
-	public List<TextChunk> getTextElements() {
-		return textElements;
-	}
-
-	public void setTextElements(List<TextChunk> textElements) {
-		this.textElements = textElements;
-	}
-
 }
