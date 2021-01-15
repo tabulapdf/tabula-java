@@ -1,23 +1,9 @@
 package technology.tabula.extractors;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import technology.tabula.*;
 
-import technology.tabula.Cell;
-import technology.tabula.Page;
-import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
-import technology.tabula.Table;
-import technology.tabula.TableWithRulingLines;
-import technology.tabula.TextElement;
-import technology.tabula.Utils;
+import java.awt.geom.Point2D;
+import java.util.*;
 
 /**
  * @author manuel
@@ -60,8 +46,8 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
      */
     public List<Table> extract(Page page, List<Ruling> rulings) {
         // split rulings into horizontal and vertical
-        List<Ruling> horizontalR = new ArrayList<>(), 
-                verticalR = new ArrayList<>();
+        List<Ruling> horizontalR = new ArrayList<>();
+        List<Ruling> verticalR = new ArrayList<>();
         
         for (Ruling r: rulings) {
             if (r.horizontal()) {
@@ -113,7 +99,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         // if there's no text at all on the page, it's not a table 
         // (we won't be able to do anything with it though)
-        if(page.getText().isEmpty()){
+        if (page.getText().isEmpty()){
             return false; 
         }
 
@@ -122,7 +108,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         Page minimalRegion = page.getArea(Utils.bounds(page.getText()));
         
         List<? extends Table> tables = new SpreadsheetExtractionAlgorithm().extract(minimalRegion);
-        if (tables.size() == 0) {
+        if (tables.isEmpty()) {
             return false;
         }
         Table table = tables.get(0);
@@ -130,16 +116,17 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         int colsDefinedByLines = table.getColCount();
         
         tables = new BasicExtractionAlgorithm().extract(minimalRegion);
-        if (tables.size() == 0) {
-            // TODO WHAT DO WE DO HERE?
+        if (tables.isEmpty()) {
+            return false;
         }
         table = tables.get(0);
         int rowsDefinedWithoutLines = table.getRowCount();
         int colsDefinedWithoutLines = table.getColCount();
         
-        float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) + ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
+        float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) +
+                ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
         
-        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1/MAGIC_HEURISTIC_NUMBER);
+        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1 / MAGIC_HEURISTIC_NUMBER);
     }
     
     public static List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
@@ -147,16 +134,12 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
         List<Point2D> intersectionPointsList = new ArrayList<>(intersectionPoints.keySet());
         intersectionPointsList.sort(Y_FIRST_POINT_COMPARATOR);
-        boolean doBreak = false;
         
         for (int i = 0; i < intersectionPointsList.size(); i++) {
             Point2D topLeft = intersectionPointsList.get(i);
             Ruling[] hv = intersectionPoints.get(topLeft);
-            doBreak = false;
-            
-            // CrossingPointsDirectlyBelow( topLeft );
+
             List<Point2D> xPoints = new ArrayList<>();
-            // CrossingPointsDirectlyToTheRight( topLeft );
             List<Point2D> yPoints = new ArrayList<>();
 
             for (Point2D p: intersectionPointsList.subList(i, intersectionPointsList.size())) {
@@ -169,7 +152,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             }
             outer:
             for (Point2D xPoint: xPoints) {
-                if (doBreak) { break; }
 
                 // is there a vertical edge b/w topLeft and xPoint?
                 if (!hv[1].equals(intersectionPoints.get(xPoint)[1])) {
@@ -185,7 +167,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                             && intersectionPoints.get(btmRight)[0].equals(intersectionPoints.get(xPoint)[0])
                             && intersectionPoints.get(btmRight)[1].equals(intersectionPoints.get(yPoint)[1])) {
                             cellsFound.add(new Cell(topLeft, btmRight));
-                        doBreak = true;
                         break outer;
                     }
                 }
@@ -224,10 +205,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         // X first sort
         List<Point2D> pointsSortX = new ArrayList<>(pointSet);
-        Collections.sort(pointsSortX, X_FIRST_POINT_COMPARATOR);
+        pointsSortX.sort(X_FIRST_POINT_COMPARATOR);
         // Y first sort
         List<Point2D> pointsSortY = new ArrayList<>(pointSet);
-        Collections.sort(pointsSortY, Y_FIRST_POINT_COMPARATOR);
+        pointsSortY.sort(Y_FIRST_POINT_COMPARATOR);
         
         while (i < pointSet.size()) {
             float currY = (float) pointsSortY.get(i).getY();
@@ -263,16 +244,15 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 if (curr.direction == Direction.HORIZONTAL) {
                     nextVertex = edgesV.get(curr.point);
                     edgesV.remove(curr.point);
-                    lastAddedVertex = new PolygonVertex(nextVertex, Direction.VERTICAL); 
-                    polygon.add(lastAddedVertex);
+                    lastAddedVertex = new PolygonVertex(nextVertex, Direction.VERTICAL);
                 }
                 else {
                     nextVertex = edgesH.get(curr.point);
                     edgesH.remove(curr.point);
                     lastAddedVertex = new PolygonVertex(nextVertex, Direction.HORIZONTAL);
-                    polygon.add(lastAddedVertex);
                 }
-                
+                polygon.add(lastAddedVertex);
+
                 if (lastAddedVertex.equals(polygon.get(0))) {
                     // closed polygon
                     polygon.remove(polygon.size() - 1);
@@ -324,7 +304,8 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             this.point = point;
         }
         
-        @Override public boolean equals(Object other) {
+        @Override
+        public boolean equals(Object other) {
             if (this == other) 
                 return true;
             if (!(other instanceof PolygonVertex))
@@ -332,11 +313,13 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             return this.point.equals(((PolygonVertex) other).point);
         }
         
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             return this.point.hashCode();
         }
         
-        @Override public String toString() {
+        @Override
+        public String toString() {
             return String.format("%s[point=%s,direction=%s]", this.getClass().getName(), this.point.toString(), this.direction.toString());
         }
     }
