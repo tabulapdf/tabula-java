@@ -26,7 +26,7 @@ public class ObjectExtractor {
         TextStripper textStripper = new TextStripper(pdfDocument, pageNumber);
         textStripper.process();
 
-        Utils.sort(textStripper.textElements, Rectangle.ILL_DEFINED_ORDER);
+        Utils.sort(textStripper.getTextElements(), Rectangle.ILL_DEFINED_ORDER);
 
         float width, height;
         int rotation = page.getRotation();
@@ -45,10 +45,10 @@ public class ObjectExtractor {
                 .withPdPage(page)
                 .withPdDocument(pdfDocument)
                 .withRulings(streamEngine.rulings)
-                .withTextElements(textStripper.textElements)
-                .withMinCharWidth(textStripper.minCharWidth)
-                .withMinCharHeight(textStripper.minCharHeight)
-                .withIndex(textStripper.spatialIndex)
+                .withTextElements(textStripper.getTextElements())
+                .withMinCharWidth(textStripper.getMinCharWidth())
+                .withMinCharHeight(textStripper.getMinCharHeight())
+                .withIndex(textStripper.getSpatialIndex())
                 .build();
     }
 
