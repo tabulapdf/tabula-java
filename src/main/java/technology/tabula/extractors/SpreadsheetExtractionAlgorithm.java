@@ -27,57 +27,28 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     private static final float MAGIC_HEURISTIC_NUMBER = 0.65f;
     
-    private static final Comparator<Point2D> POINT_COMPARATOR = new Comparator<Point2D>() {
-        @Override
-        public int compare(Point2D arg0, Point2D arg1) {
-            int rv = 0;
-            float arg0X = Utils.round(arg0.getX(), 2);
-            float arg0Y = Utils.round(arg0.getY(), 2);
-            float arg1X = Utils.round(arg1.getX(), 2);
-            float arg1Y = Utils.round(arg1.getY(), 2);
-            
-            
-            if (arg0Y > arg1Y) {
-                rv = 1;
-            }
-            else if (arg0Y < arg1Y) {
-                rv = -1;
-            }
-            else if (arg0X > arg1X) {
-                rv = 1;
-            }
-            else if (arg0X < arg1X) {
-                rv = -1;
-            }
-            return rv;
+    private static final Comparator<Point2D> Y_FIRST_POINT_COMPARATOR = (point1, point2) -> {
+        int compareY = compareRounded(point1.getY(), point2.getY());
+        if (compareY == 0) {
+            return compareRounded(point1.getX(), point2.getX());
         }
+        return compareY;
     };
     
-    private static final Comparator<Point2D> X_FIRST_POINT_COMPARATOR = new Comparator<Point2D>() {
-        @Override
-        public int compare(Point2D arg0, Point2D arg1) {
-            int rv = 0;
-            float arg0X = Utils.round(arg0.getX(), 2);
-            float arg0Y = Utils.round(arg0.getY(), 2);
-            float arg1X = Utils.round(arg1.getX(), 2);
-            float arg1Y = Utils.round(arg1.getY(), 2);
-            
-            if (arg0X > arg1X) {
-                rv = 1;
-            }
-            else if (arg0X < arg1X) {
-                rv = -1;
-            }
-            else if (arg0Y > arg1Y) {
-                rv = 1;
-            }
-            else if (arg0Y < arg1Y) {
-                rv = -1;
-            }
-            return rv;
+    private static final Comparator<Point2D> X_FIRST_POINT_COMPARATOR = (point1, point2) -> {
+        int compareX = compareRounded(point1.getX(), point2.getX());
+        if (compareX == 0) {
+            return compareRounded(point1.getY(), point2.getY());
         }
+        return compareX;
     };
 
+    private static int compareRounded(double d1, double d2) {
+        float d1Rounded = Utils.round(d1, 2);
+        float d2Rounded = Utils.round(d2, 2);
+
+        return Float.compare(d1Rounded, d2Rounded);
+    }
     
     @Override
     public List<Table> extract(Page page) {
@@ -175,7 +146,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         List<Cell> cellsFound = new ArrayList<>();
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
         List<Point2D> intersectionPointsList = new ArrayList<>(intersectionPoints.keySet());
-        Collections.sort(intersectionPointsList, POINT_COMPARATOR); 
+        intersectionPointsList.sort(Y_FIRST_POINT_COMPARATOR);
         boolean doBreak = false;
         
         for (int i = 0; i < intersectionPointsList.size(); i++) {
@@ -256,7 +227,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         Collections.sort(pointsSortX, X_FIRST_POINT_COMPARATOR);
         // Y first sort
         List<Point2D> pointsSortY = new ArrayList<>(pointSet);
-        Collections.sort(pointsSortY, POINT_COMPARATOR);
+        Collections.sort(pointsSortY, Y_FIRST_POINT_COMPARATOR);
         
         while (i < pointSet.size()) {
             float currY = (float) pointsSortY.get(i).getY();
