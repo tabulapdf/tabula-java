@@ -38,7 +38,18 @@ public class ObjectExtractor {
             height = page.getCropBox().getHeight();
         }
 
-        return new Page(0, 0, width, height, rotation, pageNumber, page, pdfDocument, streamEngine, textStripper);
+        return Page.Builder.newInstance()
+                .withPageDims(PageDims.of(0, 0, width, height))
+                .withRotation(rotation)
+                .withNumber(pageNumber)
+                .withPdPage(page)
+                .withPdDocument(pdfDocument)
+                .withRulings(streamEngine.rulings)
+                .withTextElements(textStripper.textElements)
+                .withMinCharWidth(textStripper.minCharWidth)
+                .withMinCharHeight(textStripper.minCharHeight)
+                .withIndex(textStripper.spatialIndex)
+                .build();
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //

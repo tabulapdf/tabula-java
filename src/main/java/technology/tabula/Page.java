@@ -36,36 +36,27 @@ public class Page extends Rectangle {
 
     private static final float DEFAULT_MIN_CHAR_LENGTH = 7;
 
-    // TODO: Use a creational design patterns here?
-    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc) {
-        super(top, left, width, height);
+    private Page(
+            PageDims pageDims,
+            int rotation,
+            int number,
+            PDPage pdPage,
+            PDDocument doc,
+            List<TextElement> characters,
+            List<Ruling> rulings,
+            float minCharWidth,
+            float minCharHeight,
+            RectangleSpatialIndex<TextElement> index
+    ) {
+        super(pageDims.getTop(), pageDims.getLeft(), pageDims.getWidth(), pageDims.getHeight());
         this.rotation = rotation;
         this.number = number;
         this.pdPage = pdPage;
         this.pdDoc = doc;
-    }
-
-    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
-                List<TextElement> characters, List<Ruling> rulings) {
-        this(top, left, width, height, rotation, number, pdPage, doc);
         this.textElements = characters;
         this.rulings = rulings;
-    }
-
-    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
-                ObjectExtractorStreamEngine streamEngine, TextStripper textStripper) {
-        this(top, left, width, height, rotation, number, pdPage, doc, textStripper.textElements, streamEngine.rulings);
-        this.minCharWidth = textStripper.minCharWidth;
-        this.minCharHeight = textStripper.minCharHeight;
-        this.spatialIndex = textStripper.spatialIndex;
-    }
-
-    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
-                List<TextElement> characters, List<Ruling> rulings,
-                float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
-        this(top, left, width, height, rotation, number, pdPage, doc, characters, rulings);
-        this.minCharHeight = minCharHeight;
         this.minCharWidth = minCharWidth;
+        this.minCharHeight = minCharHeight;
         this.spatialIndex = index;
     }
 
@@ -76,10 +67,18 @@ public class Page extends Rectangle {
         float minimumCharWidth = getMinimumCharWidthFrom(areaTextElements);
         float minimumCharHeight = getMinimumCharHeightFrom(areaTextElements);
 
-        Page page = new Page(area.getTop(), area.getLeft(), (float) area.getWidth(), (float) area.getHeight(),
-                rotation, number, pdPage, pdDoc, areaTextElements,
-                Ruling.cropRulingsToArea(getRulings(), area),
-                minimumCharWidth, minimumCharHeight, spatialIndex);
+        final Page page = Page.Builder.newInstance()
+                .withPageDims(PageDims.of(area.getTop(), area.getLeft(), (float) area.getWidth(), (float) area.getHeight()))
+                .withRotation(rotation)
+                .withNumber(number)
+                .withPdPage(pdPage)
+                .withPdDocument(pdDoc)
+                .withTextElements(areaTextElements)
+                .withRulings(Ruling.cropRulingsToArea(getRulings(), area))
+                .withMinCharWidth(minimumCharWidth)
+                .withMinCharHeight(minimumCharHeight)
+                .withIndex(spatialIndex)
+                .build();
 
         addBorderRulingsTo(page);
 
@@ -281,4 +280,86 @@ public class Page extends Rectangle {
         return spatialIndex;
     }
 
+    public static class Builder {
+        private PageDims pageDims;
+        private int rotation;
+        private int number;
+        private PDPage pdPage;
+        private PDDocument pdDocument;
+        private List<TextElement> textElements;
+        private List<Ruling> rulings;
+        private float minCharWidth;
+        private float minCharHeight;
+        private RectangleSpatialIndex<TextElement> index;
+
+        private Builder() {}
+
+        public static Builder newInstance() {
+            return new Builder();
+        }
+
+        public Builder withPageDims(PageDims pageDims) {
+            this.pageDims = pageDims;
+
+            return this;
+        }
+
+        public Builder withRotation(int rotation) {
+            this.rotation = rotation;
+
+            return this;
+        }
+
+        public Builder withNumber(int number) {
+            this.number = number;
+
+            return this;
+        }
+
+        public Builder withPdPage(PDPage pdPage) {
+            this.pdPage = pdPage;
+
+            return this;
+        }
+
+        public Builder withPdDocument(PDDocument pdDocument) {
+            this.pdDocument = pdDocument;
+
+            return this;
+        }
+
+        public Builder withTextElements(List<TextElement> textElements) {
+            this.textElements = textElements;
+
+            return this;
+        }
+
+        public Builder withRulings(List<Ruling> rulings) {
+            this.rulings = rulings;
+
+            return this;
+        }
+
+        public Builder withMinCharWidth(float minCharWidth) {
+            this.minCharWidth = minCharWidth;
+
+            return this;
+        }
+
+        public Builder withMinCharHeight(float minCharHeight) {
+            this.minCharHeight = minCharHeight;
+
+            return this;
+        }
+
+        public Builder withIndex(RectangleSpatialIndex<TextElement> index) {
+            this.index = index;
+
+            return this;
+        }
+
+        public Page build() {
+            return new Page(pageDims, rotation, number, pdPage, pdDocument, textElements, rulings, minCharWidth, minCharHeight, index);
+        }
+    }
 }
