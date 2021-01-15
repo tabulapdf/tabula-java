@@ -14,35 +14,32 @@ import com.google.gson.JsonSerializer;
 
 public final class TableSerializer implements JsonSerializer<Table> {
 
-	public static final TableSerializer INSTANCE = new TableSerializer();
+    public static final TableSerializer INSTANCE = new TableSerializer();
 
-	private TableSerializer() {
-		// singleton
-	}
+    private TableSerializer() {}
 
-	@Override
-	public JsonElement serialize(Table src, Type typeOfSrc, JsonSerializationContext context) {
+    @Override
+    public JsonElement serialize(Table table, Type type, JsonSerializationContext context) {
+        JsonObject json = new JsonObject();
+        JsonArray data = new JsonArray();
 
-		JsonObject result = new JsonObject();
+        json.addProperty("extraction_method", table.getExtractionMethod());
+        json.addProperty("top", table.getTop());
+        json.addProperty("left", table.getLeft());
+        json.addProperty("width", table.getWidth());
+        json.addProperty("height", table.getHeight());
+        json.addProperty("right", table.getRight());
+        json.addProperty("bottom", table.getBottom());
+        json.add("data", data);
 
-		result.addProperty("extraction_method", src.getExtractionMethod());
-		result.addProperty("top",    src.getTop());
-		result.addProperty("left",   src.getLeft());
-		result.addProperty("width",  src.getWidth());
-		result.addProperty("height", src.getHeight());
-		result.addProperty("right",  src.getRight());
-		result.addProperty("bottom", src.getBottom());
+        for (List<RectangularTextContainer> tableRow : table.getRows()) {
+            JsonArray jsonRow = new JsonArray();
+            for (RectangularTextContainer textChunk : tableRow)
+                jsonRow.add(context.serialize(textChunk));
+            data.add(jsonRow);
+        }
 
-		JsonArray data;
-		result.add("data", data = new JsonArray());
-		
-		for (List<RectangularTextContainer> srcRow : src.getRows()) {
-			JsonArray row = new JsonArray();
-			for (RectangularTextContainer textChunk : srcRow) row.add(context.serialize(textChunk));
-			data.add(row);
-		}
-
-		return result;
-	}
+        return json;
+    }
 
 }
