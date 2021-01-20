@@ -60,6 +60,57 @@ public class Page extends Rectangle {
         this.spatialIndex = index;
     }
 
+  /**
+   *
+   * @deprecated use {@link Builder} instead
+   */
+    @Deprecated
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc) {
+      super(top, left, width, height);
+      this.rotation = rotation;
+      this.number = number;
+      this.pdPage = pdPage;
+      this.pdDoc = doc;
+    }
+
+   /**
+    *
+    * @deprecated use {@link Builder} instead
+    */
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
+                List<TextElement> characters, List<Ruling> rulings) {
+      this(top, left, width, height, rotation, number, pdPage, doc);
+      this.textElements = characters;
+      this.rulings = rulings;
+    }
+
+   /**
+    *
+    * @deprecated use {@link Builder} instead
+    */
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
+                ObjectExtractorStreamEngine streamEngine, TextStripper textStripper) {
+      this(top, left, width, height, rotation, number, pdPage, doc, textStripper.textElements, streamEngine.rulings);
+      this.minCharWidth = textStripper.minCharWidth;
+      this.minCharHeight = textStripper.minCharHeight;
+      this.spatialIndex = textStripper.spatialIndex;
+    }
+
+
+
+   /**
+    *
+    * @deprecated use {@link Builder} instead
+    */
+    public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
+                List<TextElement> characters, List<Ruling> rulings,
+                float minCharWidth, float minCharHeight, RectangleSpatialIndex<TextElement> index) {
+      this(top, left, width, height, rotation, number, pdPage, doc, characters, rulings);
+      this.minCharHeight = minCharHeight;
+      this.minCharWidth = minCharWidth;
+      this.spatialIndex = index;
+    }
+
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
     public Page getArea(Rectangle area) {
         List<TextElement> areaTextElements = getText(area);
