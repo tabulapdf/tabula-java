@@ -90,10 +90,10 @@ public class Page extends Rectangle {
     */
     public Page(float top, float left, float width, float height, int rotation, int number, PDPage pdPage, PDDocument doc,
                 ObjectExtractorStreamEngine streamEngine, TextStripper textStripper) {
-      this(top, left, width, height, rotation, number, pdPage, doc, textStripper.textElements, streamEngine.rulings);
-      this.minCharWidth = textStripper.minCharWidth;
-      this.minCharHeight = textStripper.minCharHeight;
-      this.spatialIndex = textStripper.spatialIndex;
+      this(top, left, width, height, rotation, number, pdPage, doc, textStripper.getTextElements(), streamEngine.rulings);
+      this.minCharWidth = textStripper.getMinCharWidth();
+      this.minCharHeight = textStripper.getMinCharHeight();
+      this.spatialIndex = textStripper.getSpatialIndex();
     }
 
 
