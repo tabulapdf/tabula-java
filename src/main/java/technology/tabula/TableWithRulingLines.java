@@ -14,12 +14,13 @@ public class TableWithRulingLines extends Table {
     List<Ruling> verticalRulings, horizontalRulings;
     RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
     
-    public TableWithRulingLines(Rectangle area, List<Cell> cells, List<Ruling> horizontalRulings, List<Ruling> verticalRulings, ExtractionAlgorithm extractionAlgorithm) {
+    public TableWithRulingLines(Rectangle area, List<Cell> cells, List<Ruling> horizontalRulings, List<Ruling> verticalRulings, ExtractionAlgorithm extractionAlgorithm, int number) {
         super(extractionAlgorithm);
         this.setRect(area);
         this.verticalRulings = verticalRulings;
         this.horizontalRulings = horizontalRulings;
         this.addCells(cells);
+        this.setPageNumber(number);
     }
     
     private void addCells(List<Cell> cells) {

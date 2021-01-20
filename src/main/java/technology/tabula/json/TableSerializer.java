@@ -30,6 +30,7 @@ public final class TableSerializer implements JsonSerializer<Table> {
         json.addProperty("height", table.getHeight());
         json.addProperty("right", table.getRight());
         json.addProperty("bottom", table.getBottom());
+        json.addProperty("page_number", table.getPageNumber());
         json.add("data", data);
 
         for (List<RectangularTextContainer> tableRow : table.getRows()) {
