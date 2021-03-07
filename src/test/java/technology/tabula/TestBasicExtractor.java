@@ -135,6 +135,7 @@ public class TestBasicExtractor {
 
         assertTrue(firstRow.get(1).getText().equals("ALLEGIANT AIR"));
         assertTrue(firstRow.get(2).getText().equals("ALLEGIANT AIR LLC"));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -143,6 +144,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         assertArrayEquals(ARGENTINA_DIPUTADOS_VOTING_RECORD_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -162,6 +164,7 @@ public class TestBasicExtractor {
 
         assertTrue(sixthRow.get(0).getText().equals("VALSANGIACOMO BLANC"));
         assertTrue(sixthRow.get(1).getText().equals("OFERNANDO JORGE"));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -170,6 +173,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         assertArrayEquals(EU_002_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -178,6 +182,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm(page.getVerticalRulings());
         Table table = bea.extract(page.getArea(299.625f, 148.44f, 711.875f, 452.32f)).get(0);
         assertArrayEquals(EU_017_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -186,6 +191,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         assertArrayEquals(FRX_2012_DISCLOSURE_EXPECTED, UtilsForTesting.tableToArrayOfRows(table));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -199,6 +205,7 @@ public class TestBasicExtractor {
         List<RectangularTextContainer> lastRow = rows.get(rows.size() - 1);
         assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ."));
         assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
+        page.getPDDoc().close();
     }
 
     @Test
@@ -274,6 +281,8 @@ public class TestBasicExtractor {
         assertEquals("DOD, and NIH", cells.get(38).getText());
         assertEquals("and networks", cells.get(39).getText());
 
+        page.getPDDoc().close();
+
     }
 
     @Test
@@ -314,6 +323,7 @@ public class TestBasicExtractor {
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         assertEquals(expectedCsv, sb.toString());
+        page.getPDDoc().close();
     }
 
 
@@ -323,6 +333,7 @@ public class TestBasicExtractor {
         BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
         Table table = bea.extract(page).get(0);
         assertArrayEquals(EXPECTED_EMPTY_TABLE, UtilsForTesting.tableToArrayOfRows(table));
+        page.getPDDoc().close();
     }
 
 
