@@ -27,7 +27,7 @@ public class Cell extends RectangularTextContainer<TextChunk> {
 			return "";
 		}
 		StringBuilder sb = new StringBuilder();
-		Collections.sort(this.textElements, Rectangle.ILL_DEFINED_ORDER);
+		this.textElements.sort(Rectangle.ILL_DEFINED_ORDER);
 		double curTop = this.textElements.get(0).getTop();
 		for (TextChunk tc : this.textElements) {
 			if (useLineReturns && tc.getTop() > curTop) {

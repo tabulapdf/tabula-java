@@ -209,11 +209,10 @@ public class TextChunk extends RectangularTextContainer<TextElement> {
             throw new IllegalArgumentException();
         }
 
-        TextChunk[] rv = new TextChunk[]{
-                new TextChunk(this.getTextElements().subList(0, i)),
-                new TextChunk(this.getTextElements().subList(i, this.getTextElements().size()))
-        };
-        return rv;
+      return new TextChunk[]{
+              new TextChunk(this.getTextElements().subList(0, i)),
+              new TextChunk(this.getTextElements().subList(i, this.getTextElements().size()))
+      };
     }
 
     /**
@@ -293,11 +292,8 @@ public class TextChunk extends RectangularTextContainer<TextElement> {
             return false;
         TextChunk other = (TextChunk) obj;
         if (textElements == null) {
-            if (other.textElements != null)
-                return false;
-        } else if (!textElements.equals(other.textElements))
-            return false;
-        return true;
+          return other.textElements == null;
+        } else return textElements.equals(other.textElements);
     }
 
     public static boolean allSameChar(List<TextChunk> textChunks) {

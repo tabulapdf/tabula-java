@@ -74,7 +74,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 
 				@Override
 				public int compare(TextChunk o1, TextChunk o2) {
-					return new java.lang.Float(o1.getLeft()).compareTo(o2.getLeft());
+					return Float.compare(o1.getLeft(), o2.getLeft());
 				}
 			});
             
