@@ -122,7 +122,7 @@ public class TestUtils {
 
     @Test
     public void testJPEG2000DoesNotRaise() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
+        PDDocument pdf_document = org.apache.pdfbox.Loader.loadPDF(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
         PDPage page = pdf_document.getPage(0);
         Utils.pageConvertToImage(pdf_document, page, 360, ImageType.RGB);
     }

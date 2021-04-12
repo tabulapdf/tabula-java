@@ -23,8 +23,8 @@ public class UtilsForTesting {
     public static Page getPage(String path, int pageNumber) throws IOException {
         ObjectExtractor oe = null;
         try {
-            PDDocument document = PDDocument
-                    .load(new File(path));
+            PDDocument document = org.apache.pdfbox.Loader
+                    .loadPDF(new File(path));
             oe = new ObjectExtractor(document);
             Page page = oe.extract(pageNumber);
             return page;
