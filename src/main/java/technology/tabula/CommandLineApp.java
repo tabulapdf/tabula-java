@@ -269,7 +269,7 @@ public class CommandLineApp {
 
         Integer result;
         try {
-            result = Integer.parseInt(line.getOptionValue("line-color-filter"));
+            result = Integer.parseInt(line.getOptionValue("line-color-filter"), 16);
         } catch (NumberFormatException e) {
             throw new ParseException("line-color-filter parameter must be a hexadecimal number");
         }
