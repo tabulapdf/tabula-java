@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -56,6 +57,22 @@ public class CommandLineApp {
             this.password = line.getOptionValue('s');
         }
     }
+
+	public CommandLineApp(Pair<Integer, Rectangle>[] page_areas, Integer[] pages, OutputFormat output_format, boolean guess, ExtractionMethod extraction_method, boolean use_returns, String password) throws ParseException {
+		if (page_areas != null)
+			this.pageAreas = Arrays.asList(page_areas);
+		if (pages != null)
+			this.pages = Arrays.asList(pages);
+		this.outputFormat = output_format;
+
+		TableExtractor extractor = new TableExtractor();
+		extractor.setGuess(guess);
+		extractor.setMethod(extraction_method);
+		extractor.setUseLineReturns(use_returns);
+		this.tableExtractor = extractor;
+
+		this.password = password;
+	}
 
     public static void main(String[] args) {
         CommandLineParser parser = new DefaultParser();
