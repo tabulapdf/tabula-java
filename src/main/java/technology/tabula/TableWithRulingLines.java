@@ -6,22 +6,17 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import technology.tabula.extractors.ExtractionAlgorithm;
+
 @SuppressWarnings("serial")
 public class TableWithRulingLines extends Table {
 
     List<Ruling> verticalRulings, horizontalRulings;
-    RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<Cell>();
+    RectangleSpatialIndex<Cell> si = new RectangleSpatialIndex<>();
     
-    public TableWithRulingLines() {
-        super();
-    }
-
-    public TableWithRulingLines(Rectangle area, Page page, List<Cell> cells,
-            List<Ruling> horizontalRulings,
-            List<Ruling> verticalRulings) {
-        this();
+    public TableWithRulingLines(Rectangle area, List<Cell> cells, List<Ruling> horizontalRulings, List<Ruling> verticalRulings, ExtractionAlgorithm extractionAlgorithm) {
+        super(extractionAlgorithm);
         this.setRect(area);
-        this.page = page;
         this.verticalRulings = verticalRulings;
         this.horizontalRulings = horizontalRulings;
         this.addCells(cells);
@@ -61,7 +56,7 @@ public class TableWithRulingLines extends Table {
     private static List<List<Cell>> rowsOfCells(List<Cell> cells) {
         Cell c;
         float lastTop;
-        List<List<Cell>> rv = new ArrayList<List<Cell>>();
+        List<List<Cell>> rv = new ArrayList<>();
         List<Cell> lastRow;
         
         if (cells.isEmpty()) {
@@ -78,19 +73,19 @@ public class TableWithRulingLines extends Table {
         
         Iterator<Cell> iter = cells.iterator();
         c = iter.next();
-        lastTop = (float) c.getTop();
-        lastRow = new ArrayList<Cell>();
+        lastTop = c.getTop();
+        lastRow = new ArrayList<>();
         lastRow.add(c);
         rv.add(lastRow);
         
         while (iter.hasNext()) {
             c = iter.next();
             if (!Utils.feq(c.getTop(), lastTop)) {
-                lastRow = new ArrayList<Cell>();
+                lastRow = new ArrayList<>();
                 rv.add(lastRow);
             }
             lastRow.add(c);
-            lastTop = (float) c.getTop();
+            lastTop = c.getTop();
         }
         return rv;
     }

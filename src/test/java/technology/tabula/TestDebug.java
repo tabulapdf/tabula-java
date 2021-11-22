@@ -1,13 +1,5 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Test;
-import technology.tabula.debug.Debug;
-
 public class TestDebug {
 
     private final static String PATH = "src/test/resources/technology/tabula/spanning_cells.pdf";

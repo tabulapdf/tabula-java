@@ -1,25 +1,9 @@
 package technology.tabula.extractors;
 
-import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import technology.tabula.*;
 
-import technology.tabula.Cell;
-import technology.tabula.Page;
-import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
-import technology.tabula.Table;
-import technology.tabula.TableWithRulingLines;
-import technology.tabula.TextElement;
-import technology.tabula.Utils;
-import technology.tabula.writers.CSVWriter;
+import java.awt.geom.Point2D;
+import java.util.*;
 
 /**
  * @author manuel
@@ -29,70 +13,41 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     private static final float MAGIC_HEURISTIC_NUMBER = 0.65f;
     
-    private static final Comparator<Point2D> POINT_COMPARATOR = new Comparator<Point2D>() {
-        @Override
-        public int compare(Point2D arg0, Point2D arg1) {
-            int rv = 0;
-            float arg0X = Utils.round(arg0.getX(), 2);
-            float arg0Y = Utils.round(arg0.getY(), 2);
-            float arg1X = Utils.round(arg1.getX(), 2);
-            float arg1Y = Utils.round(arg1.getY(), 2);
-            
-            
-            if (arg0Y > arg1Y) {
-                rv = 1;
-            }
-            else if (arg0Y < arg1Y) {
-                rv = -1;
-            }
-            else if (arg0X > arg1X) {
-                rv = 1;
-            }
-            else if (arg0X < arg1X) {
-                rv = -1;
-            }
-            return rv;
+    private static final Comparator<Point2D> Y_FIRST_POINT_COMPARATOR = (point1, point2) -> {
+        int compareY = compareRounded(point1.getY(), point2.getY());
+        if (compareY == 0) {
+            return compareRounded(point1.getX(), point2.getX());
         }
+        return compareY;
     };
     
-    private static final Comparator<Point2D> X_FIRST_POINT_COMPARATOR = new Comparator<Point2D>() {
-        @Override
-        public int compare(Point2D arg0, Point2D arg1) {
-            int rv = 0;
-            float arg0X = Utils.round(arg0.getX(), 2);
-            float arg0Y = Utils.round(arg0.getY(), 2);
-            float arg1X = Utils.round(arg1.getX(), 2);
-            float arg1Y = Utils.round(arg1.getY(), 2);
-            
-            if (arg0X > arg1X) {
-                rv = 1;
-            }
-            else if (arg0X < arg1X) {
-                rv = -1;
-            }
-            else if (arg0Y > arg1Y) {
-                rv = 1;
-            }
-            else if (arg0Y < arg1Y) {
-                rv = -1;
-            }
-            return rv;
+    private static final Comparator<Point2D> X_FIRST_POINT_COMPARATOR = (point1, point2) -> {
+        int compareX = compareRounded(point1.getX(), point2.getX());
+        if (compareX == 0) {
+            return compareRounded(point1.getY(), point2.getY());
         }
+        return compareX;
     };
 
+    private static int compareRounded(double d1, double d2) {
+        float d1Rounded = Utils.round(d1, 2);
+        float d2Rounded = Utils.round(d2, 2);
+
+        return Float.compare(d1Rounded, d2Rounded);
+    }
     
     @Override
-    public List<? extends Table> extract(Page page) {
+    public List<Table> extract(Page page) {
         return extract(page, page.getRulings());
     }
     
     /**
      * Extract a list of Table from page using rulings as separators
      */
-    public List<? extends Table> extract(Page page, List<Ruling> rulings) {
+    public List<Table> extract(Page page, List<Ruling> rulings) {
         // split rulings into horizontal and vertical
-        List<Ruling> horizontalR = new ArrayList<Ruling>(), 
-                verticalR = new ArrayList<Ruling>();
+        List<Ruling> horizontalR = new ArrayList<>();
+        List<Ruling> verticalR = new ArrayList<>();
         
         for (Ruling r: rulings) {
             if (r.horizontal()) {
@@ -108,10 +63,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         List<Cell> cells = findCells(horizontalR, verticalR);
         List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
         
-        List<TableWithRulingLines> spreadsheets = new ArrayList<TableWithRulingLines>();
+        List<Table> spreadsheets = new ArrayList<>();
         for (Rectangle area: spreadsheetAreas) {
 
-            List<Cell> overlappingCells = new ArrayList<Cell>();
+            List<Cell> overlappingCells = new ArrayList<>();
             for (Cell c: cells) {
                 if (c.intersects(area)) {
 
@@ -120,73 +75,72 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 }
             }
 
-            List<Ruling> horizontalOverlappingRulings = new ArrayList<Ruling>();
+            List<Ruling> horizontalOverlappingRulings = new ArrayList<>();
             for (Ruling hr: horizontalR) {
                 if (area.intersectsLine(hr)) {
                     horizontalOverlappingRulings.add(hr);
                 }
             }
-            List<Ruling> verticalOverlappingRulings = new ArrayList<Ruling>();
+            List<Ruling> verticalOverlappingRulings = new ArrayList<>();
             for (Ruling vr: verticalR) {
                 if (area.intersectsLine(vr)) {
                     verticalOverlappingRulings.add(vr);
                 }
             }
                         
-            TableWithRulingLines t = new TableWithRulingLines(area, page, overlappingCells,
-                    horizontalOverlappingRulings, verticalOverlappingRulings);
-            
-            t.setExtractionAlgorithm(this);
-            
+            TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this);
             spreadsheets.add(t);
         }
-        Utils.sort(spreadsheets);
+        Utils.sort(spreadsheets, Rectangle.ILL_DEFINED_ORDER);
         return spreadsheets;
     }
     
     public boolean isTabular(Page page) {
         
+        // if there's no text at all on the page, it's not a table 
+        // (we won't be able to do anything with it though)
+        if (page.getText().isEmpty()){
+            return false; 
+        }
+
         // get minimal region of page that contains every character (in effect,
         // removes white "margins")
         Page minimalRegion = page.getArea(Utils.bounds(page.getText()));
         
         List<? extends Table> tables = new SpreadsheetExtractionAlgorithm().extract(minimalRegion);
-        if (tables.size() == 0) {
+        if (tables.isEmpty()) {
             return false;
         }
         Table table = tables.get(0);
-        int rowsDefinedByLines = table.getRows().size();
-        int colsDefinedByLines = table.getCols().size();
+        int rowsDefinedByLines = table.getRowCount();
+        int colsDefinedByLines = table.getColCount();
         
         tables = new BasicExtractionAlgorithm().extract(minimalRegion);
-        if (tables.size() == 0) {
-            // TODO WHAT DO WE DO HERE?
+        if (tables.isEmpty()) {
+            return false;
         }
         table = tables.get(0);
-        int rowsDefinedWithoutLines = table.getRows().size();
-        int colsDefinedWithoutLines = table.getCols().size();
+        int rowsDefinedWithoutLines = table.getRowCount();
+        int colsDefinedWithoutLines = table.getColCount();
         
-        float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) + ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
+        float ratio = (((float) colsDefinedByLines / colsDefinedWithoutLines) +
+                ((float) rowsDefinedByLines / rowsDefinedWithoutLines)) / 2.0f;
         
-        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1/MAGIC_HEURISTIC_NUMBER);
+        return ratio > MAGIC_HEURISTIC_NUMBER && ratio < (1 / MAGIC_HEURISTIC_NUMBER);
     }
     
     public static List<Cell> findCells(List<Ruling> horizontalRulingLines, List<Ruling> verticalRulingLines) {
-        List<Cell> cellsFound = new ArrayList<Cell>();
+        List<Cell> cellsFound = new ArrayList<>();
         Map<Point2D, Ruling[]> intersectionPoints = Ruling.findIntersections(horizontalRulingLines, verticalRulingLines);
-        List<Point2D> intersectionPointsList = new ArrayList<Point2D>(intersectionPoints.keySet());
-        Collections.sort(intersectionPointsList, POINT_COMPARATOR); 
-        boolean doBreak = false;
+        List<Point2D> intersectionPointsList = new ArrayList<>(intersectionPoints.keySet());
+        intersectionPointsList.sort(Y_FIRST_POINT_COMPARATOR);
         
         for (int i = 0; i < intersectionPointsList.size(); i++) {
             Point2D topLeft = intersectionPointsList.get(i);
             Ruling[] hv = intersectionPoints.get(topLeft);
-            doBreak = false;
-            
-            // CrossingPointsDirectlyBelow( topLeft );
-            List<Point2D> xPoints = new ArrayList<Point2D>();
-            // CrossingPointsDirectlyToTheRight( topLeft );
-            List<Point2D> yPoints = new ArrayList<Point2D>();
+
+            List<Point2D> xPoints = new ArrayList<>();
+            List<Point2D> yPoints = new ArrayList<>();
 
             for (Point2D p: intersectionPointsList.subList(i, intersectionPointsList.size())) {
                 if (p.getX() == topLeft.getX() && p.getY() > topLeft.getY()) {
@@ -198,7 +152,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             }
             outer:
             for (Point2D xPoint: xPoints) {
-                if (doBreak) { break; }
 
                 // is there a vertical edge b/w topLeft and xPoint?
                 if (!hv[1].equals(intersectionPoints.get(xPoint)[1])) {
@@ -214,7 +167,6 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                             && intersectionPoints.get(btmRight)[0].equals(intersectionPoints.get(xPoint)[0])
                             && intersectionPoints.get(btmRight)[1].equals(intersectionPoints.get(yPoint)[1])) {
                             cellsFound.add(new Cell(topLeft, btmRight));
-                        doBreak = true;
                         break outer;
                     }
                 }
@@ -230,16 +182,16 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     public static List<Rectangle> findSpreadsheetsFromCells(List<? extends Rectangle> cells) {
         // via: http://stackoverflow.com/questions/13746284/merging-multiple-adjacent-rectangles-into-one-polygon
-        List<Rectangle> rectangles = new ArrayList<Rectangle>();
-        Set<Point2D> pointSet = new HashSet<Point2D>();
-        Map<Point2D, Point2D> edgesH = new HashMap<Point2D, Point2D>();
-        Map<Point2D, Point2D> edgesV = new HashMap<Point2D, Point2D>();
+        List<Rectangle> rectangles = new ArrayList<>();
+        Set<Point2D> pointSet = new HashSet<>();
+        Map<Point2D, Point2D> edgesH = new HashMap<>();
+        Map<Point2D, Point2D> edgesV = new HashMap<>();
         int i = 0;
         
-        cells = new ArrayList<Rectangle>(new HashSet<Rectangle>(cells));
-        
-        Collections.sort(cells);
-        
+        cells = new ArrayList<>(new HashSet<>(cells));
+
+        Utils.sort(cells, Rectangle.ILL_DEFINED_ORDER);
+
         for (Rectangle cell: cells) {
             for(Point2D pt: cell.getPoints()) {
                 if (pointSet.contains(pt)) { // shared vertex, remove it
@@ -252,11 +204,11 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         // X first sort
-        List<Point2D> pointsSortX = new ArrayList<Point2D>(pointSet);
-        Collections.sort(pointsSortX, X_FIRST_POINT_COMPARATOR);
+        List<Point2D> pointsSortX = new ArrayList<>(pointSet);
+        pointsSortX.sort(X_FIRST_POINT_COMPARATOR);
         // Y first sort
-        List<Point2D> pointsSortY = new ArrayList<Point2D>(pointSet);
-        Collections.sort(pointsSortY, POINT_COMPARATOR);
+        List<Point2D> pointsSortY = new ArrayList<>(pointSet);
+        pointsSortY.sort(Y_FIRST_POINT_COMPARATOR);
         
         while (i < pointSet.size()) {
             float currY = (float) pointsSortY.get(i).getY();
@@ -278,10 +230,10 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         // Get all the polygons
-        List<List<PolygonVertex>> polygons = new ArrayList<List<PolygonVertex>>();
+        List<List<PolygonVertex>> polygons = new ArrayList<>();
         Point2D nextVertex;
         while (!edgesH.isEmpty()) {
-            ArrayList<PolygonVertex> polygon = new ArrayList<PolygonVertex>();
+            ArrayList<PolygonVertex> polygon = new ArrayList<>();
             Point2D first = edgesH.keySet().iterator().next();
             polygon.add(new PolygonVertex(first, Direction.HORIZONTAL));
             edgesH.remove(first);
@@ -292,16 +244,15 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
                 if (curr.direction == Direction.HORIZONTAL) {
                     nextVertex = edgesV.get(curr.point);
                     edgesV.remove(curr.point);
-                    lastAddedVertex = new PolygonVertex(nextVertex, Direction.VERTICAL); 
-                    polygon.add(lastAddedVertex);
+                    lastAddedVertex = new PolygonVertex(nextVertex, Direction.VERTICAL);
                 }
                 else {
                     nextVertex = edgesH.get(curr.point);
                     edgesH.remove(curr.point);
                     lastAddedVertex = new PolygonVertex(nextVertex, Direction.HORIZONTAL);
-                    polygon.add(lastAddedVertex);
                 }
-                
+                polygon.add(lastAddedVertex);
+
                 if (lastAddedVertex.equals(polygon.get(0))) {
                     // closed polygon
                     polygon.remove(polygon.size() - 1);
@@ -336,7 +287,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     
     @Override
     public String toString() {
-        return "spreadsheet";
+        return "lattice";
     }
     
     private enum Direction {
@@ -353,6 +304,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             this.point = point;
         }
         
+        @Override
         public boolean equals(Object other) {
             if (this == other) 
                 return true;
@@ -361,10 +313,12 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             return this.point.equals(((PolygonVertex) other).point);
         }
         
+        @Override
         public int hashCode() {
             return this.point.hashCode();
         }
         
+        @Override
         public String toString() {
             return String.format("%s[point=%s,direction=%s]", this.getClass().getName(), this.point.toString(), this.direction.toString());
         }

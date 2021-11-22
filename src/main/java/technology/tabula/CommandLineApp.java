@@ -1,27 +1,24 @@
 package technology.tabula;
 
-import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
-import technology.tabula.detectors.SpreadsheetDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
@@ -32,12 +29,17 @@ import technology.tabula.writers.Writer;
 
 public class CommandLineApp {
 
-    private static String VERSION = "0.9.1";
-    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2016 Manuel Aristarán", VERSION);
+    private static String VERSION = "1.0.6-SNAPSHOT";
+    private static String VERSION_STRING = String.format("tabula %s (c) 2012-2020 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
+    private static final int RELATIVE_AREA_CALCULATION_MODE = 0;
+    private static final int ABSOLUTE_AREA_CALCULATION_MODE = 1;
+
+
     private Appendable defaultOutput;
-    private Rectangle pageArea;
+
+    private List<Pair<Integer, Rectangle>> pageAreas;
     private List<Integer> pages;
     private OutputFormat outputFormat;
     private String password;
@@ -45,21 +47,21 @@ public class CommandLineApp {
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
-        this.pageArea = CommandLineApp.whichArea(line);
+        this.pageAreas = CommandLineApp.whichAreas(line);
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
 
         if (line.hasOption('s')) {
-          this.password = line.getOptionValue('s');
+            this.password = line.getOptionValue('s');
         }
     }
 
     public static void main(String[] args) {
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         try {
             // parse the command line arguments
-            CommandLine line = parser.parse(buildOptions(), args );
+            CommandLine line = parser.parse(buildOptions(), args);
 
             if (line.hasOption('h')) {
                 printHelp();
@@ -72,7 +74,7 @@ public class CommandLineApp {
             }
 
             new CommandLineApp(System.out, line).extractTables(line);
-        } catch(ParseException exp) {
+        } catch (ParseException exp) {
             System.err.println("Error: " + exp.getMessage());
             System.exit(1);
         }
@@ -81,20 +83,20 @@ public class CommandLineApp {
 
     public void extractTables(CommandLine line) throws ParseException {
         if (line.hasOption('b')) {
-          if (line.getArgs().length != 0) {
-              throw new ParseException("Filename specified with batch\nTry --help for help");
-          }
+            if (line.getArgs().length != 0) {
+                throw new ParseException("Filename specified with batch\nTry --help for help");
+            }
 
-          File pdfDirectory = new File(line.getOptionValue('b'));
-          if (!pdfDirectory.isDirectory()) {
-            throw new ParseException("Directory does not exist or is not a directory");
-          }
-          extractDirectoryTables(line, pdfDirectory);
-          return;
+            File pdfDirectory = new File(line.getOptionValue('b'));
+            if (!pdfDirectory.isDirectory()) {
+                throw new ParseException("Directory does not exist or is not a directory");
+            }
+            extractDirectoryTables(line, pdfDirectory);
+            return;
         }
 
         if (line.getArgs().length != 1) {
-            throw new ParseException("Need one filename\nTry --help for help");
+            throw new ParseException("Need exactly one filename\nTry --help for help");
         }
 
         File pdfFile = new File(line.getArgs()[0]);
@@ -106,9 +108,9 @@ public class CommandLineApp {
 
     public void extractDirectoryTables(CommandLine line, File pdfDirectory) throws ParseException {
         File[] pdfs = pdfDirectory.listFiles(new FilenameFilter() {
-          public boolean accept(File dir, String name) {
-            return name.endsWith(".pdf");
-          }
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".pdf");
+            }
         });
 
         for (File pdfFile : pdfs) {
@@ -123,10 +125,9 @@ public class CommandLineApp {
     }
 
     public void extractFileTables(CommandLine line, File pdfFile) throws ParseException {
-        Appendable outFile = this.defaultOutput;
         if (!line.hasOption('o')) {
-          extractFile(pdfFile, this.defaultOutput);
-          return;
+            extractFile(pdfFile, this.defaultOutput);
+            return;
         }
 
         File outputFile = new File(line.getOptionValue('o'));
@@ -157,41 +158,52 @@ public class CommandLineApp {
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
         PDDocument pdfDocument = null;
         try {
-            pdfDocument = PDDocument.load(pdfFile);
+            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
             PageIterator pageIterator = getPageIterator(pdfDocument);
-            List<Table> tables = new ArrayList<Table>();
+            List<Table> tables = new ArrayList<>();
 
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
-                if (pageArea != null) {
-                    page = page.getArea(pageArea);
+                if (tableExtractor.verticalRulingPositions != null) {
+                    for (Float verticalRulingPosition : tableExtractor.verticalRulingPositions) {
+                        page.addRuling(new Ruling(0, verticalRulingPosition, 0.0f, (float) page.getHeight()));
+                    }
                 }
 
-                tables.addAll(tableExtractor.extractTables(page));
+                if (pageAreas != null) {
+                    for (Pair<Integer, Rectangle> areaPair : pageAreas) {
+                        Rectangle area = areaPair.getRight();
+                        if (areaPair.getLeft() == RELATIVE_AREA_CALCULATION_MODE) {
+                            area = new Rectangle((float) (area.getTop() / 100 * page.getHeight()),
+                                    (float) (area.getLeft() / 100 * page.getWidth()), (float) (area.getWidth() / 100 * page.getWidth()),
+                                    (float) (area.getHeight() / 100 * page.getHeight()));
+                        }
+                        tables.addAll(tableExtractor.extractTables(page.getArea(area)));
+                    }
+                } else {
+                    tables.addAll(tableExtractor.extractTables(page));
+                }
             }
             writeTables(tables, outFile);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
         } finally {
-          try {
-              if (pdfDocument != null) {
-                pdfDocument.close();
-              }
-          } catch (IOException e) {
-              System.out.println("Error in closing pdf document" + e);
-          }
+            try {
+                if (pdfDocument != null) {
+                    pdfDocument.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error in closing pdf document" + e);
+            }
         }
     }
 
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
-        ObjectExtractor extractor = (this.password == null) ?
-                new ObjectExtractor(pdfDocument) :
-                new ObjectExtractor(pdfDocument, this.password);
-        PageIterator pageIterator = (pages == null) ?
-          extractor.extract() :
-          extractor.extract(pages);
-        return pageIterator;
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        return (pages == null) ?
+                extractor.extract() :
+                extractor.extract(pages);
     }
 
     // CommandLine parsing methods
@@ -211,16 +223,28 @@ public class CommandLineApp {
         }
     }
 
-    private static Rectangle whichArea(CommandLine line) throws ParseException {
+    private static List<Pair<Integer, Rectangle>> whichAreas(CommandLine line) throws ParseException {
         if (!line.hasOption('a')) {
-          return null;
+            return null;
         }
 
-        List<Float> f = parseFloatList(line.getOptionValue('a'));
-        if (f.size() != 4) {
-            throw new ParseException("area parameters must be top,left,bottom,right");
+        String[] optionValues = line.getOptionValues('a');
+
+        List<Pair<Integer, Rectangle>> areaList = new ArrayList<Pair<Integer, Rectangle>>();
+        for (String optionValue : optionValues) {
+            int areaCalculationMode = ABSOLUTE_AREA_CALCULATION_MODE;
+            int startIndex = 0;
+            if (optionValue.startsWith("%")) {
+                startIndex = 1;
+                areaCalculationMode = RELATIVE_AREA_CALCULATION_MODE;
+            }
+            List<Float> f = parseFloatList(optionValue.substring(startIndex));
+            if (f.size() != 4) {
+                throw new ParseException("area parameters must be top,left,bottom,right optionally preceded by %");
+            }
+            areaList.add(new Pair<Integer, Rectangle>(areaCalculationMode, new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0))));
         }
-        return new Rectangle(f.get(0), f.get(1), f.get(3) - f.get(1), f.get(2) - f.get(0));
+        return areaList;
     }
 
     private static List<Integer> whichPages(CommandLine line) throws ParseException {
@@ -229,36 +253,44 @@ public class CommandLineApp {
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
-        if (line.hasOption('r')) {
+        // -r/--spreadsheet [deprecated; use -l] or -l/--lattice
+        if (line.hasOption('r') || line.hasOption('l')) {
             return ExtractionMethod.SPREADSHEET;
         }
 
-        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('g')) {
+        // -n/--no-spreadsheet [deprecated; use -t] or  -c/--columns or -g/--guess or -t/--stream
+        if (line.hasOption('n') || line.hasOption('c') || line.hasOption('t')) {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
     }
 
     private static TableExtractor createExtractor(CommandLine line) throws ParseException {
-      TableExtractor extractor = new TableExtractor();
-      extractor.setGuess(line.hasOption('g'));
-      extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
-      extractor.setUseLineReturns(line.hasOption('u'));
+        TableExtractor extractor = new TableExtractor();
+        extractor.setGuess(line.hasOption('g'));
+        extractor.setMethod(CommandLineApp.whichExtractionMethod(line));
+        extractor.setUseLineReturns(line.hasOption('u'));
 
-      if (line.hasOption('c')) {
-          extractor.setVerticalRulingPositions(parseFloatList(line.getOptionValue('c')));
-      }
-      return extractor;
+        if (line.hasOption('c')) {
+            String optionString = line.getOptionValue('c');
+            if (optionString.startsWith("%")) {
+                extractor.setVerticalRulingPositionsRelative(true);
+                optionString = optionString.substring(1);
+            }
+            extractor.setVerticalRulingPositions(parseFloatList(optionString));
+        }
+
+        return extractor;
     }
 
     // utilities, etc.
 
     public static List<Float> parseFloatList(String option) throws ParseException {
         String[] f = option.split(",");
-        List<Float> rv = new ArrayList<Float>();
+        List<Float> rv = new ArrayList<>();
         try {
-            for (int i = 0; i < f.length; i++) {
-                rv.add(Float.parseFloat(f[i]));
+            for (final String element : f) {
+                rv.add(Float.parseFloat(element));
             }
             return rv;
         } catch (NumberFormatException e) {
@@ -271,141 +303,173 @@ public class CommandLineApp {
         formatter.printHelp("tabula", BANNER, buildOptions(), "", true);
     }
 
-    @SuppressWarnings("static-access")
     public static Options buildOptions() {
         Options o = new Options();
 
         o.addOption("v", "version", false, "Print version and exit.");
         o.addOption("h", "help", false, "Print this help text.");
         o.addOption("g", "guess", false, "Guess the portion of the page to analyze per page.");
-        o.addOption("d", "debug", false, "Print detected table areas instead of processing");
-        o.addOption("r", "spreadsheet", false, "Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
-        o.addOption("n", "no-spreadsheet", false, "Force PDF not to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("r", "spreadsheet", false, "[Deprecated in favor of -l/--lattice] Force PDF to be extracted using spreadsheet-style extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("n", "no-spreadsheet", false, "[Deprecated in favor of -t/--stream] Force PDF not to be extracted using spreadsheet-style extraction (if there are no ruling lines separating each cell)");
+        o.addOption("l", "lattice", false, "Force PDF to be extracted using lattice-mode extraction (if there are ruling lines separating each cell, as in a PDF of an Excel spreadsheet)");
+        o.addOption("t", "stream", false, "Force PDF to be extracted using stream-mode extraction (if there are no ruling lines separating each cell)");
         o.addOption("i", "silent", false, "Suppress all stderr output.");
         o.addOption("u", "use-line-returns", false, "Use embedded line returns in cells. (Only in spreadsheet mode.)");
-        o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
-        o.addOption(OptionBuilder.withLongOpt("batch")
-            .withDescription("Convert all .pdfs in the provided directory.")
-            .hasArg()
-            .withArgName("DIRECTORY")
-            .create("b"));
-        o.addOption(OptionBuilder.withLongOpt("outfile")
-                                 .withDescription("Write output to <file> instead of STDOUT. Default: -")
-                                 .hasArg()
-                                 .withArgName("OUTFILE")
-                                 .create("o"));
-        o.addOption(OptionBuilder.withLongOpt("format")
-                                 .withDescription("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
-                                 .hasArg()
-                                 .withArgName("FORMAT")
-                                 .create("f"));
-        o.addOption(OptionBuilder.withLongOpt("password")
-                                 .withDescription("Password to decrypt document. Default is empty")
-                                 .hasArg()
-                                 .withArgName("PASSWORD")
-                                 .create("s"));
-        o.addOption(OptionBuilder.withLongOpt("columns")
-                                 .withDescription("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3")
-                                 .hasArg()
-                                 .withArgName("COLUMNS")
-                                 .create("c"));
-        o.addOption(OptionBuilder.withLongOpt("area")
-                                 .withDescription("Portion of the page to analyze (top,left,bottom,right). Example: --area 269.875,12.75,790.5,561. Default is entire page")
-                                 .hasArg()
-                                 .withArgName("AREA")
-                                 .create("a"));
-        o.addOption(OptionBuilder.withLongOpt("pages")
-                                 .withDescription("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
-                                 .hasArg()
-                                 .withArgName("PAGES")
-                                 .create("p"));
+        // o.addOption("d", "debug", false, "Print detected table areas instead of processing.");
+        o.addOption(Option.builder("b")
+                .longOpt("batch")
+                .desc("Convert all .pdfs in the provided directory.")
+                .hasArg()
+                .argName("DIRECTORY")
+                .build());
+        o.addOption(Option.builder("o")
+                .longOpt("outfile")
+                .desc("Write output to <file> instead of STDOUT. Default: -")
+                .hasArg()
+                .argName("OUTFILE")
+                .build());
+        o.addOption(Option.builder("f")
+                .longOpt("format")
+                .desc("Output format: (" + Utils.join(",", OutputFormat.formatNames()) + "). Default: CSV")
+                .hasArg()
+                .argName("FORMAT")
+                .build());
+        o.addOption(Option.builder("s")
+                .longOpt("password")
+                .desc("Password to decrypt document. Default is empty")
+                .hasArg()
+                .argName("PASSWORD")
+                .build());
+        o.addOption(Option.builder("c")
+                .longOpt("columns")
+                .desc("X coordinates of column boundaries. Example --columns 10.1,20.2,30.3. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual width of the page. "
+                        + "Example: --columns %25,50,80.6")
+                .hasArg()
+                .argName("COLUMNS")
+                .build());
+        o.addOption(Option.builder("a")
+                .longOpt("area")
+                .desc("-a/--area = Portion of the page to analyze. Example: --area 269.875,12.75,790.5,561. "
+                        + "Accepts top,left,bottom,right i.e. y1,x1,y2,x2 where all values are in points relative to the top left corner. "
+                        + "If all values are between 0-100 (inclusive) and preceded by '%', input will be taken as % of actual height or width of the page. "
+                        + "Example: --area %0,0,100,50. To specify multiple areas, -a option should be repeated. Default is entire page")
+                .hasArg()
+                .argName("AREA")
+                .build());
+        o.addOption(Option.builder("p")
+                .longOpt("pages")
+                .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
+                .hasArg()
+                .argName("PAGES")
+                .build());
 
         return o;
     }
 
     private static class TableExtractor {
-      private boolean guess = false;
-      private boolean useLineReturns = false;
-      private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
-      private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
-      private List<Float> verticalRulingPositions = null;
-      private ExtractionMethod method = ExtractionMethod.BASIC;
+        private boolean guess = false;
+        private boolean useLineReturns = false;
+        private BasicExtractionAlgorithm basicExtractor = new BasicExtractionAlgorithm();
+        private SpreadsheetExtractionAlgorithm spreadsheetExtractor = new SpreadsheetExtractionAlgorithm();
 
-      public TableExtractor() {
-      }
+        private boolean verticalRulingPositionsRelative = false;
+        private List<Float> verticalRulingPositions = null;
 
-      public void setVerticalRulingPositions(List<Float> positions) {
-        this.verticalRulingPositions = positions;
-      }
+        private ExtractionMethod method = ExtractionMethod.BASIC;
 
-      public void setGuess(boolean guess) {
-        this.guess = guess;
-      }
-
-      public void setUseLineReturns(boolean useLineReturns) {
-        this.useLineReturns = useLineReturns;
-      }
-
-      public void setMethod(ExtractionMethod method) {
-        this.method = method;
-      }
-
-      public List<Table> extractTables(Page page) {
-          ExtractionMethod effectiveMethod = this.method;
-          if (effectiveMethod == ExtractionMethod.DECIDE) {
-            effectiveMethod = spreadsheetExtractor.isTabular(page) ?
-              ExtractionMethod.SPREADSHEET :
-              ExtractionMethod.BASIC;
-          }
-          switch(effectiveMethod) {
-          case BASIC:
-              return extractTablesBasic(page);
-          case SPREADSHEET:
-              return extractTablesSpreadsheet(page);
-          default:
-            return new ArrayList<Table>();
-          }
-      }
-
-      public List<Table> extractTablesBasic(Page page) {
-        if (guess) {
-          // guess the page areas to extract using a detection algorithm
-          // currently we only have a detector that uses spreadsheets to find table areas
-          DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
-          List<Rectangle> guesses = detector.detect(page);
-          List<Table> tables = new ArrayList<Table>();
-
-          for (Rectangle guessRect : guesses) {
-              Page guess = page.getArea(guessRect);
-              tables.addAll(basicExtractor.extract(guess));
-          }
-          return tables;
+        public TableExtractor() {
         }
 
-        if (verticalRulingPositions != null) {
-          return basicExtractor.extract(page, verticalRulingPositions);
+        public void setVerticalRulingPositions(List<Float> positions) {
+            this.verticalRulingPositions = positions;
         }
-        return basicExtractor.extract(page);
-      }
 
-      public List<Table> extractTablesSpreadsheet(Page page) {
-          // TODO add useLineReturns
-          return (List<Table>)spreadsheetExtractor.extract(page);
-      }
+        public void setVerticalRulingPositionsRelative(boolean relative) {
+            this.verticalRulingPositionsRelative = relative;
+        }
+
+        public void setGuess(boolean guess) {
+            this.guess = guess;
+        }
+
+        public void setUseLineReturns(boolean useLineReturns) {
+            this.useLineReturns = useLineReturns;
+        }
+
+        public void setMethod(ExtractionMethod method) {
+            this.method = method;
+        }
+
+        public List<Table> extractTables(Page page) {
+            ExtractionMethod effectiveMethod = this.method;
+            if (effectiveMethod == ExtractionMethod.DECIDE) {
+                effectiveMethod = spreadsheetExtractor.isTabular(page) ?
+                        ExtractionMethod.SPREADSHEET :
+                        ExtractionMethod.BASIC;
+            }
+            switch (effectiveMethod) {
+                case BASIC:
+                    return extractTablesBasic(page);
+                case SPREADSHEET:
+                    return extractTablesSpreadsheet(page);
+                default:
+                    return new ArrayList<>();
+            }
+        }
+
+        public List<Table> extractTablesBasic(Page page) {
+            if (guess) {
+                // guess the page areas to extract using a detection algorithm
+                // currently we only have a detector that uses spreadsheets to find table areas
+                DetectionAlgorithm detector = new NurminenDetectionAlgorithm();
+                List<Rectangle> guesses = detector.detect(page);
+                List<Table> tables = new ArrayList<>();
+
+                for (Rectangle guessRect : guesses) {
+                    Page guess = page.getArea(guessRect);
+                    tables.addAll(basicExtractor.extract(guess));
+                }
+                return tables;
+            }
+
+            if (verticalRulingPositions != null) {
+                List<Float> absoluteRulingPositions;
+
+                if (this.verticalRulingPositionsRelative) {
+                    // convert relative to absolute
+                    absoluteRulingPositions = new ArrayList<>(verticalRulingPositions.size());
+                    for (float relative : this.verticalRulingPositions) {
+                        float absolute = (float) (relative / 100.0 * page.getWidth());
+                        absoluteRulingPositions.add(absolute);
+                    }
+                } else {
+                    absoluteRulingPositions = this.verticalRulingPositions;
+                }
+                return basicExtractor.extract(page, absoluteRulingPositions);
+            }
+
+            return basicExtractor.extract(page);
+        }
+
+        public List<Table> extractTablesSpreadsheet(Page page) {
+            // TODO add useLineReturns
+            return spreadsheetExtractor.extract(page);
+        }
     }
 
     private void writeTables(List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
         switch (outputFormat) {
-        case CSV:
-            writer = new CSVWriter();
-            break;
-        case JSON:
-            writer = new JSONWriter();
-            break;
-        case TSV:
-            writer = new TSVWriter();
-            break;
+            case CSV:
+                writer = new CSVWriter();
+                break;
+            case JSON:
+                writer = new JSONWriter();
+                break;
+            case TSV:
+                writer = new TSVWriter();
+                break;
         }
         writer.write(out, tables);
     }
@@ -413,15 +477,15 @@ public class CommandLineApp {
     private String getOutputFilename(File pdfFile) {
         String extension = ".csv";
         switch (outputFormat) {
-        case CSV:
-            extension = ".csv";
-            break;
-        case JSON:
-            extension = ".json";
-            break;
-        case TSV:
-            extension = ".tsv";
-            break;
+            case CSV:
+                extension = ".csv";
+                break;
+            case JSON:
+                extension = ".json";
+                break;
+            case TSV:
+                extension = ".tsv";
+                break;
         }
         return pdfFile.getPath().replaceFirst("(\\.pdf|)$", extension);
     }

@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 
+// NOTE: this class is currently not used by the extraction algorithms
+// keeping it for potential use.
 public class ProjectionProfile {
 
     public static final int DECIMAL_PLACES = 1; // fixed <-> float conversion precision
@@ -71,7 +73,7 @@ public class ProjectionProfile {
     public float[] findVerticalSeparators(float minColumnWidth) {
         boolean foundNarrower = false;
 
-        List<Integer> verticalSeparators = new ArrayList<Integer>();
+        List<Integer> verticalSeparators = new ArrayList<>();
         for (Ruling r: area.getVerticalRulings()) {
             if (r.length() / this.textBounds.getHeight() >= 0.95) {
                 verticalSeparators.add(toFixed(r.getPosition() - this.areaLeft));
@@ -103,7 +105,7 @@ public class ProjectionProfile {
     public float[] findHorizontalSeparators(float minRowHeight) {
         boolean foundShorter = false;
 
-        List<Integer> horizontalSeparators = new ArrayList<Integer>();
+        List<Integer> horizontalSeparators = new ArrayList<>();
         for (Ruling r: area.getHorizontalRulings()) {
             System.out.println(r.length() / this.textBounds.getWidth());
             if (r.length() / this.textBounds.getWidth() >= 0.95) {
@@ -134,7 +136,7 @@ public class ProjectionProfile {
     }
     
     private static List<Integer> findSeparatorsFromProjection(float[] derivative) {
-        List<Integer> separators = new ArrayList<Integer>();
+        List<Integer> separators = new ArrayList<>();
         Integer lastNeg = null;
         float s;
         boolean positiveSlope = false;
@@ -165,7 +167,7 @@ public class ProjectionProfile {
                         + kernelSize / 2, data.length); j++) {
                     s += data[j];
                 }
-                rv[i] = (float) Math.floor(s / (float) kernelSize);
+                rv[i] = (float) Math.floor(s / kernelSize);
             }
         }
         return rv;
@@ -211,7 +213,7 @@ public class ProjectionProfile {
     }
     
     private static double toDouble(int value) {
-        return (double) value / Math.pow(10, DECIMAL_PLACES);
+        return value / Math.pow(10, DECIMAL_PLACES);
     }
     
 }

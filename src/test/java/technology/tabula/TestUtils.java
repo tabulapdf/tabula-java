@@ -5,13 +5,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.pdfbox.rendering.ImageType;
 import org.apache.commons.cli.ParseException;
-import org.junit.Before;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.Test;
 
 public class TestUtils {
@@ -44,7 +48,7 @@ public class TestUtils {
 
     @Test
     public void testBoundsOfOneRectangle() {
-        ArrayList<Rectangle> shapes = new ArrayList();
+        ArrayList<Rectangle> shapes = new ArrayList<>();
         shapes.add(new Rectangle(0, 0, 20, 40));
         Rectangle r = Utils.bounds(shapes);
         assertEquals(r, shapes.get(0));
@@ -78,7 +82,7 @@ public class TestUtils {
 
     @Test
     public void testQuickSortEmptyList() {
-    	List<Integer> numbers = new ArrayList<Integer>();
+    	List<Integer> numbers = new ArrayList<>();
     	QuickSort.sort(numbers);
 
     	assertEquals(Collections.emptyList(), numbers);
@@ -103,8 +107,8 @@ public class TestUtils {
     @Test
     public void testQuickSortLongList() {
 
-    	List<Integer> numbers = new ArrayList<Integer>();
-    	List<Integer> expectedNumbers = new ArrayList<Integer>();
+    	List<Integer> numbers = new ArrayList<>();
+    	List<Integer> expectedNumbers = new ArrayList<>();
 
     	for(int i = 0; i <= 12000; i++){
     		numbers.add(12000 - i);
@@ -114,6 +118,13 @@ public class TestUtils {
     	QuickSort.sort(numbers);
 
     	assertEquals(expectedNumbers, numbers);
+    }
+
+    @Test
+    public void testJPEG2000DoesNotRaise() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
+        PDPage page = pdf_document.getPage(0);
+        Utils.pageConvertToImage(pdf_document, page, 360, ImageType.RGB);
     }
 
 }

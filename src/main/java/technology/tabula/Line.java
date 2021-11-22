@@ -8,7 +8,7 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class Line extends Rectangle {
 
-    List<TextChunk> textChunks = new ArrayList<TextChunk>();
+    List<TextChunk> textChunks = new ArrayList<>();
     public static final Character[] WHITE_SPACE_CHARS = { ' ', '\t', '\r', '\n', '\f' };
     
 
@@ -52,7 +52,7 @@ public class Line extends Rectangle {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         String s = super.toString();
-        sb.append(s.substring(0, s.length() - 1));
+        sb.append(s, 0, s.length() - 1);
         sb.append(",chunks=");
         for (TextChunk te: this.textChunks) {
             sb.append("'" + te.getText() + "', ");

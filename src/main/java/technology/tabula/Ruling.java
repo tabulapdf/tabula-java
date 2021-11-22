@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,7 +17,7 @@ public class Ruling extends Line2D.Float {
     
     private static int PERPENDICULAR_PIXEL_EXPAND_AMOUNT = 2;
     private static int COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT = 1;
-    private enum SOType { VERTICAL, HRIGHT, HLEFT };
+    private enum SOType { VERTICAL, HRIGHT, HLEFT }
 
     public Ruling(float top, float left, float width, float height) {
         this(new Point2D.Float(left, top), new Point2D.Float(left+width, top+height));
@@ -39,9 +40,6 @@ public class Ruling extends Line2D.Float {
         else if (Utils.within(angle, 90, 1) || Utils.within(angle, 270, 1)) { // almost vertical
             this.setLine(this.x1, this.y1, this.x1, this.y2);
         }
-//        else {
-//            System.out.println("oblique: " + this + " ("+ this.getAngle() + ")");
-//        }
     }
 
     public boolean vertical() {
@@ -230,11 +228,6 @@ public class Ruling extends Line2D.Float {
         return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
     }
     
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
     public float getTop() {
         return this.y1;
     }
@@ -291,13 +284,13 @@ public class Ruling extends Line2D.Float {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Formatter formatter = new Formatter(sb);
-        String rv = formatter.format("%s[x1=%f y1=%f x2=%f y2=%f]", this.getClass().toString(), this.x1, this.y1, this.x2, this.y2).toString();
+        String rv = formatter.format(Locale.US, "%s[x1=%f y1=%f x2=%f y2=%f]", this.getClass().toString(), this.x1, this.y1, this.x2, this.y2).toString();
         formatter.close();
         return rv;
     }
     
     public static List<Ruling> cropRulingsToArea(List<Ruling> rulings, Rectangle2D area) {
-        ArrayList<Ruling> rv = new ArrayList<Ruling>();
+        ArrayList<Ruling> rv = new ArrayList<>();
         for (Ruling r : rulings) {
             if (r.intersects(area)) {
                 rv.add(r.intersect(area));
@@ -322,15 +315,15 @@ public class Ruling extends Line2D.Float {
             }
         }
         
-        List<SortObject> sos = new ArrayList<SortObject>();
+        List<SortObject> sos = new ArrayList<>();
         
-        TreeMap<Ruling, Boolean> tree = new TreeMap<Ruling, Boolean>(new Comparator<Ruling>() {
+        TreeMap<Ruling, Boolean> tree = new TreeMap<>(new Comparator<Ruling>() {
             @Override
             public int compare(Ruling o1, Ruling o2) {
                 return java.lang.Double.compare(o1.getTop(), o2.getTop());
             }});
         
-        TreeMap<Point2D, Ruling[]> rv = new TreeMap<Point2D, Ruling[]>(new Comparator<Point2D>() {
+        TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
             @Override
             public int compare(Point2D o1, Point2D o2) {
                 if (o1.getY() > o2.getY()) return  1;
@@ -409,7 +402,7 @@ public class Ruling extends Line2D.Float {
     }
     
     public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
-        ArrayList<Ruling> rv = new ArrayList<Ruling>();
+        ArrayList<Ruling> rv = new ArrayList<>();
         Collections.sort(lines, new Comparator<Ruling>() {
             @Override
             public int compare(Ruling a, Ruling b) {

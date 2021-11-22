@@ -1,0 +1,21 @@
+version: '{build}'
+install:
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if (!(Test-Path -Path "C:\maven\apache-maven-3.5.4" )) {
+        (new-object System.Net.WebClient).DownloadFile(
+          'http://www-us.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.zip',
+          'C:\maven-bin.zip'
+        )
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+      }
+  - cmd: SET PATH=C:\maven\apache-maven-3.5.4\bin;%JAVA_HOME%\bin;%PATH%
+  - cmd: SET MAVEN_OPTS=-Xmx2g
+  - cmd: SET JAVA_OPTS=-Xmx2g
+build_script:
+  - mvn clean package -B -DskipTests -Dmaven.javadoc.skip=true
+test_script:
+  - mvn install -B -Dmaven.javadoc.skip=true -Dgpg.skip
+cache:
+  - C:\maven -> appveyor.yml
+  - C:\Users\appveyor\.m2 -> appveyor.yml

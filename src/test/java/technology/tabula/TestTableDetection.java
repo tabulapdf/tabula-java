@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
 import com.google.gson.Gson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,10 +47,6 @@ public class TestTableDetection {
         private transient boolean firstRun;
         private transient String pdfFilename;
 
-        public TestStatus() {
-            this(null);
-        }
-
         public TestStatus(String pdfFilename) {
             this.numExpectedTables = 0;
             this.numCorrectlyDetectedTables = 0;
@@ -75,12 +70,12 @@ public class TestTableDetection {
         }
 
         public void save() {
-            try {
-                FileWriter w = new FileWriter(jsonFilename(this.pdfFilename));
+            try (FileWriter w = new FileWriter(jsonFilename(this.pdfFilename))) {
                 Gson gson = new Gson();
                 w.write(gson.toJson(this));
                 w.close();
             } catch (Exception e) {
+                throw new Error(e);
             }
         }
 
@@ -109,7 +104,7 @@ public class TestTableDetection {
     public static Collection<Object[]> data() {
         String[] regionCodes = {"eu", "us"};
 
-        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        ArrayList<Object[]> data = new ArrayList<>();
 
         for (String regionCode : regionCodes) {
             String directoryName = "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-" + regionCode + "/";
@@ -145,6 +140,7 @@ public class TestTableDetection {
         try {
             this.builder = factory.newDocumentBuilder();
         } catch (Exception e) {
+            // ignored
         }
     }
 
@@ -170,7 +166,7 @@ public class TestTableDetection {
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
         // parse expected tables from the ground truth dataset
-        Map<Integer, List<Rectangle>> expectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> expectedTables = new HashMap<>();
 
         int numExpectedTables = 0;
 
@@ -189,7 +185,7 @@ public class TestTableDetection {
 
             List<Rectangle> pageTables = expectedTables.get(page);
             if (pageTables == null) {
-                pageTables = new ArrayList<Rectangle>();
+                pageTables = new ArrayList<>();
                 expectedTables.put(page, pageTables);
             }
 
@@ -208,7 +204,7 @@ public class TestTableDetection {
         }
 
         // now find tables detected by tabula-java
-        Map<Integer, List<Rectangle>> detectedTables = new HashMap<Integer, List<Rectangle>>();
+        Map<Integer, List<Rectangle>> detectedTables = new HashMap<>();
 
         // the algorithm we're going to be testing
         NurminenDetectionAlgorithm detectionAlgorithm = new NurminenDetectionAlgorithm();
@@ -225,7 +221,7 @@ public class TestTableDetection {
         // now compare
         System.out.println("Testing " + this.pdf.getName());
 
-        List<String> errors = new ArrayList<String>();
+        List<String> errors = new ArrayList<>();
         this.status.numExpectedTables = numExpectedTables;
         totalExpectedTables += numExpectedTables;
 
@@ -290,7 +286,7 @@ public class TestTableDetection {
     }
 
     private List<String> comparePages(Integer page, List<Rectangle> detected, List<Rectangle> expected) {
-        ArrayList<String> errors = new ArrayList<String>();
+        ArrayList<String> errors = new ArrayList<>();
 
         // go through the detected tables and try to match them with expected tables
         // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):

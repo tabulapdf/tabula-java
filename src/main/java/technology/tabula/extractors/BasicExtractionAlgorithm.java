@@ -26,9 +26,9 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     }
     
     public List<Table> extract(Page page, List<Float> verticalRulingPositions) {
-        List<Ruling> verticalRulings = new ArrayList<Ruling>(verticalRulingPositions.size());
+        List<Ruling> verticalRulings = new ArrayList<>(verticalRulingPositions.size());
         for (Float p: verticalRulingPositions) {
-            verticalRulings.add(new Ruling((float) page.getTop(), (float) p, 0.0f, (float) page.getHeight()));
+            verticalRulings.add(new Ruling(page.getTop(), p, 0.0f, (float) page.getHeight()));
         }
         this.verticalRulings = verticalRulings;
         return this.extract(page);
@@ -40,7 +40,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         List<TextElement> textElements = page.getText();
         
         if (textElements.size() == 0) {
-            return Arrays.asList(new Table[] { Table.EMPTY });
+            return Arrays.asList(new Table[] { Table.empty() });
         }
         
         List<TextChunk> textChunks = this.verticalRulings == null ? TextElement.mergeWords(page.getText()) : TextElement.mergeWords(page.getText(), this.verticalRulings);
@@ -54,7 +54,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
                     return Double.compare(arg0.getLeft(), arg1.getLeft());
                 }
             });
-            columns = new ArrayList<Float>(this.verticalRulings.size());
+            columns = new ArrayList<>(this.verticalRulings.size());
             for (Ruling vr: this.verticalRulings) {
                 columns.add(vr.getLeft());
             }
@@ -63,8 +63,9 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             columns = columnPositions(lines);
         }
         
-        Table table = new Table(page, this);
-        
+        Table table = new Table(this);
+        table.setRect(page.getLeft(), page.getTop(), page.getWidth(), page.getHeight());
+
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             List<TextChunk> elements = line.getTextElements();
@@ -73,7 +74,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 
 				@Override
 				public int compare(TextChunk o1, TextChunk o2) {
-					return new java.lang.Float(o1.getLeft()).compareTo(o2.getLeft());
+					return Float.compare(o1.getLeft(), o2.getLeft());
 				}
 			});
             
@@ -99,7 +100,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
     
     @Override
     public String toString() {
-        return "basic";
+        return "stream";
     }
     
     
@@ -109,7 +110,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
      */
     public static List<java.lang.Float> columnPositions(List<Line> lines) {
 
-        List<Rectangle> regions = new ArrayList<Rectangle>();
+        List<Rectangle> regions = new ArrayList<>();
         for (TextChunk tc: lines.get(0).getTextElements()) {
             if (tc.isSameChar(Line.WHITE_SPACE_CHARS)) { 
                 continue; 
@@ -120,7 +121,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         }
         
         for (Line l: lines.subList(1, lines.size())) {
-            List<TextChunk> lineTextElements = new ArrayList<TextChunk>();
+            List<TextChunk> lineTextElements = new ArrayList<>();
             for (TextChunk tc: l.getTextElements()) {
                 if (!tc.isSameChar(Line.WHITE_SPACE_CHARS)) { 
                     lineTextElements.add(tc);
@@ -129,7 +130,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             
             for (Rectangle cr: regions) {
 
-                List<TextChunk> overlaps = new ArrayList<TextChunk>();
+                List<TextChunk> overlaps = new ArrayList<>();
                 for (TextChunk te: lineTextElements) {
                     if (cr.horizontallyOverlaps(te)) {
                         overlaps.add(te);
@@ -150,9 +151,9 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
             }
         }
         
-        List<java.lang.Float> rv = new ArrayList<java.lang.Float>();
+        List<java.lang.Float> rv = new ArrayList<>();
         for (Rectangle r: regions) {
-            rv.add((float) r.getRight());
+            rv.add(r.getRight());
         }
         
         Collections.sort(rv);
