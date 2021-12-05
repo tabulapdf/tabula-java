@@ -1,11 +1,13 @@
 package technology.tabula;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.strtree.STRtree;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
+@SuppressWarnings("unchecked")
 public class RectangleSpatialIndex<T extends Rectangle> {
     
 
@@ -18,11 +20,19 @@ public class RectangleSpatialIndex<T extends Rectangle> {
     }
     
     public List<T> contains(Rectangle r) {
+        return getRectangles(r, r::contains);
+    }
+
+    public List<T> getWords(Rectangle r) {
+        return getRectangles(r, other -> Utils.belongTo(r, other));
+    }
+
+    public List<T> getRectangles(Rectangle r, Predicate<T> rule) {
         List<T> intersection = si.query(new Envelope(r.getLeft(), r.getRight(), r.getTop(), r.getBottom()));
         List<T> rv = new ArrayList<T>();
 
         for (T ir: intersection) {
-            if (r.contains(ir)) {
+            if (rule.test(ir)) {
                 rv.add(ir);
             }
         }

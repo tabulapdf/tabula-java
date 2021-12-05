@@ -1,13 +1,11 @@
 package technology.tabula;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Float.compare;
 import static java.util.Collections.min;
@@ -197,7 +195,7 @@ public class Page extends Rectangle {
     }
 
     public List<TextElement> getText(Rectangle area) {
-        return spatialIndex.contains(area);
+        return spatialIndex.getWords(area);
     }
 
     /**
