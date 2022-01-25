@@ -65,6 +65,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         
         Table table = new Table(this);
         table.setRect(page.getLeft(), page.getTop(), page.getWidth(), page.getHeight());
+        table.setPageNumber(page.getPageNumber());
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
