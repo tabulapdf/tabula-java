@@ -13,5 +13,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+          cache: maven
       - name: Build with Maven
         run: mvn --batch-mode test
