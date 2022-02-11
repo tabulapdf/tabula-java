@@ -1,19 +1,28 @@
 package technology.tabula;
 
-import java.awt.Shape;
+import org.apache.commons.cli.ParseException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
-
-import org.apache.commons.cli.ParseException;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author manuel
@@ -117,19 +126,19 @@ public class Utils {
         return ret;
     }
 
-	/**
-	 * Wrap Collections.sort so we can fallback to a non-stable quicksort if we're
-	 * running on JDK7+
-	 */
-	public static <T extends Comparable<? super T>> void sort(List<T> list) {
-		if (useQuickSort) QuickSort.sort(list);
-		else              Collections.sort(list);
-	}
+    /**
+     * Wrap Collections.sort so we can fallback to a non-stable quicksort if we're
+     * running on JDK7+
+     */
+    public static <T extends Comparable<? super T>> void sort(List<T> list) {
+        if (useQuickSort) QuickSort.sort(list);
+        else Collections.sort(list);
+    }
 
-	public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
-		if (useQuickSort) QuickSort.sort(list, comparator);
-		else              Collections.sort(list, comparator);
-	}
+    public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
+        if (useQuickSort) QuickSort.sort(list, comparator);
+        else Collections.sort(list, comparator);
+    }
 
     private static boolean useCustomQuickSort() {
         // taken from PDFBOX:
@@ -271,18 +280,27 @@ public class Utils {
         }
     }
 
-	public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
-		try (PDDocument document = new PDDocument()) {
-			document.addPage(page);
-			PDFRenderer renderer = new PDFRenderer(document);
-			document.close();
-			return renderer.renderImageWithDPI(0, dpi, imageType);
-		}
-	}
+    public static BufferedImage pageConvertToImage(PDPage page, int dpi, ImageType imageType) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            document.addPage(page);
+            PDFRenderer renderer = new PDFRenderer(document);
+            document.close();
+            return renderer.renderImageWithDPI(0, dpi, imageType);
+        }
+    }
 
-  public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
-    PDFRenderer renderer = new PDFRenderer(doc);
-    return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
-  }
+    public static BufferedImage pageConvertToImage(PDDocument doc, PDPage page, int dpi, ImageType imageType) throws IOException {
+        PDFRenderer renderer = new PDFRenderer(doc);
+        return renderer.renderImageWithDPI(doc.getPages().indexOf(page), dpi, imageType);
+    }
+
+    public static boolean belongTo(Rectangle source, Rectangle other) {
+        double x = (other.getLeft() + other.getRight()) / 2;
+        double y = (other.getTop() + other.getBottom()) / 2;
+        return source.getTop() <= y &&
+                source.getBottom() >= y &&
+                source.getLeft() <= x &&
+                source.getRight() >= x;
+    }
 
 }

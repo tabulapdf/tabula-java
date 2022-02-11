@@ -1,6 +1,11 @@
 package technology.tabula;
 
-import static org.junit.Assert.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Test;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
+import technology.tabula.writers.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,20 +13,16 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Test;
-
-import technology.tabula.extractors.BasicExtractionAlgorithm;
-import technology.tabula.writers.CSVWriter;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestBasicExtractor {
 
 	private static final String EU_002_PDF = "src/test/resources/technology/tabula/eu-002.pdf";
 	private static final String[][] EU_002_EXPECTED = {
 		{"",                                              "",                "Involvement of pupils in", ""},
-		{"",                                              "Preperation and", "Production of",            "Presentation an"},
+		{"",                                              "Preperation and", "Production of",            "Presentation and"},
 		{"",                                              "planing",         "materials",                "evaluation"},
 		{"Knowledge and awareness of different cultures", "0,2885",          "0,3974",                   "0,3904"},
 		{"Foreign language competence",                   "0,3057",          "0,4184",                   "0,3899"},
@@ -229,7 +230,7 @@ public class TestBasicExtractor {
         //First row
         assertEquals("Nanotechnology and its publics", cells.get(3).getText());
         assertEquals("NSF", cells.get(4).getText());
-        assertEquals("Pennsylvania State Universit", cells.get(5).getText());
+        assertEquals("Pennsylvania State University", cells.get(5).getText());
 
         //Second row
         assertEquals("Public information and deliberation in nanoscience and", cells.get(6).getText());
