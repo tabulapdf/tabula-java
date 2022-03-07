@@ -24,6 +24,7 @@ public final class TableSerializer implements JsonSerializer<Table> {
         JsonArray data = new JsonArray();
 
         json.addProperty("extraction_method", table.getExtractionMethod());
+        json.addProperty("page_number", table.getPageNumber());
         json.addProperty("top", table.getTop());
         json.addProperty("left", table.getLeft());
         json.addProperty("width", table.getWidth());
