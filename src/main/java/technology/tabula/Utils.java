@@ -39,9 +39,9 @@ public class Utils {
     }
 
     public static float round(double d, int decimalPlace) {
-        BigDecimal bd = new BigDecimal(Double.toString(d));
-        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
-        return bd.floatValue();
+        BigDecimal bigDecimal = new BigDecimal(Double.toString(d));
+        bigDecimal = bigDecimal.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+        return bigDecimal.floatValue();
     }
 
     public static Rectangle bounds(Collection<? extends Shape> shapes) {
@@ -50,14 +50,14 @@ public class Utils {
         }
 
         Iterator<? extends Shape> iter = shapes.iterator();
-        Rectangle rv = new Rectangle();
-        rv.setRect(iter.next().getBounds2D());
+        Rectangle rectangle = new Rectangle();
+        rectangle.setRect(iter.next().getBounds2D());
 
         while (iter.hasNext()) {
-            Rectangle2D.union(iter.next().getBounds2D(), rv, rv);
+            Rectangle2D.union(iter.next().getBounds2D(), rectangle, rectangle);
         }
 
-        return rv;
+        return rectangle;
 
     }
 
@@ -82,8 +82,8 @@ public class Utils {
         if (cs == null || cs.length() == 0) {
             return false;
         }
-        final int sz = cs.length();
-        for (int i = 0; i < sz; i++) {
+        final int charSeqLength = cs.length();
+        for (int i = 0; i < charSeqLength; i++) {
             if (!Character.isDigit(cs.charAt(i))) {
                 return false;
             }
@@ -162,29 +162,29 @@ public class Utils {
             return null;
         }
 
-        List<Integer> rv = new ArrayList<>();
+        List<Integer> parsePageList = new ArrayList<>();
 
         String[] ranges = pagesSpec.split(",");
         for (int i = 0; i < ranges.length; i++) {
-            String[] r = ranges[i].split("-");
-            if (r.length == 0 || !Utils.isNumeric(r[0]) || r.length > 1 && !Utils.isNumeric(r[1])) {
+            String[] rangeSplit = ranges[i].split("-");
+            if (rangeSplit.length == 0 || !Utils.isNumeric(rangeSplit[0]) || rangeSplit.length > 1 && !Utils.isNumeric(rangeSplit[1])) {
                 throw new ParseException("Syntax error in page range specification");
             }
 
-            if (r.length < 2) {
-                rv.add(Integer.parseInt(r[0]));
+            if (rangeSplit.length < 2) {
+                parsePageList.add(Integer.parseInt(rangeSplit[0]));
             } else {
-                int t = Integer.parseInt(r[0]);
-                int f = Integer.parseInt(r[1]);
+                int t = Integer.parseInt(rangeSplit[0]);
+                int f = Integer.parseInt(rangeSplit[1]);
                 if (t > f) {
                     throw new ParseException("Syntax error in page range specification");
                 }
-                rv.addAll(Utils.range(t, f + 1));
+                parsePageList.addAll(Utils.range(t, f + 1));
             }
         }
 
-        Collections.sort(rv);
-        return rv;
+        Collections.sort(parsePageList);
+        return parsePageList;
     }
 
     public static void snapPoints(List<? extends Line2D.Float> rulings, float xThreshold, float yThreshold) {

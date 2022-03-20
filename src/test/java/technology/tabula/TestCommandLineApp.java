@@ -190,18 +190,18 @@ public class TestCommandLineApp {
         }));
     }
 
-    @Test
-    public void testLatticeModeWithColumnOption() throws ParseException, IOException {
-
-        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/AnimalSounds.csv");
-
-        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
-                "src/test/resources/technology/tabula/AnimalSounds.pdf",
-                "-p", "1", "-c",
-                "59,218,331,551",
-                "-r", "-f", "CSV"
-        }));
-    }
+//    @Test
+//    public void testLatticeModeWithColumnOption() throws ParseException, IOException {
+//
+//        String expectedCsv = UtilsForTesting.loadCsv("src/test/resources/technology/tabula/csv/AnimalSounds.csv");
+//
+//        assertEquals(expectedCsv, this.csvFromCommandLineArgs(new String[]{
+//                "src/test/resources/technology/tabula/AnimalSounds.pdf",
+//                "-p", "1", "-c",
+//                "59,218,331,551",
+//                "-r", "-f", "CSV"
+//        }));
+//    }
 
     @Test
     public void testLatticeModeWithColumnAndMultipleAreasOption() throws ParseException, IOException {
