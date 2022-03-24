@@ -540,7 +540,7 @@ public class TestSpreadsheetExtractor {
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, table);
         String result = sb.toString();
-//        assertEquals(expectedCsv, result);
+        assertEquals(expectedCsv, result);
         page.getPDDoc().close();
     }    
 
