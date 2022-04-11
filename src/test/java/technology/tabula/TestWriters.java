@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
+import technology.tabula.writers.FactoryWriter;
 import technology.tabula.writers.JSONWriter;
 import technology.tabula.writers.TSVWriter;
 
@@ -63,7 +64,7 @@ public class TestWriters {
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/argentina_diputados_voting_record.json");
         Table table = this.getTable();
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, table);
+        (new FactoryWriter().getInstance("JsonWriter")).write(sb, table);
         String s = sb.toString();
         assertEquals(expectedJson, s);
     }
@@ -76,7 +77,7 @@ public class TestWriters {
         Table table = sea.extract(page).get(0);
 
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, table);
+        (new FactoryWriter().getInstance("JsonWriter")).write(sb, table);
         String s = sb.toString();
         assertEquals(expectedJson, s);
     }
@@ -99,7 +100,7 @@ public class TestWriters {
         String expectedJson = UtilsForTesting.loadJson("src/test/resources/technology/tabula/json/twotables.json");
         List<Table> tables = this.getTables();
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, tables);
+        (new FactoryWriter().getInstance("JsonWriter")).write(sb, tables);
 
         String s = sb.toString();
         assertEquals(expectedJson, s);
