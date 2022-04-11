@@ -222,7 +222,7 @@ public class Page extends Rectangle {
     public Rectangle getTextBounds() {
         List<TextElement> texts = this.getText();
         if (!texts.isEmpty()) {
-            return Utils.bounds(texts);
+            return Utils.getInstance().bounds(texts);
         } else {
             return new Rectangle();
         }
@@ -249,7 +249,7 @@ public class Page extends Rectangle {
         }
 
         // TODO: Move as a static method to the Ruling class?
-        Utils.snapPoints(rulings, minCharWidth, minCharHeight);
+        Utils.getInstance().snapPoints(rulings, minCharWidth, minCharHeight);
 
         verticalRulingLines = getCollapsedVerticalRulings();
         horizontalRulingLines = getCollapsedHorizontalRulings();

@@ -19,6 +19,19 @@ import org.apache.pdfbox.rendering.PDFRenderer;
  * @author manuel
  */
 public class Utils {
+
+    private Utils(){
+
+    }
+
+    private static Utils instance;
+    public static Utils getInstance(){
+        if (instance == null){
+            instance = new Utils();
+        }
+        return instance;
+    }
+
     public static boolean within(double first, double second, double variance) {
         return second < first + variance && second > first - variance;
     }
