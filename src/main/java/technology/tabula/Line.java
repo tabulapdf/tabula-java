@@ -6,7 +6,7 @@ import java.util.List;
 // TODO this class seems superfluous - get rid of it
 
 @SuppressWarnings("serial")
-public class Line extends Rectangle {
+public class Line extends Rectangle implements TabulaInterface {
 
     List<TextChunk> textChunks = new ArrayList<>();
     public static final Character[] WHITE_SPACE_CHARS = { ' ', '\t', '\r', '\n', '\f' };
@@ -72,5 +72,17 @@ public class Line extends Rectangle {
         }
         
         return rv;
+    }
+
+//    public TabulaInterface makeDuplicate(){
+//        Line line = null;
+//        line = (Line) super.clone();
+//        return line;
+//    }
+
+    @Override
+    public TabulaInterface newDuplicate() {
+        Line line = (Line) super.clone();
+        return line;
     }
 }

@@ -10,6 +10,7 @@ import java.text.Normalizer;
 @SuppressWarnings("serial")
 public class TextChunk extends RectangularTextContainer<TextElement> {
     public static final TextChunk EMPTY = new TextChunk(0, 0, 0, 0);
+    private static Line cloneLine;
 //    List<TextElement> textElements = new ArrayList<>();
 
     public TextChunk(float top, float left, float width, float height) {
@@ -330,7 +331,10 @@ public class TextChunk extends RectangularTextContainer<TextElement> {
 
         float bbwidth = Rectangle.boundingBoxOf(textChunks).width;
 
+        //Line l = new Line();
+        CloneFactoryTabula cloneFactoryTabula = new CloneFactoryTabula();
         Line l = new Line();
+        cloneLine = (Line)cloneFactoryTabula.makeDuplicate(l);
         l.addTextChunk(textChunks.get(0));
         textChunks.remove(0);
         lines.add(l);
