@@ -63,7 +63,7 @@ public class TextStripper extends PDFTextStripper {
 
             float wos = textPosition.getWidthOfSpace();
 
-            TextElement te = new TextElement(Utils.round(textPosition.getYDirAdj() - h, 2),
+            TextElement te = new TextElement(Utils.getInstance().round(textPosition.getYDirAdj() - h, 2),
                     Utils.round(textPosition.getXDirAdj(), 2), Utils.round(textPosition.getWidthDirAdj(), 2),
                     Utils.round(textPosition.getHeightDir(), 2), textPosition.getFont(), textPosition.getFontSizeInPt(), c,
                     // workaround a possible bug in PDFBox:

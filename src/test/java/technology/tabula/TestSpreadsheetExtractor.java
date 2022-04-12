@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 import technology.tabula.writers.CSVWriter;
+import technology.tabula.writers.FactoryWriter;
 import technology.tabula.writers.JSONWriter;
 
 public class TestSpreadsheetExtractor {
@@ -203,7 +204,7 @@ public class TestSpreadsheetExtractor {
 
 
         StringBuilder sb = new StringBuilder();
-        (new JSONWriter()).write(sb, tables);
+        (new FactoryWriter().getInstance("JsonWriter")).write(sb, tables);
         assertEquals(expectedJson, sb.toString());
         page.getPDDoc().close();
     }

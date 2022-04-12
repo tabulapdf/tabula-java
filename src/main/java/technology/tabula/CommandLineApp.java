@@ -21,10 +21,7 @@ import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
-import technology.tabula.writers.CSVWriter;
-import technology.tabula.writers.JSONWriter;
-import technology.tabula.writers.TSVWriter;
-import technology.tabula.writers.Writer;
+import technology.tabula.writers.*;
 
 
 public class CommandLineApp {
@@ -460,12 +457,13 @@ public class CommandLineApp {
 
     private void writeTables(List<Table> tables, Appendable out) throws IOException {
         Writer writer = null;
+        FactoryWriter factoryWriter= new FactoryWriter();
         switch (outputFormat) {
             case CSV:
-                writer = new CSVWriter();
+                writer = factoryWriter.getInstance("CSVWriter");
                 break;
             case JSON:
-                writer = new JSONWriter();
+               writer= factoryWriter.getInstance("JsonWriter");
                 break;
             case TSV:
                 writer = new TSVWriter();
