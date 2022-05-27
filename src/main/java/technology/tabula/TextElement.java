@@ -1,9 +1,9 @@
 package technology.tabula;
 
+import org.apache.pdfbox.pdmodel.font.PDFont;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.pdfbox.pdmodel.font.PDFont;
 
 @SuppressWarnings("serial")
 public class TextElement extends Rectangle implements HasText {
@@ -56,7 +56,8 @@ public class TextElement extends Rectangle implements HasText {
         return fontSize;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         String s = super.toString();
         sb.append(s.substring(0, s.length() - 1));
@@ -162,29 +163,9 @@ public class TextElement extends Rectangle implements HasText {
                 previousAveCharWidth = -1;
             }
 
-            // is there any vertical ruling that goes across chr and prevChar?
-            acrossVerticalRuling = false;
-            for (Ruling r : verticalRulings) {
-                if (
-                        (verticallyOverlapsRuling(prevChar, r) && verticallyOverlapsRuling(chr, r)) &&
-                                (prevChar.x < r.getPosition() && chr.x > r.getPosition()) || (prevChar.x > r.getPosition() && chr.x < r.getPosition())
-                        ) {
-                    acrossVerticalRuling = true;
-                    break;
-                }
-            }
-
-            // Estimate the expected width of the space based on the
-            // space character with some margin.
+            acrossVerticalRuling = verticalRulingCheck(verticalRulings, prevChar, chr);
             wordSpacing = chr.getWidthOfSpace();
-            deltaSpace = 0;
-            if (java.lang.Float.isNaN(wordSpacing) || wordSpacing == 0) {
-                deltaSpace = java.lang.Float.MAX_VALUE;
-            } else if (lastWordSpacing < 0) {
-                deltaSpace = wordSpacing * 0.5f; // 0.5 == spacing tolerance
-            } else {
-                deltaSpace = ((wordSpacing + lastWordSpacing) / 2.0f) * 0.5f;
-            }
+            deltaSpace = spaceWidthCalculation(wordSpacing, lastWordSpacing);
 
             // Estimate the expected width of the space based on the
             // average character width with some margin. This calculation does not
@@ -272,6 +253,34 @@ public class TextElement extends Rectangle implements HasText {
 
     private static boolean verticallyOverlapsRuling(TextElement te, Ruling r) {
         return Math.max(0, Math.min(te.getBottom(), r.getY2()) - Math.max(te.getTop(), r.getY1())) > 0;
+    }
+
+    // Estimate the expected width of the space based on the space character with some margin.
+    private static float spaceWidthCalculation(float wordSpacing, float lastWordSpacing) {
+        float deltaSpace = 0;
+        if (java.lang.Float.isNaN(wordSpacing) || wordSpacing == 0) {
+            deltaSpace = java.lang.Float.MAX_VALUE;
+        } else if (lastWordSpacing < 0) {
+            deltaSpace = wordSpacing * 0.5f; // 0.5 == spacing tolerance
+        } else {
+            deltaSpace = ((wordSpacing + lastWordSpacing) / 2.0f) * 0.5f;
+        }
+        return deltaSpace;
+    }
+
+    // is there any vertical ruling that goes across chr and prevChar?
+    private static boolean verticalRulingCheck(List<Ruling> verticalRulings, TextElement prevChar, TextElement chr) {
+        boolean acrossVerticalRuling = false;
+        for (Ruling r : verticalRulings) {
+            if (
+                    (verticallyOverlapsRuling(prevChar, r) && verticallyOverlapsRuling(chr, r)) &&
+                            (prevChar.x < r.getPosition() && chr.x > r.getPosition()) || (prevChar.x > r.getPosition() && chr.x < r.getPosition())
+            ) {
+                acrossVerticalRuling = true;
+                break;
+            }
+        }
+        return acrossVerticalRuling;
     }
 
 }
