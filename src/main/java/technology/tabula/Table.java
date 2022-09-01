@@ -24,11 +24,14 @@ public class Table extends Rectangle {
 	private int rowCount = 0;
 	private int colCount = 0;
 	private String tableName;
+	private int pageNumber = 0;
 
 	/* visible for testing */ final TreeMap<CellPosition, RectangularTextContainer> cells = new TreeMap<>();
 
 	public int getRowCount() { return rowCount; }
 	public int getColCount() { return colCount; }
+	public int getPageNumber() { return pageNumber; }
+	public void setPageNumber(int pageNumber) {	this.pageNumber = pageNumber; }
 
 	public String getTableName() {
 		return tableName;

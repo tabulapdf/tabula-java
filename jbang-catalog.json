@@ -1,0 +1,8 @@
+{
+  "catalogs": {},
+  "aliases": {
+    "tabula": {
+      "script-ref": "https://github.com/tabulapdf/tabula-java/releases/download/v1.0.4/tabula-1.0.4-jar-with-dependencies.jar"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java) [![Build status](https://ci.appveyor.com/api/projects/status/l5gym1mjhrd2v8yn?svg=true)](https://ci.appveyor.com/project/jazzido/tabula-java)
+tabula-java [![Build Status](https://travis-ci.org/tabulapdf/tabula-java.svg?branch=master)](https://travis-ci.org/tabulapdf/tabula-java)
 ===========
 
 `tabula-java` is a library for extracting tables from PDF files — it is the table extraction engine that powers [Tabula](http://tabula.technology/) ([repo](http://github.com/tabulapdf/tabula)). You can use `tabula-java` as a command-line tool to programmatically extract tables from PDFs.
@@ -14,7 +14,7 @@ Download a version of the tabula-java's jar, with all dependencies included, tha
 `tabula-java` provides a command line application:
 
 ```
-$ java -jar target/tabula-1.0.2-jar-with-dependencies.jar --help
+$ java -jar target/tabula-1.0.5-jar-with-dependencies.jar --help
 usage: tabula [-a <AREA>] [-b <DIRECTORY>] [-c <COLUMNS>] [-f <FORMAT>]
        [-g] [-h] [-i] [-l] [-n] [-o <OUTFILE>] [-p <PAGES>] [-r] [-s
        <PASSWORD>] [-t] [-u] [-v]
@@ -70,12 +70,13 @@ Tabula helps you extract tables from PDFs
  -tn, --tableNames           筛选要输出的表
 ```
 
-It also includes a debugging tool, run `java -cp ./target/tabula-1.0.2-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
+It also includes a debugging tool, run `java -cp ./target/tabula-1.0.5-jar-with-dependencies.jar technology.tabula.debug.Debug -h` for the available options.
 
 You can also integrate `tabula-java` with any JVM language. For Java examples, see the [`tests`](src/test/java/technology/tabula/) folder.
 
 JVM start-up time is a lot of the cost of the `tabula` command, so if you're trying to extract many tables from PDFs, you have a few options for speeding it up:
 
+ - the -b option, which allows you to convert all pdfs in a given directory
  - the [drip](https://github.com/ninjudd/drip) utility
  - the [Ruby](http://github.com/tabulapdf/tabula-extractor), [Python](https://github.com/chezou/tabula-py), [R](https://github.com/leeper/tabulizer), and [Node.js](https://github.com/ezodude/tabula-js) bindings
  - writing your own program in any JVM language (Java, JRuby, Scala) that imports tabula-java.
@@ -113,5 +114,5 @@ Special thanks to the following users and organizations for generously supportin
 <a href="https://opencollective.com/tabulapdf/backer/4/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/4/avatar"></a>
 <a href="https://opencollective.com/tabulapdf/backer/5/website" target="_blank"><img src="https://opencollective.com/tabulapdf/backer/5/avatar"></a>
 
-<a title="The John S. and James L. Knight Foundation" href="http://www.knightfoundation.org/" target="_blank"><img alt="The John S. and James L. Knight Foundation" src="http://www.knightfoundation.org/media/uploads/media_images/knight-logo-300.jpg"></a>
+<a title="The John S. and James L. Knight Foundation" href="http://www.knightfoundation.org/" target="_blank"><img alt="The John S. and James L. Knight Foundation" src="https://knightfoundation.org/wp-content/uploads/2019/10/KF_Logotype_Icon-and-Stacked-Name.png" width="300"></a>
 <a title="The Shuttleworth Foundation" href="https://shuttleworthfoundation.org/" target="_blank"><img width="200" alt="The Shuttleworth Foundation" src="https://raw.githubusercontent.com/tabulapdf/tabula/gh-pages/shuttleworth.jpg"></a>

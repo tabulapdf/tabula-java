@@ -66,6 +66,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
         Table table = new Table(this);
         table.setRect(page.getLeft(), page.getTop(), page.getWidth(), page.getHeight());
         table.setTableName(page.getTableName());
+        table.setPageNumber(page.getPageNumber());
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
@@ -75,7 +76,7 @@ public class BasicExtractionAlgorithm implements ExtractionAlgorithm {
 
 				@Override
 				public int compare(TextChunk o1, TextChunk o2) {
-					return new java.lang.Float(o1.getLeft()).compareTo(o2.getLeft());
+					return Float.compare(o1.getLeft(), o2.getLeft());
 				}
 			});
             

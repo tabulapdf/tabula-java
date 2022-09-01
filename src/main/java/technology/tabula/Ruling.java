@@ -40,9 +40,6 @@ public class Ruling extends Line2D.Float {
         else if (Utils.within(angle, 90, 1) || Utils.within(angle, 270, 1)) { // almost vertical
             this.setLine(this.x1, this.y1, this.x1, this.y2);
         }
-//        else {
-//            System.out.println("oblique: " + this + " ("+ this.getAngle() + ")");
-//        }
     }
 
     public boolean vertical() {
@@ -229,11 +226,6 @@ public class Ruling extends Line2D.Float {
         
         Ruling o = (Ruling) other;
         return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
-    }
-    
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
     
     public float getTop() {

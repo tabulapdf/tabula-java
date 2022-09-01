@@ -1,11 +1,14 @@
 package technology.tabula;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public abstract class RectangularTextContainer<T extends HasText> extends Rectangle {
+public class RectangularTextContainer<T extends Rectangle & HasText> extends Rectangle implements HasText {
 
-	public RectangularTextContainer(float top, float left, float width, float height) {
+	protected List<T> textElements = new ArrayList<>();
+
+	protected RectangularTextContainer(float top, float left, float width, float height) {
 		super(top, left, width, height);
 	}
 
@@ -19,11 +22,23 @@ public abstract class RectangularTextContainer<T extends HasText> extends Rectan
 		return this;
 	}
 
-	public abstract String getText();
+	public List<T> getTextElements() {
+		return textElements;
+	}
 
-	public abstract String getText(boolean useLineReturns);
+	public void setTextElements(List<T> textElements) {
+		this.textElements = textElements;
+	}
 
-	public abstract List<T> getTextElements();
+	@Override
+	public String getText() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String getText(boolean useLineReturns) {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override public String toString() {
 		StringBuilder sb = new StringBuilder();

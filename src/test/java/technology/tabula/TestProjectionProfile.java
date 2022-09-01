@@ -31,9 +31,16 @@ public class TestProjectionProfile {
 		List<Ruling> rulingList = new ArrayList<>();
 		rulingList.add(ruling);
 
+		page = Page.Builder.newInstance()
+				.withPageDims(PageDims.of(0, 0, 1, 1))
+				.withRotation(0)
+				.withNumber(1)
+				.withPdPage(pdPage)
+				.withPdDocument(pdDocument)
+				.withTextElements(textList)
+				.withRulings(rulingList)
+				.build();
 
-		page = new Page(0, 0, 1, 1, 0, 1, pdPage, pdDocument, textList, rulingList);
-		
 		List<Rectangle> rectangles = new ArrayList<>();
 		rectangles.add(new Rectangle(0f, 0f, 500f, 5f));
 		

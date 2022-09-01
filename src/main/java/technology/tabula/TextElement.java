@@ -30,7 +30,13 @@ public class TextElement extends Rectangle implements HasText {
         this.dir = dir;
     }
 
-    @Override public String getText() {
+    @Override
+    public String getText() {
+        return text;
+    }
+
+    @Override
+    public String getText(boolean useLineReturns) {
         return text;
     }
 

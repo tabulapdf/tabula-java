@@ -29,7 +29,7 @@ import technology.tabula.writers.*;
 
 public class CommandLineApp {
 
-    private static String VERSION = "1.0.5";
+    private static String VERSION = "1.0.6-SNAPSHOT";
     private static String VERSION_STRING = String.format("tabula %s (c) 2012-2020 Manuel Aristarán", VERSION);
     private static String BANNER = "\nTabula helps you extract tables from PDFs\n\n";
 
@@ -117,8 +117,13 @@ public class CommandLineApp {
         });
 
         for (File pdfFile : pdfs) {
-            File outputFile = new File(getOutputFilename(pdfFile));
+          File outputFile = new File(getOutputFilename(pdfFile));
+          try {
             extractFileInto(pdfFile, outputFile);
+          } catch (ParseException e) {
+            System.err.println("Caught exception while processing file: " + pdfFile.toString());
+            throw e;
+          }
         }
     }
 

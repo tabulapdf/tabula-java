@@ -189,6 +189,7 @@ public class TestSpreadsheetExtractor {
                         269.875f, 12.75f, 790.5f, 561f);
 
         SpreadsheetExtractionAlgorithm.findCells(page.getHorizontalRulings(), page.getVerticalRulings());
+        page.getPDDoc().close();
     }
 
     @Test
@@ -204,7 +205,7 @@ public class TestSpreadsheetExtractor {
         StringBuilder sb = new StringBuilder();
         (new JSONWriter()).write(sb, tables);
         assertEquals(expectedJson, sb.toString());
-
+        page.getPDDoc().close();
     }
 
     @Test
@@ -220,7 +221,7 @@ public class TestSpreadsheetExtractor {
         StringBuilder sb = new StringBuilder();
         (new CSVWriter()).write(sb, tables);
         assertEquals(expectedCsv, sb.toString());
-
+        page.getPDDoc().close();
     }
 
     @Test
@@ -229,6 +230,7 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm se = new SpreadsheetExtractionAlgorithm();
         List<? extends Table> tables = se.extract(page);
         assertEquals(2, tables.size());
+        page.getPDDoc().close();
     }
 
     @Test
@@ -244,6 +246,7 @@ public class TestSpreadsheetExtractor {
         String expected = "Project,Agency,Institution\r\nNanotechnology and its publics,NSF,Pennsylvania State University\r\n\"Public information and deliberation in nanoscience and\rnanotechnology policy (SGER)\",Interagency,\"North Carolina State\rUniversity\"\r\n\"Social and ethical research and education in agrifood\rnanotechnology (NIRT)\",NSF,Michigan State University\r\n\"From laboratory to society: developing an informed\rapproach to nanoscale science and engineering (NIRT)\",NSF,University of South Carolina\r\nDatabase and innovation timeline for nanotechnology,NSF,UCLA\r\nSocial and ethical dimensions of nanotechnology,NSF,University of Virginia\r\n\"Undergraduate exploration of nanoscience,\rapplications and societal implications (NUE)\",NSF,\"Michigan Technological\rUniversity\"\r\n\"Ethics and belief inside the development of\rnanotechnology (CAREER)\",NSF,University of Virginia\r\n\"All centers, NNIN and NCN have a societal\rimplications components\",\"NSF, DOE,\rDOD, and NIH\",\"All nanotechnology centers\rand networks\"\r\n";
 
         assertEquals(expected, result);
+        page.getPDDoc().close();
     }
 
     @Test
@@ -255,8 +258,7 @@ public class TestSpreadsheetExtractor {
             assertEquals(expectedRulings[i], rulings.get(i).getLeft(), 0.1);
         }
         assertEquals(6, rulings.size());
-
-
+        page.getPDDoc().close();
     }
 
     @Test
@@ -274,6 +276,7 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, tables.get(0));
 
         assertEquals(expectedCsv, sb.toString());
+        page.getPDDoc().close();
 
     }
 
@@ -333,7 +336,7 @@ public class TestSpreadsheetExtractor {
         for (int i = 0; i < parsedResult.size(); i++) {
             assertEquals(parsedResult.get(i).size(), parsedExpected.get(i).size());
         }
-
+        page.getPDDoc().close();
     }
 
     @Test
@@ -354,6 +357,7 @@ public class TestSpreadsheetExtractor {
         page.getText();
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         bea.extract(page).get(0);
+        page.getPDDoc().close();
     }
 
     @Test
@@ -365,6 +369,7 @@ public class TestSpreadsheetExtractor {
         SpreadsheetExtractionAlgorithm bea = new SpreadsheetExtractionAlgorithm();
         List<Table> tables = bea.extract(page);
         assertEquals(1, tables.size());
+        page.getPDDoc().close();
     }
 
     @Test
@@ -395,6 +400,7 @@ public class TestSpreadsheetExtractor {
         assertEquals("3,700.00", table.getRows().get(7).get(1).getText());
         assertEquals("Daily or Miscellaneous\r(each day of the payroll period)", table.getRows().get(8).get(0).getText());
         assertEquals("14.23", table.getRows().get(8).get(1).getText());
+        page.getPDDoc().close();
 
     }
 
@@ -410,6 +416,7 @@ public class TestSpreadsheetExtractor {
 
         assertEquals("Total Supply", table.getRows().get(4).get(0).getText());
         assertEquals("6.6", table.getRows().get(6).get(2).getText());
+        page.getPDDoc().close();
     }
 
     @Test
@@ -422,6 +429,7 @@ public class TestSpreadsheetExtractor {
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
         }
+        page.getPDDoc().close();
     }
 
     @Test
@@ -434,6 +442,7 @@ public class TestSpreadsheetExtractor {
         for (int i = 1; i < tables.size(); i++) {
             assert (tables.get(i - 1).getTop() <= tables.get(i).getTop());
         }
+        page.getPDDoc().close();
     }
 
     @Test
@@ -464,6 +473,7 @@ public class TestSpreadsheetExtractor {
         // which is not currently possible because of the two problems listed above
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
 
+        page.getPDDoc().close();
     }
 
 
@@ -497,6 +507,7 @@ public class TestSpreadsheetExtractor {
         // these (commented-out) tests reflect the theoretical correct answer,
         // which is not currently possible because of the two problems listed above
         // assertEquals("مرحباً",                       table.getRows().get(0).get(0).getText()); // really ought to be ً, but this is forgiveable for now
+        page.getPDDoc().close();
 
     }
 
@@ -509,6 +520,7 @@ public class TestSpreadsheetExtractor {
         Table table = sea.extract(page).get(0);
 
         assertEquals("REGIONAL PULMONARY & SLEEP\rMEDICINE", table.getRows().get(8).get(1).getText());
+        page.getPDDoc().close();
 
     }
     
@@ -529,6 +541,7 @@ public class TestSpreadsheetExtractor {
         (new CSVWriter()).write(sb, table);
         String result = sb.toString();
         assertEquals(expectedCsv, result);
+        page.getPDDoc().close();
     }    
 
 }

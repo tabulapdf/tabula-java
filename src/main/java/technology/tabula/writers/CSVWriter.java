@@ -13,33 +13,35 @@ import technology.tabula.Table;
 
 public class CSVWriter implements Writer {
 
-	public CSVWriter() {
-		this(CSVFormat.EXCEL);
-	}
-
-	protected CSVWriter(CSVFormat format) {
-		this.format = format;
-	}
-
 	private final CSVFormat format;
 
-	@Override
-	public void write(Appendable out, Table table) throws IOException {
-		write(out, Collections.singletonList(table));
-	}
+    public CSVWriter() {
+        this(CSVFormat.EXCEL);
+    }
 
-	@Override
-	public void write(Appendable out, List<Table> tables) throws IOException {
-		try (CSVPrinter printer = new CSVPrinter(out, format)) {
-			for (Table table : tables) {
-				for (List<RectangularTextContainer> row : table.getRows()) {
-					List<String> cells = new ArrayList<>(row.size());
-					for (RectangularTextContainer<?> tc : row) cells.add(tc.getText());
-					printer.printRecord(cells);
-				}
-			}
-			printer.flush();
-		}
-	}
+    protected CSVWriter(CSVFormat format) {
+        this.format = format;
+    }
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+    @Override
+    public void write(Appendable out, Table table) throws IOException {
+        write(out, Collections.singletonList(table));
+    }
+
+    @Override
+    public void write(Appendable out, List<Table> tables) throws IOException {
+        try (CSVPrinter printer = new CSVPrinter(out, format)) {
+            for (Table table : tables) {
+                for (List<RectangularTextContainer> row : table.getRows()) {
+                    List<String> cells = new ArrayList<>(row.size());
+                    for (RectangularTextContainer<?> cell : row)
+                    	cells.add(cell.getText());
+                    printer.printRecord(cells);
+                }
+            }
+            printer.flush();
+        }
+    }
 
 }

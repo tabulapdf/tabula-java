@@ -31,6 +31,7 @@ public class TextStripper extends PDFTextStripper {
         return content;
     }
 
+
     public TextStripper(PDDocument document, int pageNumber) throws IOException {
         super();
         this.document = document;
@@ -161,5 +162,21 @@ public class TextStripper extends PDFTextStripper {
             printable |= !Character.isISOControl(c) && block != null && block != Character.UnicodeBlock.SPECIALS;
         }
         return printable;
+    }
+
+    public List<TextElement> getTextElements() {
+        return this.textElements;
+    }
+
+    public RectangleSpatialIndex<TextElement> getSpatialIndex() {
+        return spatialIndex;
+    }
+
+    public float getMinCharWidth() {
+        return minCharWidth;
+    }
+
+    public float getMinCharHeight() {
+        return minCharHeight;
     }
 }

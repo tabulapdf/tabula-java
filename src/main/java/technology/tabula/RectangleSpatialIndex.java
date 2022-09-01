@@ -32,8 +32,7 @@ public class RectangleSpatialIndex<T extends Rectangle> {
     }
     
     public List<T> intersects(Rectangle r) {
-        List rv = si.query(new Envelope(r.getLeft(), r.getRight(), r.getTop(), r.getBottom()));
-        return rv;
+      return si.query(new Envelope(r.getLeft(), r.getRight(), r.getTop(), r.getBottom()));
     }
     
     /**
