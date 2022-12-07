@@ -85,30 +85,33 @@ JVM start-up time is a lot of the cost of the `tabula` command, so if you're try
 
 A simple Java code example which extracts all rows and cells from all tables of all pages of a PDF document:
 
-        InputStream in = this.getClass().getResourceAsStream("my.pdf");
-        try (PDDocument document = PDDocument.load(in)) {
-            SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-            PageIterator pi = new ObjectExtractor(document).extract();
-            while (pi.hasNext()) {
-                // iterate over the pages of the document
-                Page page = pi.next();
-                List<Table> table = sea.extract(page);
-                // iterate over the tables of the page
-                for(Table tables: table) {
-                    List<List<RectangularTextContainer>> rows = tables.getRows();
-                    // iterate over the rows of the table
-                    for (List<RectangularTextContainer> cells : rows) {
-                        // print all column-cells of the row plus linefeed
-                        for (RectangularTextContainer content : cells) {
-                            // Note: Cell.getText() uses \r to concat text chunks
-                            String text = content.getText().replace("\r", " ");
-                            System.out.print(text + "|");
-                        }
-                        System.out.println();
-                    }
+```java
+InputStream in = this.getClass().getResourceAsStream("my.pdf");
+try (PDDocument document = PDDocument.load(in)) {
+    SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
+    PageIterator pi = new ObjectExtractor(document).extract();
+    while (pi.hasNext()) {
+        // iterate over the pages of the document
+        Page page = pi.next();
+        List<Table> table = sea.extract(page);
+        // iterate over the tables of the page
+        for(Table tables: table) {
+            List<List<RectangularTextContainer>> rows = tables.getRows();
+            // iterate over the rows of the table
+            for (List<RectangularTextContainer> cells : rows) {
+                // print all column-cells of the row plus linefeed
+                for (RectangularTextContainer content : cells) {
+                    // Note: Cell.getText() uses \r to concat text chunks
+                    String text = content.getText().replace("\r", " ");
+                    System.out.print(text + "|");
                 }
+                System.out.println();
             }
         }
+    }
+}
+```
+
 
 For more detail information check the Javadoc. 
 The Javadoc API documentation can be generated (see also '_Building from Source_' section) via
