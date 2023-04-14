@@ -316,12 +316,8 @@ public class Ruling extends Line2D.Float {
         }
         
         List<SortObject> sos = new ArrayList<>();
-        
-        TreeMap<Ruling, Boolean> tree = new TreeMap<>(new Comparator<Ruling>() {
-            @Override
-            public int compare(Ruling o1, Ruling o2) {
-                return java.lang.Double.compare(o1.getTop(), o2.getTop());
-            }});
+
+        TreeMap<Integer, Ruling> tree = new TreeMap();
         
         TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
             @Override
@@ -374,21 +370,21 @@ public class Ruling extends Line2D.Float {
         for (SortObject so : sos) {
             switch(so.type) {
             case VERTICAL:
-                for (Map.Entry<Ruling, Boolean> h : tree.entrySet()) {
-                    Point2D i = h.getKey().intersectionPoint(so.ruling);
+                for (Map.Entry<Integer, Ruling> h : tree.entrySet()) {
+                    Point2D i = h.getValue().intersectionPoint(so.ruling);
                     if (i == null) {
                         continue;
                     }
                     rv.put(i, 
-                           new Ruling[] { h.getKey().expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT), 
+                           new Ruling[] { h.getValue().expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT), 
                                           so.ruling.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT) });
                 }
                 break;
             case HRIGHT:
-                tree.remove(so.ruling);
+                tree.remove(so.ruling.hashCode());
                 break;
             case HLEFT:
-                tree.put(so.ruling, true);
+                tree.put(so.ruling.hashCode(), so.ruling);
                 break;
             }
         }
