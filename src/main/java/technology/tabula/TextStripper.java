@@ -18,13 +18,19 @@ public class TextStripper extends PDFTextStripper {
     private static final float AVG_HEIGHT_MULT_THRESHOLD = 6.0f;
     private static final float MAX_BLANK_FONT_SIZE = 40.0f;
     private static final float MIN_BLANK_FONT_SIZE = 2.0f;
-    private final PDDocument document;
-    private final ArrayList<TextElement> textElements;
-    private final RectangleSpatialIndex<TextElement> spatialIndex;
-    private float minCharWidth = Float.MAX_VALUE;
-    private float minCharHeight = Float.MAX_VALUE;
-    private float totalHeight = 0.0f;
-    private int countHeight = 0;
+    private PDDocument document;
+    public ArrayList<TextElement> textElements;
+    public RectangleSpatialIndex<TextElement> spatialIndex;
+    public float minCharWidth = Float.MAX_VALUE;
+    public float minCharHeight = Float.MAX_VALUE;
+    public float totalHeight = 0.0f;
+    public int countHeight = 0;
+    private String content;
+
+    public String getContent() {
+        return content;
+    }
+
 
     public TextStripper(PDDocument document, int pageNumber) throws IOException {
         super();
@@ -36,12 +42,13 @@ public class TextStripper extends PDFTextStripper {
     }
 
     public void process() throws IOException {
-        this.getText(this.document);
+        content = this.getText(this.document);
     }
 
     @Override
     protected void writeString(String string, List<TextPosition> textPositions) throws IOException
     {
+        super.writeString(string, textPositions);
         for (TextPosition textPosition: textPositions)
         {
             if (textPosition == null) {

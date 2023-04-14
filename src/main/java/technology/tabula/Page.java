@@ -15,13 +15,16 @@ import static java.util.Collections.min;
 @SuppressWarnings("serial")
 // TODO: this class should probably be called "PageArea" or something like that
 public class Page extends Rectangle {
-
+  
     private int number;
     private Integer rotation;
     private float minCharWidth;
     private float minCharHeight;
 
     private List<TextElement> textElements;
+  
+    private String content;
+    private String tableName;
 
     // TODO: Create a class for 'List <Ruling>' that encapsulates all of these lists and their behaviors?
     private List<Ruling> rulings,
@@ -47,6 +50,8 @@ public class Page extends Rectangle {
             float minCharWidth,
             float minCharHeight,
             RectangleSpatialIndex<TextElement> index
+            String content, 
+            String tableName
     ) {
         super(pageDims.getTop(), pageDims.getLeft(), pageDims.getWidth(), pageDims.getHeight());
         this.rotation = rotation;
@@ -58,6 +63,8 @@ public class Page extends Rectangle {
         this.minCharWidth = minCharWidth;
         this.minCharHeight = minCharHeight;
         this.spatialIndex = index;
+        this.content = content;
+        this.tableName = tableName;      
     }
 
   /**
@@ -342,6 +349,8 @@ public class Page extends Rectangle {
         private float minCharWidth;
         private float minCharHeight;
         private RectangleSpatialIndex<TextElement> index;
+        private String content;
+        private String tableName;
 
         private Builder() {}
 
@@ -361,8 +370,20 @@ public class Page extends Rectangle {
             return this;
         }
 
+        public Builder withContent(String content) {
+          this.content = content;
+          
+          return this;
+        }
+
+        public Builder withTableName(String tableName) {
+          this.tableName = tableName;
+          return this;
+        }
+
         public Builder withNumber(int number) {
             this.number = number;
+
 
             return this;
         }
@@ -410,7 +431,7 @@ public class Page extends Rectangle {
         }
 
         public Page build() {
-            return new Page(pageDims, rotation, number, pdPage, pdDocument, textElements, rulings, minCharWidth, minCharHeight, index);
+            return new Page(pageDims, rotation, number, pdPage, pdDocument, textElements, rulings, minCharWidth, minCharHeight, index, content, tableName);
         }
     }
 }

@@ -89,6 +89,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
             }
                         
             TableWithRulingLines t = new TableWithRulingLines(area, overlappingCells, horizontalOverlappingRulings, verticalOverlappingRulings, this, page.getPageNumber());
+            t.setTableName(page.getTableName());
             spreadsheets.add(t);
         }
         Utils.sort(spreadsheets, Rectangle.ILL_DEFINED_ORDER);
@@ -111,7 +112,8 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         if (tables.isEmpty()) {
             return false;
         }
-        Table table = tables.get(0);
+        //Table table = tables.get(0);
+        Table table = Utils.maxColTable(tables);
         int rowsDefinedByLines = table.getRowCount();
         int colsDefinedByLines = table.getColCount();
         

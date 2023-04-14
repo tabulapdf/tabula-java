@@ -1,6 +1,7 @@
 package technology.tabula;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -9,8 +10,11 @@ public class ObjectExtractor implements java.io.Closeable {
 
     private final PDDocument pdfDocument;
 
-    public ObjectExtractor(PDDocument pdfDocument) {
+    private final List<String> tableNames;
+
+    public ObjectExtractor(PDDocument pdfDocument, List<String> tableNames) {
         this.pdfDocument = pdfDocument;
+        this.tableNames = tableNames;
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -19,13 +23,21 @@ public class ObjectExtractor implements java.io.Closeable {
             throw new java.lang.IndexOutOfBoundsException("Page number does not exist.");
         }
         PDPage page = pdfDocument.getPage(pageNumber - 1);
-
+      
         ObjectExtractorStreamEngine streamEngine = new ObjectExtractorStreamEngine(page);
         streamEngine.processPage(page);
 
         TextStripper textStripper = new TextStripper(pdfDocument, pageNumber);
         textStripper.process();
-
+        String tableName = "";
+        //TODO 判断表名是否存在
+        if (tableNames != null){
+            //采用文本包含方式判断表名,后续需优化
+            tableName = Utils.findTableName(tableNames, pdfTextStripper.getContent());
+            if ("".equals(tableName)) {
+                return null;
+            }
+        }
         Utils.sort(textStripper.getTextElements(), Rectangle.ILL_DEFINED_ORDER);
 
         float width, height;
@@ -49,6 +61,8 @@ public class ObjectExtractor implements java.io.Closeable {
                 .withMinCharWidth(textStripper.getMinCharWidth())
                 .withMinCharHeight(textStripper.getMinCharHeight())
                 .withIndex(textStripper.getSpatialIndex())
+                .withContent(pdfTextStripper.getContent())
+                .withTableName(tableName)
                 .build();
     }
 

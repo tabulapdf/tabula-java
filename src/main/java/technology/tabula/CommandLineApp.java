@@ -7,7 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javafx.scene.control.Tab;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -17,14 +19,12 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import org.locationtech.jts.util.StringUtil;
 import technology.tabula.detectors.DetectionAlgorithm;
 import technology.tabula.detectors.NurminenDetectionAlgorithm;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
-import technology.tabula.writers.CSVWriter;
-import technology.tabula.writers.JSONWriter;
-import technology.tabula.writers.TSVWriter;
-import technology.tabula.writers.Writer;
+import technology.tabula.writers.*;
 
 
 public class CommandLineApp {
@@ -44,6 +44,8 @@ public class CommandLineApp {
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
+    private Map<String, List<String>> tableMap;
+
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
@@ -51,6 +53,7 @@ public class CommandLineApp {
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
+        this.tableMap = CommandLineApp.whichTableMap(line);
 
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
@@ -165,6 +168,10 @@ public class CommandLineApp {
             while (pageIterator.hasNext()) {
                 Page page = pageIterator.next();
 
+                if (page == null) {
+                    continue;
+                }
+
                 if (tableExtractor.verticalRulingPositions != null) {
                     for (Float verticalRulingPosition : tableExtractor.verticalRulingPositions) {
                         page.addRuling(new Ruling(0, verticalRulingPosition, 0.0f, (float) page.getHeight()));
@@ -200,7 +207,8 @@ public class CommandLineApp {
     }
 
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
-        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        List<String>tableNames=new ArrayList<String>(tableMap.keySet());
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument, tableNames);
         return (pages == null) ?
                 extractor.extract() :
                 extractor.extract(pages);
@@ -249,7 +257,15 @@ public class CommandLineApp {
 
     private static List<Integer> whichPages(CommandLine line) throws ParseException {
         String pagesOption = line.hasOption('p') ? line.getOptionValue('p') : "1";
+        String tableName = line.hasOption("tn") ? line.getOptionValue("tn") : "";
+        if (!"".equals(tableName) && "1".equals(pagesOption))
+            pagesOption = "all";
         return Utils.parsePagesOption(pagesOption);
+    }
+
+    private static Map<String,List<String>> whichTableMap(CommandLine line) throws ParseException{
+        String pagesOption = line.hasOption("tn") ? line.getOptionValue("tn") : "";
+        return Utils.parseTableMapOption(pagesOption);
     }
 
     private static ExtractionMethod whichExtractionMethod(CommandLine line) {
@@ -363,7 +379,12 @@ public class CommandLineApp {
                 .hasArg()
                 .argName("PAGES")
                 .build());
-
+        o.addOption(Option.builder("tn")
+                .longOpt("tableNames")
+                .desc("Comma separated list of TableName, or all. Examples: --tableName table1,table2")
+                .hasArg()
+                .argName("TABLENAMES")
+                .build());
         return o;
     }
 
@@ -467,6 +488,9 @@ public class CommandLineApp {
             case JSON:
                 writer = new JSONWriter();
                 break;
+            case SJSON:
+                writer = new SJSONWriter(tableMap);
+                break;
             case TSV:
                 writer = new TSVWriter();
                 break;
@@ -481,6 +505,7 @@ public class CommandLineApp {
                 extension = ".csv";
                 break;
             case JSON:
+            case SJSON:
                 extension = ".json";
                 break;
             case TSV:
@@ -493,7 +518,8 @@ public class CommandLineApp {
     private enum OutputFormat {
         CSV,
         TSV,
-        JSON;
+        JSON,
+        SJSON;
 
         static String[] formatNames() {
             OutputFormat[] values = OutputFormat.values();
