@@ -20,7 +20,7 @@ public class CSVWriter implements Writer {
     }
 
     protected CSVWriter(CSVFormat format) {
-        this.format = format;
+        this.format = format.withRecordSeparator("\n");
     }
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
