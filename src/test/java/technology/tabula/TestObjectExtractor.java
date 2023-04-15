@@ -84,6 +84,19 @@ public class TestObjectExtractor {
     }
 
     @Test
+    public void testShouldFilterRulingsByColor() throws IOException {
+        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/should_filter_rulings_by_color.pdf"));
+        try (ObjectExtractor oe = new ObjectExtractor(pdf_document, 0)) {
+            PageIterator pi = oe.extract();
+
+            Page page = pi.next();
+            List<Ruling> rulings = page.getRulings();
+
+            assertEquals(7, rulings.size());
+        }
+    }
+
+    @Test
     public void testDontThrowNPEInShfill() throws IOException {
         PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/labor.pdf"));
 
