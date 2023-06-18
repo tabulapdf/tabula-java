@@ -167,7 +167,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                     if (startPoint == null || endPoint == null) {
                         break;
                     }
-                    line = getLineBetween(startPoint, endPoint, pointComparator);
+                    line = pointComparator.getLineBetween(startPoint, endPoint);
                     verifyLineIntersectsClipping(line);
                     break;
                 case SEG_MOVETO:
@@ -182,7 +182,7 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
                     if (startPoint == null || endPoint == null) {
                         break;
                     }
-                    line = getLineBetween(endPoint, last_move, pointComparator);
+                    line = pointComparator.getLineBetween(endPoint, last_move);
                     verifyLineIntersectsClipping(line);
                     break;
             }
@@ -217,13 +217,6 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
         float x = Utils.round(startPointCoordinates[0], 2);
         float y = Utils.round(startPointCoordinates[1], 2);
         return new Point2D.Float(x, y);
-    }
-
-    private Line2D.Float getLineBetween(Point2D.Float pointA, Point2D.Float pointB, PointComparator pointComparator) {
-        if (pointComparator.compare(pointA, pointB) == -1) {
-            return new Line2D.Float(pointA, pointB);
-        }
-        return new Line2D.Float(pointB, pointA);
     }
 
     private void verifyLineIntersectsClipping(Line2D.Float line) {
@@ -265,6 +258,12 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             if (p1X < p2X)
                 return -1;
             return 0;
+        }
+            private Line2D.Float getLineBetween(Point2D.Float pointA, Point2D.Float pointB) {
+            if (compare(pointA, pointB) == -1) {
+                return new Line2D.Float(pointA, pointB);
+            }
+            return new Line2D.Float(pointB, pointA);
         }
     }
 
