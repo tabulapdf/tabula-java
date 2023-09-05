@@ -8,9 +8,15 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.junit.Assert;
 
 public class UtilsForTesting {
+
+    public static PDType1Font HELVETICA = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+    public static PDType1Font HELVETICA_BOLD = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+    public static PDType1Font TIMES_ROMAN = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
 
     public static Page getAreaFromFirstPage(String path, float top, float left, float bottom, float right) throws IOException {
         return getAreaFromPage(path, 1, top, left, bottom, right);
@@ -23,8 +29,8 @@ public class UtilsForTesting {
     public static Page getPage(String path, int pageNumber) throws IOException {
         ObjectExtractor oe = null;
         try {
-            PDDocument document = PDDocument
-                    .load(new File(path));
+            PDDocument document = org.apache.pdfbox.Loader
+                    .loadPDF(new File(path));
             oe = new ObjectExtractor(document);
             Page page = oe.extract(pageNumber);
             return page;

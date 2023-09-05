@@ -21,8 +21,8 @@ public class TestProjectionProfile {
 		PDPage pdPage = new PDPage();
 		PDDocument pdDocument = new PDDocument();
 		
-		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
-		TextElement textElement2 = new TextElement(5f, 15f, 10f, 20f, PDType1Font.HELVETICA, 1f, "test", 1f);
+		TextElement textElement = new TextElement(5f, 15f, 10f, 20f, UtilsForTesting.HELVETICA, 1f, "test", 1f);
+		TextElement textElement2 = new TextElement(5f, 15f, 10f, 20f, UtilsForTesting.HELVETICA, 1f, "test", 1f);
 		List<TextElement> textList = new ArrayList<>();
 		textList.add(textElement);
 		textList.add(textElement2);

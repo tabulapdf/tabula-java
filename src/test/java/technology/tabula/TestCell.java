@@ -30,8 +30,7 @@ public class TestCell {
 	public void testGetTextElements() {
 		Cell cell = new Cell(0, 0, 0, 0);
 		assertTrue(cell.getTextElements().isEmpty());
-		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, UtilsForTesting.HELVETICA_BOLD, 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		List<TextChunk> tList = new ArrayList<>();
 		tList.add(tChunk);

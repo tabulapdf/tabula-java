@@ -215,7 +215,7 @@ public class Debug {
                                   boolean drawColumns, boolean drawCharacters, boolean drawArea, boolean drawCells,
                                   boolean drawUnprocessedRulings, boolean drawProjectionProfile, boolean drawClippingPaths,
                                   boolean drawDetectedTables) throws IOException {
-        PDDocument document = PDDocument.load(new File(pdfPath));
+        PDDocument document = org.apache.pdfbox.Loader.loadPDF(new File(pdfPath));
 
         ObjectExtractor oe = new ObjectExtractor(document);
 
@@ -349,7 +349,7 @@ public class Debug {
 
             if (pages == null) {
                 // user specified all pages
-                PDDocument document = PDDocument.load(pdfFile);
+                PDDocument document = org.apache.pdfbox.Loader.loadPDF(pdfFile);
 
                 int numPages = document.getNumberOfPages();
                 pages = new ArrayList<>(numPages);

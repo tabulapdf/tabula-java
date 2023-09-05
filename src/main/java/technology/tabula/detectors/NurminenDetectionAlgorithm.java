@@ -804,8 +804,7 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
     private PDDocument removeText(PDPage page) throws IOException {
 
         PDFStreamParser parser = new PDFStreamParser(page);
-        parser.parse();
-        List<Object> tokens = parser.getTokens();
+        List<Object> tokens = parser.parse();
         List<Object> newTokens = new ArrayList<>();
         for (Object token : tokens) {
             if (token instanceof Operator) {

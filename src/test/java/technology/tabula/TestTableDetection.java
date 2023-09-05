@@ -162,7 +162,7 @@ public class TestTableDetection {
         NodeList tables = regionDocument.getElementsByTagName("table");
 
         // tabula extractors
-        PDDocument pdfDocument = PDDocument.load(this.pdf);
+        PDDocument pdfDocument = org.apache.pdfbox.Loader.loadPDF(this.pdf);
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
         // parse expected tables from the ground truth dataset

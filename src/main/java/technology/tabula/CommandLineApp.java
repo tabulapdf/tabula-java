@@ -158,7 +158,7 @@ public class CommandLineApp {
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
         PDDocument pdfDocument = null;
         try {
-            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+            pdfDocument = this.password == null ? org.apache.pdfbox.Loader.loadPDF(pdfFile) : org.apache.pdfbox.Loader.loadPDF(pdfFile, this.password);
             PageIterator pageIterator = getPageIterator(pdfDocument);
             List<Table> tables = new ArrayList<>();
 
