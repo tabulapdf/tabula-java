@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.junit.Test;
 
 public class TestLine {
@@ -14,7 +15,7 @@ public class TestLine {
 	public void testSetTextElements() {
 		Line line = new Line();
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		List<TextChunk> tList = new ArrayList<>();
 		tList.add(tChunk);
@@ -28,7 +29,7 @@ public class TestLine {
 	public void testAddTextChunkIntTextChunk() {
 		Line line = new Line();
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(3, tChunk);
 		
@@ -39,7 +40,7 @@ public class TestLine {
 	public void testLessThanAddTextChunkIntTextChunk() {
 		Line line = new Line();
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(0, tChunk);
 		line.addTextChunk(0, tChunk);
@@ -51,7 +52,7 @@ public class TestLine {
 	public void testErrorAddTextChunkIntTextChunk() {
 		Line line = new Line();
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(-1, tChunk);
 		}
@@ -60,7 +61,7 @@ public class TestLine {
 	public void testToString() {
 		Line line = new Line();
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		line.addTextChunk(0, tChunk);
 		line.addTextChunk(0, tChunk);
