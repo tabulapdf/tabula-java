@@ -62,7 +62,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         List<Cell> cells = findCells(horizontalR, verticalR);
         List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
-        
+        Collections.sort(spreadsheetAreas, Comparator.comparingDouble(Rectangle::getHeight).reversed());
         List<Table> spreadsheets = new ArrayList<>();
         for (Rectangle area: spreadsheetAreas) {
 
