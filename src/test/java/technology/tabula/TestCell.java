@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.junit.Test;
 
 public class TestCell {
@@ -31,7 +32,7 @@ public class TestCell {
 		Cell cell = new Cell(0, 0, 0, 0);
 		assertTrue(cell.getTextElements().isEmpty());
 		
-		TextElement tElement = new TextElement(0, 0, 0, 0, PDType1Font.HELVETICA_BOLD, 10, "test", 5);
+		TextElement tElement = new TextElement(0, 0, 0, 0, new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10, "test", 5);
 		TextChunk tChunk = new TextChunk(tElement);
 		List<TextChunk> tList = new ArrayList<>();
 		tList.add(tChunk);
