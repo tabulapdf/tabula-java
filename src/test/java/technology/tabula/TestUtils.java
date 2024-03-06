@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.commons.cli.ParseException;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -122,7 +123,7 @@ public class TestUtils {
 
     @Test
     public void testJPEG2000DoesNotRaise() throws IOException {
-        PDDocument pdf_document = PDDocument.load(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
+        PDDocument pdf_document = Loader.loadPDF(new File("src/test/resources/technology/tabula/jpeg2000.pdf"));
         PDPage page = pdf_document.getPage(0);
         Utils.pageConvertToImage(pdf_document, page, 360, ImageType.RGB);
     }

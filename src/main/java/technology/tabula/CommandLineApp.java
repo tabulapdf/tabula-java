@@ -15,6 +15,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import technology.tabula.detectors.DetectionAlgorithm;
@@ -158,7 +159,7 @@ public class CommandLineApp {
     private void extractFile(File pdfFile, Appendable outFile) throws ParseException {
         PDDocument pdfDocument = null;
         try {
-            pdfDocument = this.password == null ? PDDocument.load(pdfFile) : PDDocument.load(pdfFile, this.password);
+            pdfDocument = this.password == null ?  Loader.loadPDF(pdfFile) :  Loader.loadPDF(pdfFile,password);
             PageIterator pageIterator = getPageIterator(pdfDocument);
             List<Table> tables = new ArrayList<>();
 

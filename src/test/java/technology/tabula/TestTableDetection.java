@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import static org.junit.Assert.*;
 
 import com.google.gson.Gson;
+import org.apache.pdfbox.Loader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -162,7 +163,7 @@ public class TestTableDetection {
         NodeList tables = regionDocument.getElementsByTagName("table");
 
         // tabula extractors
-        PDDocument pdfDocument = PDDocument.load(this.pdf);
+        PDDocument pdfDocument = Loader.loadPDF(this.pdf);
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
         // parse expected tables from the ground truth dataset

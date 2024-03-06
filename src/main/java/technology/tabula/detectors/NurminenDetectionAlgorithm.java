@@ -805,12 +805,12 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
 
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
-        List<Object> tokens = parser.getTokens();
         List<Object> newTokens = new ArrayList<>();
-        for (Object token : tokens) {
+        while (page.hasContents()) {
+            Object token = parser.parseNextToken();
             if (token instanceof Operator) {
                 Operator op = (Operator) token;
-                if (op.getName().equals("TJ") || op.getName().equals("Tj")) {
+                if ("TJ".equals(op.getName()) || "Tj".equals(op.getName())) {
                     //remove the one argument to this operator
                     newTokens.remove(newTokens.size() - 1);
                     continue;
