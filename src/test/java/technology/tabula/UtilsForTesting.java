@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.Assert;
 
@@ -23,11 +24,9 @@ public class UtilsForTesting {
     public static Page getPage(String path, int pageNumber) throws IOException {
         ObjectExtractor oe = null;
         try {
-            PDDocument document = PDDocument
-                    .load(new File(path));
+            PDDocument document = Loader.loadPDF(new File(path));
             oe = new ObjectExtractor(document);
-            Page page = oe.extract(pageNumber);
-            return page;
+            return oe.extract(pageNumber);
         } finally {
             if (oe != null)
                 oe.close();
