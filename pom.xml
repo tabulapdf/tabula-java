@@ -263,6 +263,12 @@
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
         <version>3.0.1</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
