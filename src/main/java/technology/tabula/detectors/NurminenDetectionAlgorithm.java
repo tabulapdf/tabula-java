@@ -1,14 +1,8 @@
 package technology.tabula.detectors;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
-
+import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.contentstream.operator.Operator;
+import org.apache.pdfbox.contentstream.operator.OperatorName;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
@@ -16,15 +10,16 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.rendering.ImageType;
-
-import technology.tabula.Line;
-import technology.tabula.Page;
-import technology.tabula.Rectangle;
-import technology.tabula.Ruling;
-import technology.tabula.TextChunk;
-import technology.tabula.TextElement;
-import technology.tabula.Utils;
+import technology.tabula.*;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
 
 /**
  * Created by matt on 2015-12-17.
@@ -799,25 +794,10 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         return verticalRulings;
     }
 
-
-    // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
     private PDDocument removeText(PDPage page) throws IOException {
 
         PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
-        List<Object> newTokens = new ArrayList<>();
-        while (page.hasContents()) {
-            Object token = parser.parseNextToken();
-            if (token instanceof Operator) {
-                Operator op = (Operator) token;
-                if ("TJ".equals(op.getName()) || "Tj".equals(op.getName())) {
-                    //remove the one argument to this operator
-                    newTokens.remove(newTokens.size() - 1);
-                    continue;
-                }
-            }
-            newTokens.add(token);
-        }
 
         PDDocument document = new PDDocument();
         PDPage newPage = document.importPage(page);
@@ -826,9 +806,51 @@ public class NurminenDetectionAlgorithm implements DetectionAlgorithm {
         PDStream newContents = new PDStream(document);
         OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
         ContentStreamWriter writer = new ContentStreamWriter(out);
-        writer.writeTokens(newTokens);
+        List<Object> tokensWithoutText = createTokensWithoutText(page);
+        writer.writeTokens(tokensWithoutText);
         out.close();
         newPage.setContents(newContents);
         return document;
     }
+
+
+    /**
+     * @param contentStream contentStream
+     * @return newTokens
+     * @throws IOException When parseNextToken on Error
+     * @see <a href="https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/util/RemoveAllText.java#L127">...</a>
+     */
+    private static List<Object> createTokensWithoutText(PDContentStream contentStream) throws IOException {
+        PDFStreamParser parser = new PDFStreamParser(contentStream);
+        Object token = parser.parseNextToken();
+        List<Object> newTokens = new ArrayList<>();
+        while (token != null) {
+            if (token instanceof Operator) {
+                Operator op = (Operator) token;
+                String opName = op.getName();
+                if (OperatorName.SHOW_TEXT_ADJUSTED.equals(opName)
+                        || OperatorName.SHOW_TEXT.equals(opName)
+                        || OperatorName.SHOW_TEXT_LINE.equals(opName)) {
+                    // remove the argument to this operator
+                    newTokens.remove(newTokens.size() - 1);
+
+                    token = parser.parseNextToken();
+                    continue;
+                } else if (OperatorName.SHOW_TEXT_LINE_AND_SPACE.equals(opName)) {
+                    // remove the 3 arguments to this operator
+                    newTokens.remove(newTokens.size() - 1);
+                    newTokens.remove(newTokens.size() - 1);
+                    newTokens.remove(newTokens.size() - 1);
+
+                    token = parser.parseNextToken();
+                    continue;
+                }
+            }
+            newTokens.add(token);
+            token = parser.parseNextToken();
+        }
+        return newTokens;
+    }
+
+
 }

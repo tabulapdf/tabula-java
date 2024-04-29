@@ -1,29 +1,29 @@
 package technology.tabula;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.junit.Assert.*;
-
 import com.google.gson.Gson;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import technology.tabula.detectors.NurminenDetectionAlgorithm;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import technology.tabula.detectors.NurminenDetectionAlgorithm;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by matt on 2015-12-14.
@@ -111,15 +111,10 @@ public class TestTableDetection {
             String directoryName = "src/test/resources/technology/tabula/icdar2013-dataset/competition-dataset-" + regionCode + "/";
             File dir = new File(directoryName);
 
-            File[] pdfs = dir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.toLowerCase().endsWith(".pdf");
-                }
-            });
+            File[] pdfs = dir.listFiles((dir1, name) -> name.toLowerCase().endsWith(".pdf"));
 
             for (File pdf : pdfs) {
-                data.add(new Object[] {pdf});
+                data.add(new Object[]{pdf});
             }
         }
 
@@ -163,6 +158,8 @@ public class TestTableDetection {
         NodeList tables = regionDocument.getElementsByTagName("table");
 
         // tabula extractors
+
+
         PDDocument pdfDocument = Loader.loadPDF(this.pdf);
         ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
 
@@ -171,7 +168,7 @@ public class TestTableDetection {
 
         int numExpectedTables = 0;
 
-        for (int i=0; i<tables.getLength(); i++) {
+        for (int i = 0; i < tables.getLength(); i++) {
 
             Element table = (Element) tables.item(i);
             Element region = (Element) table.getElementsByTagName("region").item(0);
@@ -195,7 +192,7 @@ public class TestTableDetection {
             // do some extra work to extract the page with tabula and get the dimensions from there
             Page extractedPage = extractor.extractPage(page);
 
-            float top = (float)extractedPage.getHeight() - y2;
+            float top = (float) extractedPage.getHeight() - y2;
             float left = x1;
             float width = x2 - x1;
             float height = y2 - y1;
@@ -214,8 +211,8 @@ public class TestTableDetection {
         while (pages.hasNext()) {
             Page page = pages.next();
             List<Rectangle> tablesOnPage = detectionAlgorithm.detect(page);
-            if (tablesOnPage.size() > 0) {
-                detectedTables.put(new Integer(page.getPageNumber()), tablesOnPage);
+            if (!tablesOnPage.isEmpty()) {
+                detectedTables.put(page.getPageNumber(), tablesOnPage);
             }
         }
 
@@ -267,7 +264,7 @@ public class TestTableDetection {
         System.out.println(totalErroneouslyDetectedTables + " tables incorrectly detected");
 
 
-        if(this.status.isFirstRun()) {
+        if (this.status.isFirstRun()) {
             // make the baseline
             this.status.expectedFailure = failed;
             this.status.numCorrectlyDetectedTables = this.numCorrectlyDetectedTables;
@@ -293,14 +290,14 @@ public class TestTableDetection {
         // from http://www.orsigiorgio.net/wp-content/papercite-data/pdf/gho*12.pdf (comparing regions):
         // for other (e.g.“black-box”) algorithms, bounding boxes and content are used. A region is correct if it
         // contains the minimal bounding box of the ground truth without intersecting additional content.
-        for (Iterator<Rectangle> detectedIterator = detected.iterator(); detectedIterator.hasNext();) {
+        for (Iterator<Rectangle> detectedIterator = detected.iterator(); detectedIterator.hasNext(); ) {
             Rectangle detectedTable = detectedIterator.next();
 
-            for (int i=0; i<expected.size(); i++) {
+            for (int i = 0; i < expected.size(); i++) {
                 if (detectedTable.contains(expected.get(i))) {
                     // we have a candidate for the detected table, make sure it doesn't intersect any others
                     boolean intersectsOthers = false;
-                    for (int j=0; j<expected.size(); j++) {
+                    for (int j = 0; j < expected.size(); j++) {
                         if (i == j) continue;
                         if (detectedTable.intersects(expected.get(j))) {
                             intersectsOthers = true;
