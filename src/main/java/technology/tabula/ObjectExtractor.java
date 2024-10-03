@@ -8,9 +8,15 @@ import org.apache.pdfbox.pdmodel.PDPage;
 public class ObjectExtractor implements java.io.Closeable {
 
     private final PDDocument pdfDocument;
+    private final Integer lineColorFilter;
 
     public ObjectExtractor(PDDocument pdfDocument) {
+        this(pdfDocument, null);
+    }
+
+    public ObjectExtractor(PDDocument pdfDocument, Integer lineColorFilter) {
         this.pdfDocument = pdfDocument;
+        this.lineColorFilter = lineColorFilter;
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -20,7 +26,7 @@ public class ObjectExtractor implements java.io.Closeable {
         }
         PDPage page = pdfDocument.getPage(pageNumber - 1);
 
-        ObjectExtractorStreamEngine streamEngine = new ObjectExtractorStreamEngine(page);
+        ObjectExtractorStreamEngine streamEngine = new ObjectExtractorStreamEngine(page, lineColorFilter);
         streamEngine.processPage(page);
 
         TextStripper textStripper = new TextStripper(pdfDocument, pageNumber);

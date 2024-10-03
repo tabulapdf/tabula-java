@@ -7,6 +7,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +16,9 @@ import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
+import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,7 @@ import static java.awt.geom.PathIterator.*;
 
 class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
+    private Integer lineColorFilter;
     protected List<Ruling> rulings;
     private AffineTransform pageTransform;
     private boolean extractRulingLines = true;
@@ -32,8 +36,9 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
 
     private static final float RULING_MINIMUM_LENGTH = 0.01f;
 
-    protected ObjectExtractorStreamEngine(PDPage page) {
+    protected ObjectExtractorStreamEngine(PDPage page, Integer lineColorFilter) {
         super(page);
+        this.lineColorFilter = lineColorFilter;
         logger = LoggerFactory.getLogger(ObjectExtractorStreamEngine.class);
         rulings = new ArrayList<>();
 
@@ -130,15 +135,10 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
     }
 
     private void strokeOrFillPath(boolean isFill) {
-        if (!extractRulingLines) {
+        if (!extractRulingLines || filterPathByColor(isFill) || filterPathBySegmentType()) {
             currentPath.reset();
             return;
         }
-
-        boolean didNotPassedTheFilter = filterPathBySegmentType();
-        if (didNotPassedTheFilter) return;
-
-        // TODO: how to implement color filter?
 
         // Skip the first path operation and save it as the starting point.
         PathIterator pathIterator = currentPath.getPathIterator(getPageTransform());
@@ -189,6 +189,32 @@ class ObjectExtractorStreamEngine extends PDFGraphicsStreamEngine {
             startPoint = endPoint;
         }
         currentPath.reset();
+    }
+
+    private boolean filterPathByColor (boolean isFill) {
+        if (lineColorFilter == null) {
+            return false;
+        }
+
+        try {
+            PDGraphicsState state = getGraphicsState();
+            PDColor currentColor;
+            if (isFill) {
+                currentColor = state.getNonStrokingColor();
+            } else {
+                currentColor = state.getStrokingColor();
+            }
+            return currentColor.toRGB() != lineColorFilter;
+        } catch (IOException e) {
+            System.err.println("Color conversion failed:");
+            e.printStackTrace();
+            return false;
+        } catch (IllegalStateException e) {
+            System.err.println("Cannot convert pattern color:");
+            e.printStackTrace();
+            return false;
+        }
+        // TODO: if the toRGB() method throws an exception, should the color be valid or not?
     }
 
     private boolean filterPathBySegmentType() {
