@@ -62,7 +62,7 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
         
         List<Cell> cells = findCells(horizontalR, verticalR);
         List<Rectangle> spreadsheetAreas = findSpreadsheetsFromCells(cells);
-        
+
         List<Table> spreadsheets = new ArrayList<>();
         for (Rectangle area: spreadsheetAreas) {
 
@@ -183,9 +183,9 @@ public class SpreadsheetExtractionAlgorithm implements ExtractionAlgorithm {
     public static List<Rectangle> findSpreadsheetsFromCells(List<? extends Rectangle> cells) {
         // via: http://stackoverflow.com/questions/13746284/merging-multiple-adjacent-rectangles-into-one-polygon
         List<Rectangle> rectangles = new ArrayList<>();
-        Set<Point2D> pointSet = new HashSet<>();
-        Map<Point2D, Point2D> edgesH = new HashMap<>();
-        Map<Point2D, Point2D> edgesV = new HashMap<>();
+        Set<Point2D> pointSet = new LinkedHashSet<>();
+        Map<Point2D, Point2D> edgesH = new LinkedHashMap<>();
+        Map<Point2D, Point2D> edgesV = new LinkedHashMap<>();
         int i = 0;
         
         cells = new ArrayList<>(new HashSet<>(cells));
