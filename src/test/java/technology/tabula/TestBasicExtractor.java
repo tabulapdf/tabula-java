@@ -203,7 +203,7 @@ public class TestBasicExtractor {
         List<List<RectangularTextContainer>> rows = table.getRows();
         List<RectangularTextContainer> firstRow = rows.get(0);
         List<RectangularTextContainer> lastRow = rows.get(rows.size() - 1);
-        assertTrue(firstRow.get(0).getText().equals("Violent crime  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ."));
+        assertTrue(firstRow.get(0).getText().equals("Violent crime. .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ."));
         assertTrue(lastRow.get(lastRow.size() - 1).getText().equals("(X)"));
         page.getPDDoc().close();
     }
