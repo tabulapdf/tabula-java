@@ -45,6 +45,7 @@ public class CommandLineApp {
     private OutputFormat outputFormat;
     private String password;
     private TableExtractor tableExtractor;
+    private Integer lineColorFilter;
 
     public CommandLineApp(Appendable defaultOutput, CommandLine line) throws ParseException {
         this.defaultOutput = defaultOutput;
@@ -52,6 +53,7 @@ public class CommandLineApp {
         this.pages = CommandLineApp.whichPages(line);
         this.outputFormat = CommandLineApp.whichOutputFormat(line);
         this.tableExtractor = CommandLineApp.createExtractor(line);
+        this.lineColorFilter = CommandLineApp.whichLineColorFilter(line);
 
         if (line.hasOption('s')) {
             this.password = line.getOptionValue('s');
@@ -201,7 +203,7 @@ public class CommandLineApp {
     }
 
     private PageIterator getPageIterator(PDDocument pdfDocument) throws IOException {
-        ObjectExtractor extractor = new ObjectExtractor(pdfDocument);
+        ObjectExtractor extractor = new ObjectExtractor(pdfDocument, lineColorFilter);
         return (pages == null) ?
                 extractor.extract() :
                 extractor.extract(pages);
@@ -264,6 +266,23 @@ public class CommandLineApp {
             return ExtractionMethod.BASIC;
         }
         return ExtractionMethod.DECIDE;
+    }
+
+    private static Integer whichLineColorFilter(CommandLine line) throws ParseException {
+        if (!line.hasOption("line-color-filter")) {
+            return null;
+        }
+
+        Integer result;
+        try {
+            result = Integer.parseInt(line.getOptionValue("line-color-filter"), 16);
+        } catch (NumberFormatException e) {
+            throw new ParseException("line-color-filter parameter must be a hexadecimal number");
+        }
+        if (result < 0 || result > 0xFFFFFF) {
+            throw new ParseException("line-color-filter parameter must be at most FFFFFF");
+        }
+        return result;
     }
 
     private static TableExtractor createExtractor(CommandLine line) throws ParseException {
@@ -363,6 +382,12 @@ public class CommandLineApp {
                 .desc("Comma separated list of ranges, or all. Examples: --pages 1-3,5-7, --pages 3 or --pages all. Default is --pages 1")
                 .hasArg()
                 .argName("PAGES")
+                .build());
+        o.addOption(Option.builder(null)
+                .longOpt("line-color-filter")
+                .desc("Only consider lines of this color to be lattice lines. Example: --line-color-filter DEADBE .")
+                .hasArg()
+                .argName("COLOR")
                 .build());
 
         return o;
